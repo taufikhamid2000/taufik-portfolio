@@ -29,7 +29,7 @@ export default function Home() {
     <div className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white">
       <Header showSignupLink={true} />
       <div className="flex flex-col items-center justify-center p-8">
-        <h1 className="text-4xl font-bold mt-8">Hey, welcome to Taufik's Portfolio!</h1>
+        <h1 className="text-4xl font-bold mt-8">Hey, welcome to Taufik`s Portfolio!</h1>
         <p className="mt-4 text-center max-w-md">
           These are the projects I have so far. Feel free to explore each one of them!
         </p>
