@@ -30,7 +30,7 @@ export default function CreateProject() {
 
       setProjectName('');
       setDescription('');
-    } catch (error) {
+    } catch {
       setMessage('Failed to create project');
     }
   };
