@@ -46,7 +46,7 @@ export default function ${normalizedProjectName.replace(/-/g, '_')}() {
     fs.writeFileSync(path.join(projectDir, 'metadata.json'), JSON.stringify(metadataContent, null, 2), 'utf8');
 
     return NextResponse.json({ message: 'Project created successfully' });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to create project' }, { status: 500 });
   }
 }
