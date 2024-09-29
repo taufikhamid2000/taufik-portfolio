@@ -9,7 +9,11 @@ interface UserState {
   email: string;
 }
 
-const Header = () => {
+interface HeaderProps {
+  showSignupLink?: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ showSignupLink = true }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [user, setUser] = useState<UserState | null>(null);
 
@@ -64,9 +68,11 @@ const Header = () => {
       <div className="flex gap-4 items-center">
         {!user ? (
           <>
-            <Link href="/signup" className="hover:underline">
-              Sign Up
-            </Link>
+            {showSignupLink && (
+              <Link href="/signup" className="hover:underline">
+                Sign Up
+              </Link>
+            )}
             <Link href="/login" className="hover:underline">
               Log In
             </Link>
