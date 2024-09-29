@@ -4,15 +4,15 @@ import { useState } from 'react';
 import supabase from '../../lib/supabaseClient';
 import Header from '../../components/Header';
 
-export default function SignupPage() {
+export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -20,9 +20,10 @@ export default function SignupPage() {
     if (error) {
       setMessage(`Error: ${error.message}`);
     } else {
-      setMessage('Signup successful! Please check your email to confirm your account.');
-      setEmail('');
-      setPassword('');
+      setMessage('Login successful! Redirecting...');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000); // Redirect to homepage after successful login
     }
   };
 
@@ -30,8 +31,8 @@ export default function SignupPage() {
     <div className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white">
       <Header />
       <div className="pt-20 w-full max-w-lg p-8 mx-auto bg-white rounded-lg shadow-md dark:bg-gray-800">
-        <h1 className="text-3xl font-bold mb-6 text-center">Sign Up</h1>
-        <form onSubmit={handleSignup} className="flex flex-col gap-6">
+        <h1 className="text-3xl font-bold mb-6 text-center">Login</h1>
+        <form onSubmit={handleLogin} className="flex flex-col gap-6">
           <input
             type="email"
             placeholder="Email"
@@ -52,7 +53,7 @@ export default function SignupPage() {
             type="submit"
             className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out"
           >
-            Sign Up
+            Log In
           </button>
         </form>
         {message && (

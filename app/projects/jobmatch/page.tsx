@@ -1,0 +1,12 @@
+"use client";
+
+import TemplateProjectPage from '../../../components/TemplateProjectPage';
+
+export default function jobmatch() {
+  return (
+    <TemplateProjectPage
+      title="JobMatch"
+      description="JobMatch is a job posting website that utilizes a standardized template for job listings, ensuring consistency and clarity across all postings. The platform provides a user-friendly interface for employers to create detailed job postings with specific fields like Job Title, Location, Employment Type, Job Description, Responsibilities, Requirements, Salary & Benefits, and Application Instructions. Additionally, JobMatch offers features like employer dashboards, where companies can manage job listings and view applications, and job seekers can save jobs, track applications, and set up job alerts."
+    />
+  );
+}

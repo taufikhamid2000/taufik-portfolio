@@ -57,7 +57,7 @@ export default function Home() {
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
                       {project.name ? project.name.replace(/-/g, ' ') : 'Unnamed Project'}
                     </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
+                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-justify">
                       {project.description || 'No description available'}
                     </td>
                     <td className="border border-gray-300 dark:border-gray-600 px-4 py-2">
