@@ -29,15 +29,19 @@ export default function Home() {
     <div className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white">
       <Header showSignupLink={true} />
       <div className="flex flex-col items-center justify-center p-8">
-        <h1 className="text-4xl font-bold mt-8">Hey, welcome to Taufik`s Portfolio!</h1>
+        <h1 className="text-4xl font-bold mt-8">Hey, welcome to Taufik's Portfolio!</h1>
         <p className="mt-4 text-center max-w-md">
           These are the projects I have so far. Feel free to explore each one of them!
         </p>
-        <Link href="/create-project">
-          <button className="mt-4 px-8 py-4 bg-green-500 text-white rounded-lg hover:bg-green-700">
-            Create New Project
-          </button>
-        </Link>
+
+        {/* Admin Only Button for Create New Project */}
+        <div className="mt-4">
+          <Link href="/create-project">
+            <button className="text-xs px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+              (Admin Only) Create New Project
+            </button>
+          </Link>
+        </div>
 
         {/* Display Projects Table */}
         {projects.length > 0 && (
