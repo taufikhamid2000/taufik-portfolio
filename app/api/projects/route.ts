@@ -19,9 +19,20 @@ export async function GET() {
         description = metadata.description || description;
       }
 
+      // Look for available pages
+      const projectPath = path.join(projectsDir, folder);
+      const pageFiles = fs.readdirSync(projectPath);
+      const pages = pageFiles
+        .filter((subfolder) => fs.statSync(path.join(projectPath, subfolder)).isDirectory() || subfolder === 'page.tsx')
+        .map((subfolder) => {
+          if (subfolder === 'page.tsx') return 'Home';
+          return subfolder.replace(/-/g, ' ');
+        });
+
       return {
         name: folder,
         description,
+        pages, // Add the pages to the response
       };
     });
 
