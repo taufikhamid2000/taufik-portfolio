@@ -12,14 +12,14 @@ interface ProjectProps {
 
 const TemplateProjectPage = ({ title, description, signupLink }: ProjectProps) => {
   return (
-    <div className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white">
+    <div className="bg-white text-black dark:bg-gray-900 dark:text-white">
       <Header showSignupLink={!signupLink} />
       <div className="flex flex-col items-center justify-center p-8">
         <Image
           src="/favicon.ico"
           alt="Logo"
-          width={100}
-          height={100}
+          width={200}
+          height={200}
         />
         <h1 className="text-4xl font-bold mt-8">{title}</h1>
         <p className="mt-4 text-center max-w-md">{description}</p>
