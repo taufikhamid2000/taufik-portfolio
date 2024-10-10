@@ -94,6 +94,11 @@ export default function CreateProject() {
           >
             Create Project
           </button>
+          <Link href="/create-project/create-page">
+            <button className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 ease-in-out">
+              Create Page
+            </button>
+          </Link>
         </form>
         {message && (
           <div className={`mt-6 text-lg font-semibold ${message.includes('successfully') ? 'text-green-500' : 'text-red-500'}`}>
@@ -115,6 +120,9 @@ export default function CreateProject() {
           </div>
         )}
       </div>
+      
+      
+      
     </div>
   );
 }

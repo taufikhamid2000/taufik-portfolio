@@ -88,6 +88,19 @@ export default function Veyoyee() {
             />{' '}
             All
           </label>
+
+          <div className="mt-6 text-center">
+            <Link href="/projects/Veyoyee/surveyeehub">
+              <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 mr-4">
+                Explore Surveys
+              </button>
+            </Link>
+            <Link href="/projects/Veyoyee/surveyorhub">
+              <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                Create New Survey
+              </button>
+            </Link>
+          </div>
         </div>
 
         <table className="table">
@@ -118,6 +131,7 @@ export default function Veyoyee() {
             )}
           </tbody>
         </table>
+
       </div>
     </div>
   );
