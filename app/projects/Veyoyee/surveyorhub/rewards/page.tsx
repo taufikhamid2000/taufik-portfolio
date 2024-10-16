@@ -32,8 +32,8 @@ export default function ManageRewards() {
                       reward.points,
                       reward.status,
                       <>
-                        <Button text="Edit" color="yellow" className="button-class" />
-                        <Button text="Delete" color="red" className="ml-2" />
+                        <Button text="Edit" color="yellow" className="button-class" onClick={undefined} />
+                        <Button text="Delete" color="red" className="ml-2" onClick={undefined} />
                       </>
                     ]
                   }))
