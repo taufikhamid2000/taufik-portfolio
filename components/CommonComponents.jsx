@@ -1,7 +1,7 @@
 // CommonComponents.jsx
 
 import React from 'react';
-import '../styles/commonStyles.css'; // Make sure this path is correct in your project structure
+import '../styles/commonStyles.css';
 
 export const Button = ({ text, color, className }) => {
   const buttonClasses = `bg-${color}-500 hover:bg-${color}-600 text-white px-4 py-2 rounded-lg ${className}`;

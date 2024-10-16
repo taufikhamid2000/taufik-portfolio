@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from 'react';
-import Header from '../../../../components/Header'; // Adjust path as necessary
+import Header from '../../../../components/Header';
 import { Table, Button } from '../../../../components/CommonComponents';
 
 export default function SurveyeeHub() {
