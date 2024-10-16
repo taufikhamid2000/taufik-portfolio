@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useEffect, useState } from 'react';
@@ -52,6 +53,14 @@ export default function Veyoyee() {
         title="Veyoyee"
         description="Veyoyee is a platform that bridges the gap between survey creators and participants, offering an engaging and rewarding experience."
       />
+      {/* Admin Only Button for Create New Project */}
+      <div className="mt-6 text-center">
+        <Link href="/create-project">
+          <button className="text-xs px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+            (Admin Only) Go to admin page
+          </button>
+        </Link>
+      </div>
       <div className="mt-6 text-center">
         <Link href="/projects/Veyoyee/about">
           <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">

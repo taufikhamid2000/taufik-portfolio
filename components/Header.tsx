@@ -14,13 +14,14 @@ interface UserState {
 
 interface HeaderProps {
   showSignupLink?: boolean;
+  title?: string;
 }
 
 interface Subscription {
   unsubscribe: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ showSignupLink = true }) => {
+const Header: React.FC<HeaderProps> = ({ showSignupLink = true, title }) => {
   const [user, setUser] = useState<UserState | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -56,10 +57,11 @@ const Header: React.FC<HeaderProps> = ({ showSignupLink = true }) => {
   const MemoizedDropdownMenu = memo(DropdownMenu);
 
   return (
-    <header className="w-full p-4 bg-gray-800 text-white dark:bg-gray-900 flex justify-between items-center">
-      <div className="flex items-center">
+    <header className="w-full p-4 bg-gray-800 text-white dark:bg-gray-900 flex flex-col items-center md:flex-row md:justify-between md:items-center">
+      <div className="flex items-center mb-4 md:mb-0">
         <Link href="/" className="text-xl font-bold mr-4">Taufik&apos;s Portfolio</Link>
         <MemoizedDropdownMenu dropdownOpen={dropdownOpen} setDropdownOpen={setDropdownOpen} />
+        <div className="ml-4">{title && <h1 className="text-xl font-semibold mr-12">{title}</h1>}</div>
       </div>
       <div className="flex gap-4 items-center">
         {!user ? (
