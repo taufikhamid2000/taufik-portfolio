@@ -21,7 +21,7 @@ export const Input = ({ type, id, value, onChange, required, placeholder }) => {
       onChange={onChange}
       required={required}
       placeholder={placeholder}
-      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
     />
   );
 };

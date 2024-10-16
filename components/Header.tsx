@@ -6,7 +6,7 @@ import { useState, useEffect, memo, useCallback } from 'react';
 import supabase from '../lib/supabaseClient';
 import ThemeToggle from './ThemeToggle';
 import DropdownMenu from './DropdownMenu';
-import LanguageSwitcher from './LanguageSwitcher';
+// import LanguageSwitcher from './LanguageSwitcher';
 
 interface UserState {
   email: string;
@@ -67,8 +67,10 @@ const Header: React.FC<HeaderProps> = ({ showSignupLink = true, title }) => {
         {!user ? (
           <>
             {showSignupLink && (
-              <Link href="/auth" className="hover:underline">
-                Sign In / Sign Up
+              <Link href="/auth">
+                <button className="bg-green-500 text-white p-2 rounded hover:underline">
+                  Sign In / Sign Up
+                </button>
               </Link>
             )}
           </>
@@ -84,7 +86,7 @@ const Header: React.FC<HeaderProps> = ({ showSignupLink = true, title }) => {
           </>
         )}
         <ThemeToggle />
-        <LanguageSwitcher />
+        {/* <LanguageSwitcher /> */}
       </div>
     </header>
   );
