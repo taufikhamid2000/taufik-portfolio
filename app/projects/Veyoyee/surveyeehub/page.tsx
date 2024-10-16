@@ -48,7 +48,7 @@ export default function SurveyeeHub() {
                           style={{ width: `${survey.progress}%` }}
                         ></div>
                       </div>,
-                      <Button text="Participate" color="blue" className={undefined} />
+                      <Button text="Participate" color="blue" className={undefined} onClick={undefined} />
                     ]
                   }))
                 : [{ cols: ['No surveys found.', '', ''] }]
