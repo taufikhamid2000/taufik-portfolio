@@ -12,7 +12,7 @@ export const Button = ({ text, color, className, onClick, type = 'button' }) => 
   );
 };
 
-export const Input = ({ type, id, value, onChange, required, placeholder, disabled }) => {
+export const Input = ({ type, id, value, onChange, required, placeholder, disabled = false }) => {
   return (
     <input
       type={type}
