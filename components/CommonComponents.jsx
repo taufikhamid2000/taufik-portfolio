@@ -12,7 +12,7 @@ export const Button = ({ text, color, className, onClick, type = 'button' }) => 
   );
 };
 
-export const Input = ({ type, id, value, onChange, required, placeholder }) => {
+export const Input = ({ type, id, value, onChange, required, placeholder, disabled }) => {
   return (
     <input
       type={type}
@@ -21,10 +21,12 @@ export const Input = ({ type, id, value, onChange, required, placeholder }) => {
       onChange={onChange}
       required={required}
       placeholder={placeholder}
+      disabled={disabled}
       className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
     />
   );
 };
+
 
 export const TextArea = ({ id, value, onChange, required, placeholder }) => {
   return (
@@ -34,7 +36,7 @@ export const TextArea = ({ id, value, onChange, required, placeholder }) => {
       onChange={onChange}
       required={required}
       placeholder={placeholder}
-      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
     />
   );
 };
