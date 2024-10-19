@@ -1,59 +1,69 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import supabase from '../../../../../lib/supabaseClient';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// app/api/surveys/questions/[id]/route.ts
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
+import { NextRequest, NextResponse } from "next/server";
+import supabase from "../../../../../lib/supabaseClient";
+
+export async function GET(_request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
 
   try {
-    switch (req.method) {
-      case 'GET':
-        const { data: question, error: fetchError } = await supabase
-          .from('survey_questions')
-          .select('*')
-          .eq('question_id', id)
-          .single();
+    const { data: question, error } = await supabase
+      .from("questions")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-        if (fetchError || !question) {
-          return res.status(404).json({ error: 'Question not found' });
-        }
-
-        res.status(200).json(question);
-        break;
-
-      case 'PUT':
-        const { question_text, question_type } = req.body;
-
-        const { error: updateError } = await supabase
-          .from('survey_questions')
-          .update({ question_text, question_type })
-          .eq('question_id', id);
-
-        if (updateError) {
-          return res.status(500).json({ error: 'Failed to update question' });
-        }
-
-        res.status(200).json({ message: 'Question updated successfully' });
-        break;
-
-      case 'DELETE':
-        const { error: deleteError } = await supabase
-          .from('survey_questions')
-          .delete()
-          .eq('question_id', id);
-
-        if (deleteError) {
-          return res.status(500).json({ error: 'Failed to delete question' });
-        }
-
-        res.status(200).json({ message: 'Question deleted successfully' });
-        break;
-
-      default:
-        res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-        res.status(405).end(`Method ${req.method} Not Allowed`);
+    if (error) {
+      return NextResponse.json({ error: "Question not found" }, { status: 404 });
     }
+
+    return NextResponse.json(question, { status: 200 });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error fetching question:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const body = await request.json();
+
+  try {
+    const { data: updatedQuestion, error } = await supabase
+      .from("questions")
+      .update(body)
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: "Failed to update question" }, { status: 500 });
+    }
+
+    return NextResponse.json(updatedQuestion, { status: 200 });
+  } catch (error) {
+    console.error("Error updating question:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+export async function DELETE(_request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+
+  try {
+    const { data, error } = await supabase
+      .from("questions")
+      .delete()
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: "Failed to delete question" }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: "Question deleted successfully" }, { status: 200 });
+  } catch (error) {
+    console.error("Error deleting question:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
