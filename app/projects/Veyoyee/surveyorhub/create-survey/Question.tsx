@@ -1,21 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// what
+// Question.tsx
+
 "use client";
 
 import { Input, Button } from '../../../../../components/CommonComponents';
 import { useState } from 'react';
-
-type QuestionType = 'shortAnswer' | 'paragraph' | 'multipleChoice';
+import { QuestionData, QuestionType } from '../../../../../lib/types'; // Corrected import path
 
 interface QuestionProps {
-  question: {
-    id: number;
-    type: QuestionType;
-    questionText: string;
-    options?: string[];
-  };
+  question: QuestionData;
   index: number;
-  onQuestionChange: (updatedQuestion: any) => void;
+  onQuestionChange: (updatedQuestion: QuestionData) => void;
   onDelete: () => void;
 }
 
@@ -24,23 +18,33 @@ export default function Question({ question, index, onQuestionChange, onDelete }
   const [type, setType] = useState<QuestionType>(question.type);
   const [options, setOptions] = useState<string[]>(question.options || []);
 
+  // Handle changes to the question text
   const handleQuestionTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuestionText(e.target.value);
     onQuestionChange({ ...question, questionText: e.target.value });
   };
 
+  // Handle changes to the answer type
   const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newType = e.target.value as QuestionType;
     setType(newType);
-    onQuestionChange({ ...question, type: newType, options: newType === 'multipleChoice' ? [''] : undefined });
+    const updatedQuestion: QuestionData = {
+      ...question,
+      type: newType,
+      options: newType === 'multipleChoice' ? [''] : undefined,
+    };
+    setOptions(updatedQuestion.options || []);
+    onQuestionChange(updatedQuestion);
   };
 
+  // Add a new option for multiple-choice questions
   const addOption = () => {
     const updatedOptions = [...options, ''];
     setOptions(updatedOptions);
     onQuestionChange({ ...question, options: updatedOptions });
   };
 
+  // Handle changes to an individual option
   const handleOptionChange = (optionIndex: number, value: string) => {
     const updatedOptions = [...options];
     updatedOptions[optionIndex] = value;
@@ -48,6 +52,7 @@ export default function Question({ question, index, onQuestionChange, onDelete }
     onQuestionChange({ ...question, options: updatedOptions });
   };
 
+  // Delete an option for multiple-choice questions
   const deleteOption = (optionIndex: number) => {
     const updatedOptions = options.filter((_, idx) => idx !== optionIndex);
     setOptions(updatedOptions);
@@ -56,16 +61,20 @@ export default function Question({ question, index, onQuestionChange, onDelete }
 
   return (
     <div className="mb-6 p-4 bg-white dark:bg-gray-700 rounded-lg">
+      {/* Question Text Input */}
       <label htmlFor={`question-${index}`} className="block text-lg font-medium mb-2">
         Question {index + 1}
       </label>
       <Input
-              type="text"
-              id={`question-${index}`}
-              value={questionText}
-              onChange={handleQuestionTextChange}
-              required placeholder={undefined}      />
+        type="text"
+        id={`question-${index}`}
+        value={questionText}
+        onChange={handleQuestionTextChange}
+        required
+        placeholder="Enter your question"
+      />
 
+      {/* Answer Type Selection */}
       <div className="mt-4">
         <label htmlFor={`type-${index}`} className="block text-lg font-medium mb-2">
           Answer Type
@@ -82,17 +91,21 @@ export default function Question({ question, index, onQuestionChange, onDelete }
         </select>
       </div>
 
+      {/* Options for Multiple Choice Questions */}
       {type === 'multipleChoice' && (
         <div className="mt-4">
           <h3 className="text-lg font-semibold mb-2">Options</h3>
           {options.map((option, optionIndex) => (
             <div key={optionIndex} className="flex items-center mb-2">
               <Input
-                      type="text"
-                      value={option}
-                      onChange={(e: { target: { value: string; }; }) => handleOptionChange(optionIndex, e.target.value)}
-                      placeholder={`Option ${optionIndex + 1}`}
-                      required id={undefined}              />
+                type="text"
+                value={option}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  handleOptionChange(optionIndex, e.target.value)
+                }
+                placeholder={`Option ${optionIndex + 1}`}
+                required
+              />
               <Button
                 text="Delete"
                 color="red"
@@ -106,6 +119,7 @@ export default function Question({ question, index, onQuestionChange, onDelete }
         </div>
       )}
 
+      {/* Delete Question Button */}
       <Button text="Delete Question" color="red" type="button" onClick={onDelete} className="mt-4" />
     </div>
   );

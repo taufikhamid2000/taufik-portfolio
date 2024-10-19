@@ -4,18 +4,18 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import TemplateProjectPage from '../../../components/TemplateProjectPage';
-import { fetchCreatedSurveys, fetchAnsweredSurveys } from '../../../lib/apiService';
+import { fetchSurveys } from '../../../lib/apiService';
 import '../../../styles/tableStyles.css';
+import { Survey } from '../../../lib/types'; // Import the Survey interface
 
-interface Survey {
-  id: number;
-  title: string;
-  created_at: string;
+// Define an extended interface if needed
+interface SurveyWithDate extends Survey {
+  date: string;
 }
 
 export default function Veyoyee() {
-  const [createdSurveys, setCreatedSurveys] = useState<Survey[]>([]);
-  const [answeredSurveys, setAnsweredSurveys] = useState<Survey[]>([]);
+  const [createdSurveys, setCreatedSurveys] = useState<SurveyWithDate[]>([]);
+  const [answeredSurveys, setAnsweredSurveys] = useState<SurveyWithDate[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
 
@@ -23,10 +23,24 @@ export default function Veyoyee() {
     const loadData = async () => {
       try {
         setLoading(true);
-        const created = await fetchCreatedSurveys();
-        const answered = await fetchAnsweredSurveys();
-        setCreatedSurveys(created);
-        setAnsweredSurveys(answered);
+
+        // Fetch surveys with filters
+        const created: Survey[] = await fetchSurveys('created');
+        const answered: Survey[] = await fetchSurveys('answered');
+
+        // Map the data to match the SurveyWithDate interface
+        const mappedCreated: SurveyWithDate[] = created.map((survey) => ({
+          ...survey,
+          date: survey.id || '',
+        }));
+
+        const mappedAnswered: SurveyWithDate[] = answered.map((survey) => ({
+          ...survey,
+          date: survey.id || survey.id || '',
+        }));
+
+        setCreatedSurveys(mappedCreated);
+        setAnsweredSurveys(mappedAnswered);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -117,7 +131,7 @@ export default function Veyoyee() {
             <tr>
               <th>Survey ID</th>
               <th>Title</th>
-              <th>Created/Answered At</th>
+              <th>Date</th>
             </tr>
           </thead>
           <tbody>
@@ -130,7 +144,7 @@ export default function Veyoyee() {
                 <tr key={survey.id}>
                   <td>{survey.id}</td>
                   <td>{survey.title}</td>
-                  <td>{survey.created_at}</td>
+                  <td>{survey.date}</td>
                 </tr>
               ))
             ) : (

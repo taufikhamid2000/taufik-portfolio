@@ -1,16 +1,80 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Header from '../../../../components/Header';
-import { Button, Table } from '../../../../components/CommonComponents';
-import '../../../../styles/commonStyles.css';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Header from "../../../../components/Header";
+import { Button, Table } from "../../../../components/CommonComponents";
+import { fetchSurveys } from "../../../../lib/apiService";
+import { Survey } from "../../../../lib/types"; // Import the Survey interface
+import "../../../../styles/commonStyles.css";
+
+interface SurveyWithExtras extends Survey {
+  status: string;
+  responses: number;
+}
 
 export default function SurveyorHub() {
-  const [surveys] = useState([
-    { id: 1, title: 'Customer Satisfaction Survey', status: 'Active', responses: 120 },
-    { id: 2, title: 'Product Feedback Survey', status: 'Closed', responses: 80 }
-  ]);
+  const [surveys, setSurveys] = useState<SurveyWithExtras[]>([]);
+
+  useEffect(() => {
+    const getSurveys = async () => {
+      try {
+        const data: Survey[] = await fetchSurveys();
+
+        // Map data to include 'status' and 'responses'
+        const surveysWithExtras: SurveyWithExtras[] = data.map((survey) => ({
+          ...survey,
+          status: "Active", // Replace with actual status if available
+          responses: 0, // Replace with actual response count if available
+        }));
+
+        setSurveys(surveysWithExtras);
+      } catch (error) {
+        console.error("Error fetching surveys:", error);
+      }
+    };
+
+    getSurveys();
+  }, []);
+
+  // Define the table headers as TableHeader objects
+  const tableHeaders = [
+    { label: "Survey Title" },
+    { label: "Status" },
+    { label: "Responses" },
+    { label: "Actions" },
+  ];
+
+  // Define the table rows as TableRow objects
+  const tableRows =
+    surveys.length > 0
+      ? surveys.map((survey) => ({
+          cols: [
+            survey.title,
+            survey.status,
+            survey.responses.toString(),
+            <div key={`actions-${survey.id}`} className="flex">
+              <Button
+                text="View"
+                color="yellow"
+                className="button-class"
+                onClick={() => console.log(`Viewing survey ${survey.id}`)}
+              />
+              <Button
+                text="Delete"
+                color="red"
+                className="ml-2 button-class"
+                onClick={() => console.log(`Deleting survey ${survey.id}`)}
+              />
+            </div>,
+          ],
+        }))
+      : [
+          {
+            cols: ["No surveys created yet.", "", "", ""],
+          },
+        ];
 
   return (
     <div className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white">
@@ -20,33 +84,16 @@ export default function SurveyorHub() {
 
         <div className="mb-6 flex justify-between items-center">
           <Link href="/projects/Veyoyee/surveyorhub/create-survey">
-            <Button text="Create New Survey" color="blue" className="button-class" onClick={undefined} />
+            <Button text="Create New Survey" color="blue" className="button-class" />
           </Link>
           <Link href="/projects/Veyoyee/rewards">
-            <Button text="Manage Rewards" color="green" className="button-class" onClick={undefined} />
+            <Button text="Manage Rewards" color="green" className="button-class" />
           </Link>
         </div>
 
         <div className="mb-6">
           <h2 className="text-2xl font-semibold mb-4">Manage Surveys</h2>
-          <Table
-            headers={['Survey Title', 'Status', 'Responses', 'Actions']}
-            rows={
-              surveys.length > 0
-                ? surveys.map((survey) => ({
-                    cols: [
-                      survey.title,
-                      survey.status,
-                      survey.responses,
-                      <>
-                        <Button text="View" color="yellow" className="button-class" onClick={undefined} />
-                        <Button text="Delete" color="red" className="ml-2" onClick={undefined} />
-                      </>
-                    ]
-                  }))
-                : [{ cols: ['No surveys created yet.', '', '', ''] }]
-            }
-          />
+          <Table headers={tableHeaders} rows={tableRows} />
         </div>
 
         <div className="mb-6">
