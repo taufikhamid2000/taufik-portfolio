@@ -1,59 +1,69 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import supabase from '../../../../lib/supabaseClient';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// app/api/surveys/[id]/route.ts
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
+import { NextRequest, NextResponse } from "next/server";
+import supabase from "../../../../lib/supabaseClient";
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
 
   try {
-    switch (req.method) {
-      case 'GET':
-        const { data: survey, error: fetchError } = await supabase
-          .from('surveys')
-          .select('*')
-          .eq('survey_id', id)
-          .single();
+    const { data: survey, error } = await supabase
+      .from("surveys")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-        if (fetchError || !survey) {
-          return res.status(404).json({ error: 'Survey not found' });
-        }
-
-        res.status(200).json(survey);
-        break;
-
-      case 'PUT':
-        const { title, description, min_respondents, max_respondents, start_date, end_date } = req.body;
-
-        const { error: updateError } = await supabase
-          .from('surveys')
-          .update({ title, description, min_respondents, max_respondents, start_date, end_date })
-          .eq('survey_id', id);
-
-        if (updateError) {
-          return res.status(500).json({ error: 'Failed to update survey' });
-        }
-
-        res.status(200).json({ message: 'Survey updated successfully' });
-        break;
-
-      case 'DELETE':
-        const { error: deleteError } = await supabase
-          .from('surveys')
-          .delete()
-          .eq('survey_id', id);
-
-        if (deleteError) {
-          return res.status(500).json({ error: 'Failed to delete survey' });
-        }
-
-        res.status(200).json({ message: 'Survey deleted successfully' });
-        break;
-
-      default:
-        res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-        res.status(405).end(`Method ${req.method} Not Allowed`);
+    if (error) {
+      return NextResponse.json({ error: "Survey not found" }, { status: 404 });
     }
+
+    return NextResponse.json(survey, { status: 200 });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error fetching survey:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const body = await request.json();
+
+  try {
+    const { data: updatedSurvey, error } = await supabase
+      .from("surveys")
+      .update(body)
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: "Failed to update survey" }, { status: 500 });
+    }
+
+    return NextResponse.json(updatedSurvey, { status: 200 });
+  } catch (error) {
+    console.error("Error updating survey:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
+
+  try {
+    const { data, error } = await supabase
+      .from("surveys")
+      .delete()
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: "Failed to delete survey" }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: "Survey deleted successfully" }, { status: 200 });
+  } catch (error) {
+    console.error("Error deleting survey:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
