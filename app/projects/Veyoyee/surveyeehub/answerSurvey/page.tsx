@@ -7,7 +7,7 @@ import { Button, Input } from "../../../../../components/CommonComponents";
 import { useRouter } from "next/navigation";
 import { fetchSurveyById, submitSurveyResponse } from "../../../../../lib/apiService";
 import { useSearchParams } from "next/navigation";
-import { QuestionData, SurveyResponseData } from "../../../../../lib/types"; // Import SurveyResponseData from types
+import { QuestionData, SurveyResponseData } from "../../../../../lib/types";
 
 export default function AnswerSurvey() {
   const [surveyTitle, setSurveyTitle] = useState("");

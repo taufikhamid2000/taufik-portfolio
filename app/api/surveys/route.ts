@@ -4,12 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "../../../lib/supabaseClient";
 
-/**
- * Handles GET requests to fetch all surveys.
- * @param _request - The incoming request (unused).
- * @returns A JSON response with the list of surveys or an error message.
- */
-export async function GET(_request: NextRequest) {
+export async function GET(_: NextRequest) {
   try {
     const { data: surveys, error: fetchError } = await supabase.from("surveys").select("*");
 
@@ -24,11 +19,6 @@ export async function GET(_request: NextRequest) {
   }
 }
 
-/**
- * Handles POST requests to create a new survey.
- * @param request - The incoming request containing survey data.
- * @returns A JSON response with the newly created survey or an error message.
- */
 export async function POST(request: NextRequest) {
   try {
     const { title, description, min_respondents, max_respondents, start_date, end_date } = await request.json();
