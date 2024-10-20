@@ -17,7 +17,7 @@ export default function Veyoyee() {
   const [createdSurveys, setCreatedSurveys] = useState<SurveyWithDate[]>([]);
   const [answeredSurveys, setAnsweredSurveys] = useState<SurveyWithDate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>('all');
+  const [filter, setFilter] = useState<string>('created');
 
   useEffect(() => {
     const loadData = async () => {
