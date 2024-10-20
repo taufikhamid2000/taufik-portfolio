@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import React, { Suspense } from "react";
 import { useEffect, useState } from "react";
 import Header from "../../../../../components/Header";
 import { Button, Input } from "../../../../../components/CommonComponents";
@@ -9,7 +10,7 @@ import { fetchSurveyById, submitSurveyResponse } from "../../../../../lib/apiSer
 import { useSearchParams } from "next/navigation";
 import { QuestionData, SurveyResponseData } from "../../../../../lib/types";
 
-export default function AnswerSurvey() {
+function SurveyForm() {
   const [surveyTitle, setSurveyTitle] = useState("");
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const [responses, setResponses] = useState<{ [key: string]: string }>({});
@@ -113,5 +114,17 @@ export default function AnswerSurvey() {
         </form>
       </div>
     </div>
+  );
+}
+
+function AnswerSurveyContent() {
+  return <SurveyForm />;
+}
+
+export default function AnswerSurveyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AnswerSurveyContent />
+    </Suspense>
   );
 }
