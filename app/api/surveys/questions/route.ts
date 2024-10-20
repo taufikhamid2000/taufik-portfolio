@@ -1,30 +1,24 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import supabase from '../../../../lib/supabaseClient';
+// app/api/surveys/questions/route.ts
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+import { NextRequest, NextResponse } from "next/server";
+import supabase from "../../../../lib/supabaseClient";
+
+export async function POST(request: NextRequest) {
   try {
-    switch (req.method) {
-      case 'POST':
-        const { survey_id, question_text, question_type } = req.body;
-        
-        const { data: newQuestion, error: insertError } = await supabase
-          .from('survey_questions')
-          .insert([{ survey_id, question_text, question_type }])
-          .single();
+    const { survey_id, question_text, question_type } = await request.json();
 
-        if (insertError) {
-          return res.status(500).json({ error: 'Failed to create question' });
-        }
+    const { data: newQuestion, error: insertError } = await supabase
+      .from("survey_questions")
+      .insert([{ survey_id, question_text, question_type }])
+      .single();
 
-        res.status(201).json(newQuestion);
-        break;
-
-      default:
-        res.setHeader('Allow', ['POST']);
-        res.status(405).end(`Method ${req.method} Not Allowed`);
+    if (insertError) {
+      return NextResponse.json({ error: "Failed to create question" }, { status: 500 });
     }
+
+    return NextResponse.json(newQuestion, { status: 201 });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
