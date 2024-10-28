@@ -1,11 +1,10 @@
 /* eslint-disable react/no-unescaped-entities */
 import React, { useState } from 'react';
-// import '../../../../../../styles/commonStyles'
 import '../styles/interactiveStyles.css';
 
 interface AccordionProps {
   title: string;
-  content: string;
+  content: React.ReactNode; // Changed from 'string' to 'React.ReactNode'
 }
 
 const Accordion: React.FC<AccordionProps> = ({ title, content }) => {
@@ -22,13 +21,11 @@ const Accordion: React.FC<AccordionProps> = ({ title, content }) => {
         onClick={toggleAccordion}
       >
         {title}
-        <span className="accordion-icon float-right">
-          {isOpen ? '-' : '+'}
-        </span>
+        <span className="accordion-icon float-right">{isOpen ? '-' : '+'}</span>
       </button>
       {isOpen && (
         <div className="accordion-content px-6 py-4 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-lg">
-          <p>{content}</p>
+          {content} {/* Render content directly */}
         </div>
       )}
     </div>
