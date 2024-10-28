@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable react/no-unescaped-entities */
 import React, { useState } from 'react';
-import '../../../styles/commonStyles.css';
+// import '../../../styles/commonStyles.css';
 import '../styles/interactiveStyles.css';
 
 interface ImageLightboxProps {

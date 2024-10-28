@@ -1,6 +1,5 @@
 /* eslint-disable react/no-unescaped-entities */
-import React, { useState } from 'react';
-// import '../../../styles/commonStyles.css';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/interactiveStyles.css';
 
 interface SoundControlProps {
@@ -9,13 +8,30 @@ interface SoundControlProps {
 
 const SoundControl: React.FC<SoundControlProps> = ({ audioSrc }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const audio = new Audio(audioSrc);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Ensure the code runs only on the client side
+    if (typeof window !== 'undefined') {
+      audioRef.current = new Audio(audioSrc);
+    }
+
+    // Cleanup function to pause audio when component unmounts
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, [audioSrc]);
 
   const togglePlay = () => {
+    if (!audioRef.current) return;
+
     if (isPlaying) {
-      audio.pause();
+      audioRef.current.pause();
     } else {
-      audio.play();
+      audioRef.current.play();
     }
     setIsPlaying(!isPlaying);
   };
