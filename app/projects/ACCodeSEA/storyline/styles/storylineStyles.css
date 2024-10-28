@@ -1,0 +1,32 @@
+/* storylineStyles.css */
+
+.story-section {
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .story-section h2 {
+    color: #1f2937;
+    font-size: 1.875rem;
+    font-weight: 700;
+  }
+  
+  .story-section p {
+    color: #4b5563;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  .story-section img {
+    margin-top: 16px;
+    max-width: 100%;
+    border-radius: 8px;
+  }
+  
+  .dark .story-section h2 {
+    color: #f9fafb;
+  }
+  
+  .dark .story-section p {
+    color: #d1d5db;
+  }  

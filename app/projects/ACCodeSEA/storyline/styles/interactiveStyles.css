@@ -1,0 +1,92 @@
+/* interactiveStyles.css */
+
+.accordion {
+    margin-bottom: 1rem;
+  }
+  
+  .accordion-header {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .accordion-header:hover {
+    background-color: #d1d5db;
+  }
+  
+  .accordion-icon {
+    font-size: 1.5rem;
+  }
+  
+  .accordion-content {
+    margin-top: 1rem;
+    padding: 1rem;
+  }
+  
+  .timeline-container {
+    position: relative;
+    margin: 3rem 0;
+  }
+  
+  .timeline {
+    position: relative;
+    padding-left: 20px;
+    border-left: 4px solid #3b82f6;
+  }
+  
+  .timeline-event {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+  
+  .timeline-marker {
+    position: absolute;
+    left: -12px;
+    top: 0;
+    width: 24px;
+    height: 24px;
+    background-color: #3b82f6;
+    border-radius: 50%;
+  }
+  
+  .lightbox-overlay {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+  
+  .lightbox-close {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .lightbox-close:hover {
+    transform: scale(1.1);
+  }
+  
+  .sound-control-button {
+    transition: background-color 0.3s ease;
+  }
+  
+  .sound-control-button:hover {
+    background-color: #10b981;
+  }
+  
+  .choice-button {
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .choice-button:hover {
+    background-color: #2563eb;
+  }
+  
+  .choice-content {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }  
