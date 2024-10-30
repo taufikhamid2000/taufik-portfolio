@@ -2,7 +2,7 @@
 
 /* eslint-disable react/no-unescaped-entities */
 import { useEffect, useState } from 'react';
-import { updateFeedback, deleteFeedback, getAllFeedback } from './../supabase/feedbackService';
+import { updateFeedback, deleteFeedback, getAllFeedback } from './supabase/feedbackService';
 import { Table, Button, Input } from '../../../../components/CommonComponents';
 import { Feedback } from './types';
 

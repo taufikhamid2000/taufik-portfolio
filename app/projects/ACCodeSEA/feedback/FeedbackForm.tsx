@@ -2,7 +2,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import { useState } from 'react';
 import { Button, Input, TextArea } from '../../../../components/CommonComponents';
-import { insertFeedback } from './../supabase/feedbackService';
+import { insertFeedback } from './supabase/feedbackService';
 
 interface FeedbackFormProps {
   onFeedbackSubmitted: (newFeedback: { name: string; feedback: string }) => void;

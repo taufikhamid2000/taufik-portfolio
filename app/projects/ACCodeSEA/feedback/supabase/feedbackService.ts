@@ -1,4 +1,4 @@
-import supabase from '../../../../lib/supabaseClient';
+import supabase from '../../../../../lib/supabaseClient';
 
 export const insertFeedback = async (feedback: { name: string; feedback: string }) => {
   return await supabase.from('ac_code_sea_feedback').insert([feedback]);
