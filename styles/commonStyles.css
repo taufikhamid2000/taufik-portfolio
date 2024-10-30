@@ -71,3 +71,35 @@ body {
   td button {
     margin-right: 10px;
   }  
+
+  /* commonStyles.css - Additional styles for react-select component */
+/* 
+.react-select__control {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--table-border);
+}
+
+.react-select__single-value {
+  color: var(--text-color);
+}
+
+.react-select__option {
+  color: var(--text-color);
+  background-color: var(--bg-color);
+}
+
+.react-select__option--is-selected {
+  color: var(--bg-color);
+  background-color: var(--text-color);
+}
+
+.react-select__menu {
+  background-color: var(--bg-color);
+  border: 1px solid var(--table-border);
+}
+
+.react-select__option--is-focused {
+  background-color: var(--button-hover-bg);
+  color: var(--text-color);
+} */

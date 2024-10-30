@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-type-constraint */
 // CommonComponents.tsx
 
 import React from 'react';
 import '../styles/commonStyles.css';
+import Select, { Props as SelectProps, StylesConfig } from 'react-select';
 
 // Button Component
-
 interface ButtonProps {
   text: string;
   color: 'blue' | 'green' | 'red' | 'yellow'; // Define allowed colors
@@ -38,7 +39,6 @@ export const Button: React.FC<ButtonProps> = ({
 };
 
 // Input Component
-
 interface InputProps {
   type: React.HTMLInputTypeAttribute;
   id?: string;
@@ -73,7 +73,6 @@ export const Input: React.FC<InputProps> = ({
 };
 
 // TextArea Component
-
 interface TextAreaProps {
   id?: string;
   value: string;
@@ -102,7 +101,6 @@ export const TextArea: React.FC<TextAreaProps> = ({
 };
 
 // Table Component
-
 interface TableHeader {
   label: string;
 }
@@ -140,5 +138,42 @@ export const Table: React.FC<TableProps> = ({ headers, rows }) => {
         ))}
       </tbody>
     </table>
+  );
+};
+
+// Dropdown Component
+// import { ActionMeta, SingleValue } from 'react-select';
+
+interface DropdownProps<OptionType> extends SelectProps<OptionType, false> {
+  className?: string;
+}
+
+export const Dropdown = <OptionType extends unknown>({
+  className = '',
+  ...props
+}: DropdownProps<OptionType>) => {
+  // Custom styles for the dropdown
+  const customStyles: StylesConfig<OptionType, false> = {
+    singleValue: (provided) => ({
+      ...provided,
+      color: '#000000', // Set the selected value text color to black
+    }),
+    option: (provided) => ({
+      ...provided,
+      color: '#000000', // Set dropdown options text color to black
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: '#000000', // Set placeholder text color to black
+    }),
+  };
+
+  return (
+    <Select<OptionType, false>
+      {...props}
+      styles={customStyles}
+      classNamePrefix="react-select"
+      className={className}
+    />
   );
 };

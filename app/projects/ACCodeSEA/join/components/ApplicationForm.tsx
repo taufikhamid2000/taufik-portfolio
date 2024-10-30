@@ -1,18 +1,38 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useState } from 'react';
-import { Button, Input, TextArea } from '../../../../../components/CommonComponents';
+import { useState, useEffect } from 'react';
+import { Button, Input, TextArea, Dropdown } from '../../../../../components/CommonComponents';
+import { fetchRoles } from '../../admin/roles/utils/rolesService'; // Adjusted import path
+import { SingleValue } from 'react-select';
 
 interface ApplicationFormProps {
   onSubmit: () => void;
 }
 
+interface RoleOption {
+  value: string;
+  label: string;
+}
+
 export default function ApplicationForm({ onSubmit }: ApplicationFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState<SingleValue<RoleOption>>(null);
   const [motivation, setMotivation] = useState('');
+  const [rolesOptions, setRolesOptions] = useState<RoleOption[]>([]);
+
+  useEffect(() => {
+    const loadRoles = async () => {
+      const fetchedRoles = await fetchRoles();
+      const options = fetchedRoles.map((role: { title: string }) => ({
+        value: role.title,
+        label: role.title,
+      }));
+      setRolesOptions(options);
+    };
+    loadRoles();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,7 +41,7 @@ export default function ApplicationForm({ onSubmit }: ApplicationFormProps) {
     // Clear form fields
     setName('');
     setEmail('');
-    setRole('');
+    setRole(null);
     setMotivation('');
   };
 
@@ -33,7 +53,7 @@ export default function ApplicationForm({ onSubmit }: ApplicationFormProps) {
           type="text"
           id="name"
           value={name}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
           required
           placeholder="Enter your name"
         />
@@ -44,20 +64,23 @@ export default function ApplicationForm({ onSubmit }: ApplicationFormProps) {
           type="email"
           id="email"
           value={email}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           required
           placeholder="Enter your email"
         />
       </div>
       <div className="mb-4">
         <label className="block text-lg mb-2">Role Interested In:</label>
-        <Input
-          type="text"
+        <Dropdown<RoleOption>
           id="role"
           value={role}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRole(e.target.value)}
-          required
-          placeholder="Enter the role you're interested in"
+          onChange={(
+            selectedOption: SingleValue<RoleOption>,
+            // actionMeta: ActionMeta<RoleOption>
+          ) => setRole(selectedOption)}
+          options={rolesOptions}
+          placeholder="Select the role you're interested in"
+          isSearchable
         />
       </div>
       <div className="mb-4">
@@ -65,7 +88,7 @@ export default function ApplicationForm({ onSubmit }: ApplicationFormProps) {
         <TextArea
           id="motivation"
           value={motivation}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMotivation(e.target.value)}
+          onChange={(e) => setMotivation(e.target.value)}
           required
           placeholder="Tell us why you want to join the team"
         />
