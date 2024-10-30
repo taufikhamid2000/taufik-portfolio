@@ -2,12 +2,15 @@
 "use client";
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Header from '../../../../components/Header';
 import ContactForm from './components/ContactForm';
 import ContactDetails from './components/ContactDetails';
-import Map from './components/Map';
 import '../../../../styles/commonStyles.css';
 import { submitContactForm } from './utils/contactService';
+
+// Dynamically import the Map component to avoid server-side rendering issues
+const Map = dynamic(() => import('./components/Map'), { ssr: false });
 
 export default function ContactPage() {
   const [formStatus, setFormStatus] = useState<string | null>(null);
