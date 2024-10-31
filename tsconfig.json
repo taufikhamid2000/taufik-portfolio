@@ -29,6 +29,6 @@
     "lib/**/*",
     "app/projects/ACCodeSEA/storyline/components/StorySection.tsx",
     "app/projects/ACCodeSEA/shared/**/*.d.ts"
-  ],
+, "tailwind.config.js"  ],
   "exclude": ["node_modules"]
 }
