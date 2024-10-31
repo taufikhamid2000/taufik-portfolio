@@ -8,7 +8,7 @@ import Select, { Props as SelectProps, StylesConfig } from 'react-select';
 // Button Component
 interface ButtonProps {
   text: string;
-  color: 'blue' | 'green' | 'red' | 'yellow'; // Define allowed colors
+  color: 'blue' | 'green' | 'red' | 'yellow' | 'purple' | 'teal' | 'orange' | 'pink'; 
   className?: string;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
@@ -27,6 +27,10 @@ export const Button: React.FC<ButtonProps> = ({
     green: 'bg-green-500 hover:bg-green-600',
     red: 'bg-red-500 hover:bg-red-600',
     yellow: 'bg-yellow-500 hover:bg-yellow-600',
+    purple: 'bg-purple-500 hover:bg-purple-600',
+    teal: 'bg-teal-500 hover:bg-teal-600',
+    orange: 'bg-orange-500 hover:bg-orange-600',
+    pink: 'bg-pink-500 hover:bg-pink-600',
   };
 
   const buttonClasses = `${colorClasses[color]} text-white px-4 py-2 rounded-lg ${className}`;
