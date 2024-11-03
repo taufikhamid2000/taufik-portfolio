@@ -12,8 +12,8 @@ import Header from '../../../../components/Header';
 import RoleCard from './components/RoleCard';
 import ApplicationForm from './components/ApplicationForm';
 import BenefitsList from './components/BenefitsList';
-import { fetchRoles } from '../Admin/roles/utils/rolesService';
-import { Role } from '../Admin/roles/utils/types';
+import { fetchRoles } from '../shared/utils/rolesService';
+import { Role } from '../shared/utils/types';
 // import './styles/joinStyles.css';
 
 SwiperCore.use([Navigation, Pagination]);
