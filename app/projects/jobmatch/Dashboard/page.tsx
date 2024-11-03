@@ -1,4 +1,6 @@
-// DashboardPage.tsx
+// app/projects/JobMatch/Dashboard/page.tsx
+
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import dynamic from 'next/dynamic';
@@ -8,32 +10,18 @@ import JobStats from './components/jobStats';
 
 const Header = dynamic(() => import('../../../../components/Header'));
 
-interface EmployerData {
-  jobCount: number;
-  activeJobs: number;
-  totalApplicants: number;
-}
+export default function DashboardPage() {
+  // Define any data within the component
+  const employerData = { jobCount: 0, activeJobs: 0, totalApplicants: 0 };
+  const jobStatsData = { totalViews: 0, totalApplications: 0, averageApplicantsPerJob: 0 };
 
-interface JobStatsData {
-  totalViews: number;
-  totalApplications: number;
-  averageApplicantsPerJob: number;
-}
-
-interface DashboardPageProps {
-  employerData?: EmployerData;
-  jobStatsData?: JobStatsData;
-}
-
-export default function DashboardPage({
-  employerData = { jobCount: 0, activeJobs: 0, totalApplicants: 0 },
-  jobStatsData = { totalViews: 0, totalApplications: 0, averageApplicantsPerJob: 0 },
-}: DashboardPageProps) {
   return (
     <div className="min-h-screen theme-light-dark">
       <Header />
       <div className="container mx-auto p-12 bg-white shadow-md rounded-lg dark:bg-gray-800">
-        <h1 className="text-4xl font-bold mb-10 text-center text-blue-600 dark:text-blue-300">Dashboard</h1>
+        <h1 className="text-4xl font-bold mb-10 text-center text-blue-600 dark:text-blue-300">
+          Dashboard
+        </h1>
 
         {/* Navigation Hub Section */}
         <div className="mb-12">

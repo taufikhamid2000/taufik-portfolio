@@ -1,5 +1,7 @@
-// components/employerOverview.tsx
-"Use client";
+// app/projects/JobMatch/Dashboard/components/employerOverview.tsx
+
+/* eslint-disable react/no-unescaped-entities */
+"use client";
 
 interface EmployerOverviewProps {
   jobCount: number;
@@ -22,25 +24,19 @@ export default function EmployerOverview({
           <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300">
             Total Jobs Posted
           </h3>
-          <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-            {jobCount}
-          </p>
+          <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{jobCount}</p>
         </div>
         <div className="stat-item">
           <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300">
             Active Jobs
           </h3>
-          <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-            {activeJobs}
-          </p>
+          <p className="text-3xl font-bold text-green-600 dark:text-green-400">{activeJobs}</p>
         </div>
         <div className="stat-item">
           <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300">
             Total Applicants
           </h3>
-          <p className="text-3xl font-bold text-red-600 dark:text-red-400">
-            {totalApplicants}
-          </p>
+          <p className="text-3xl font-bold text-red-600 dark:text-red-400">{totalApplicants}</p>
         </div>
       </div>
     </div>
