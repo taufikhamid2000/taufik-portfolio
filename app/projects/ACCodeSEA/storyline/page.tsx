@@ -4,7 +4,7 @@
 import { useEffect } from 'react';
 import Header from '../../../../components/Header';
 import Accordion from './components/Accordion';
-import ImageLightbox from './components/ImageLghtbox';
+import ImageLightbox from './components/ImageLightbox';
 import SoundControl from './components/SoundControl';
 import ChoicePathway from './components/ChoicePathway';
 import storylineData from './data/storylineData';

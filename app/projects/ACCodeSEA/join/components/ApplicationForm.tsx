@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button, Input, TextArea, Dropdown } from '../../../../../components/CommonComponents';
-import { fetchRoles } from '../../Admin/roles/utils/rolesService'; // Adjusted import path
+import { fetchRoles } from '../../Admin/roles/utils/rolesService';
 import { SingleValue } from 'react-select';
 
 interface ApplicationFormProps {
