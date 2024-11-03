@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react';
 import Header from '../../../../components/Header';
 import RolesTable from './roles/components/RolesTable';
 import RoleForm from './roles/components/RoleForm';
-import { fetchRoles, addRole, updateRole, deleteRole } from '../shareda/utils/rolesService';
-import { Role } from '../shareda/utils/types'; // Import the centralized Role interface
+import { fetchRoles, addRole, updateRole, deleteRole } from '../shared/utils/rolesService';
+import { Role } from '../shared/utils/types'; // Import the centralized Role interface
 import '../../../../styles/commonStyles.css';
 // import './styles/adminRolesStyles.css';
 

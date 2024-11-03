@@ -1,7 +1,7 @@
 // D:/taufik-portfolio/taufik-portfolio/app/projects/ACCodeSEA/admin/roles/components/RolesTable.tsx
 
 import React from 'react';
-import { Role } from '../../../shareda/utils/types';
+import { Role } from '../../../shared/utils/types';
 
 interface RolesTableProps {
   roles: Role[];
