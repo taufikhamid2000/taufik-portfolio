@@ -61,7 +61,9 @@ export default function DashboardPage({
     <div className="min-h-screen theme-light-dark">
       <Header />
       <div className="container mx-auto p-12 bg-white shadow-md rounded-lg dark:bg-gray-800">
-        <h1 className="text-4xl font-bold mb-10 text-center text-blue-600 dark:text-blue-300">Dashboard</h1>
+        <h1 className="text-4xl font-bold mb-10 text-center text-blue-600 dark:text-blue-300">
+          Dashboard
+        </h1>
 
         {/* Navigation Hub Section */}
         <div className="mb-12">
