@@ -29,6 +29,6 @@
     "lib/**/*",
     "app/projects/ACCodeSEA/Storyline/components/StorySection.tsx",
     "app/projects/ACCodeSEA/Join/shared/**/*.d.ts"
-, "tailwind.config.js", "app/projects/JobMatch/Dashboard/components/navigationHub.tsx"  ],
+, "tailwind.config.js", "app/projects/JobMatch/Dashboard/components/navigationHub.tsx", "app/projects/ACCodeSEA/Admin/roles/components/RoleForm.tsx"  ],
   "exclude": ["node_modules"]
 }

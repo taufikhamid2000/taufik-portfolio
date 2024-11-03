@@ -7,7 +7,7 @@ import Header from '../../../../components/Header';
 import RolesTable from './roles/components/RolesTable';
 import RoleForm from './roles/components/RoleForm';
 import { fetchRoles, addRole, updateRole, deleteRole } from './roles/utils/rolesService';
-import { Role } from './roles/types'; // Import the centralized Role interface
+import { Role } from './roles/utils/types'; // Import the centralized Role interface
 import '../../../../styles/commonStyles.css';
 // import './styles/adminRolesStyles.css';
 

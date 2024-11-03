@@ -1,6 +1,6 @@
 // D:/taufik-portfolio/taufik-portfolio/app/projects/ACCodeSEA/admin/roles/utils/rolesService.ts
 
-import { Role } from '../types';
+import { Role } from './types';
 import supabase from '../../../../../../lib/supabaseClient'; // Adjust the import path as needed
 
 export async function fetchRoles(): Promise<Role[]> {

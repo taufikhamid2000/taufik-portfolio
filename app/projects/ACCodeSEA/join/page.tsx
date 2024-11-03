@@ -13,7 +13,7 @@ import RoleCard from './components/RoleCard';
 import ApplicationForm from './components/ApplicationForm';
 import BenefitsList from './components/BenefitsList';
 import { fetchRoles } from '../Admin/roles/utils/rolesService'; // Adjusted import path
-import { Role } from '../Admin/roles/types';
+import { Role } from '../Admin/roles/utils/types';
 // import './styles/joinStyles.css';
 
 SwiperCore.use([Navigation, Pagination]);

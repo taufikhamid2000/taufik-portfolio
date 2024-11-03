@@ -1,7 +1,7 @@
 // D:/taufik-portfolio/taufik-portfolio/app/projects/ACCodeSEA/admin/roles/components/RoleForm.tsx
 
 import React, { useState } from 'react';
-import { Role } from '../types';
+import { Role } from '../utils/types';
 
 interface RoleFormProps {
   role?: Role;

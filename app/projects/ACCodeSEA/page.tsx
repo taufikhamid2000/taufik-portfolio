@@ -14,35 +14,35 @@ export default function HomePageACCodeSEA() {
           AC Code SEA is an initiative aimed at expanding the Assassin's Creed franchise's presence in Southeast Asia. This project is dedicated to creating an immersive experience that highlights the rich cultural heritage of the region.
         </p>
         <div className="mt-6 text-center">
-          <Link href="/projects/ACCodeSEA/about">
+          <Link href="/projects/ACCodeSEA/About">
             <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
               Learn More About Us
             </button>
           </Link>
         </div>
         <div className="mt-6 text-center">
-          <Link href="/projects/ACCodeSEA/feedback">
+          <Link href="/projects/ACCodeSEA/Feedback">
             <button className="bg-yellow-600 text-white px-6 py-2 rounded-lg hover:bg-yellow-700">
               Share Your Feedback
             </button>
           </Link>
         </div>
         <div className="mt-6 text-center">
-          <Link href="/projects/ACCodeSEA/storyline">
+          <Link href="/projects/ACCodeSEA/Storyline">
             <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">
               Explore the Storyline
             </button>
           </Link>
         </div>
         <div className="mt-6 text-center">
-          <Link href="/projects/ACCodeSEA/join">
+          <Link href="/projects/ACCodeSEA/Join">
             <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
               Join the Team
             </button>
           </Link>
         </div>
         <div className="mt-6 text-center">
-          <Link href="/projects/ACCodeSEA/contact">
+          <Link href="/projects/ACCodeSEA/Contact">
             <button className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">
               Contact Us
             </button>
