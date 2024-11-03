@@ -27,8 +27,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "lib/**/*",
-    "app/projects/ACCodeSEA/storyline/components/StorySection.tsx",
-    "app/projects/ACCodeSEA/shared/**/*.d.ts"
+    "app/projects/ACCodeSEA/Storyline/components/StorySection.tsx",
+    "app/projects/ACCodeSEA/Join/shared/**/*.d.ts"
 , "tailwind.config.js", "app/projects/JobMatch/Dashboard/components/navigationHub.tsx"  ],
   "exclude": ["node_modules"]
 }

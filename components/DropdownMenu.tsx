@@ -61,14 +61,14 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ dropdownOpen, setDropdownOp
               </button>
               {activeProject === project.name && (
                 <ul className="absolute left-full top-0 mt-0 w-48 bg-white dark:bg-gray-800 text-black dark:text-white shadow-lg z-10">
-                  {project.pages.map((page, index) => (
-                    <li key={index} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700">
-                      <Link href={`/projects/${project.name}/${page === 'Home' ? '' : page.toLowerCase()}`}>
-                        {typeof page === 'string' ? page : 'Unknown'}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                {['Home', ...project.pages.filter(page => page !== 'Home')].map((page, index) => (
+                  <li key={index} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <Link href={`/projects/${project.name}/${page === 'Home' ? '' : page}`}>
+                      {typeof page === 'string' ? page : 'Unknown'}
+                    </Link>
+                  </li>
+                ))}
+              </ul>              
               )}
             </li>
           ))}
