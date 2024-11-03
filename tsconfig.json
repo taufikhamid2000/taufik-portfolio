@@ -12,23 +12,16 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "paths": {
-      "@/*": ["./*"]
-    }
+    ]
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "lib/**/*",
-    "app/projects/ACCodeSEA/Storyline/components/StorySection.tsx",
-    "app/projects/ACCodeSEA/Join/shared/**/*.d.ts"
-, "tailwind.config.js", "app/projects/JobMatch/Dashboard/components/navigationHub.tsx", "app/projects/ACCodeSEA/Admin/roles/components/RoleForm.tsx"  ],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
