@@ -1,0 +1,179 @@
+/* app/projects/random/styles.css */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+/* Global Styles */
+body {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  background: linear-gradient(135deg, #1f1c2c, #928dab);
+  color: #fff;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Container Styles */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.container::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -20%;
+  width: 140%;
+  height: 140%;
+  background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.1), transparent);
+  animation: rotateBg 20s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotateBg {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Typography */
+.heading {
+  font-size: 3em;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  animation: fadeInDown 1s ease-in-out;
+}
+
+.title {
+  font-size: 2.5em;
+  font-weight: 700;
+  margin-bottom: 20px;
+  animation: fadeInDown 1s ease-in-out;
+}
+
+.content {
+  font-size: 1.2em;
+  max-width: 800px;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  animation: fadeInUp 1s ease-in-out;
+}
+
+.textarea {
+  width: 80%;
+  max-width: 600px;
+  height: 150px;
+  padding: 15px;
+  font-size: 1em;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  resize: none;
+  outline: none;
+  margin-bottom: 20px;
+}
+
+.textarea::placeholder {
+  color: #e0e0e0;
+}
+
+/* Button Styles */
+.button {
+  padding: 15px 30px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(45deg, #ff416c, #ff4b2b);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 5px 15px rgba(255, 75, 43, 0.4);
+}
+
+.button:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(255, 75, 43, 0.6);
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .heading {
+    font-size: 2.2em;
+  }
+  .title {
+    font-size: 2em;
+  }
+  .content {
+    font-size: 1em;
+    padding: 0 15px;
+  }
+  .button {
+    font-size: 0.9em;
+    padding: 12px 24px;
+  }
+}
+
+/* Button Group */
+.button-group {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.button-secondary {
+  background: linear-gradient(45deg, #2193b0, #6dd5ed);
+  box-shadow: 0 5px 15px rgba(109, 213, 237, 0.4);
+}
+
+.button-secondary:hover {
+  background: linear-gradient(45deg, #1e90ff, #00bfff);
+  box-shadow: 0 10px 20px rgba(109, 213, 237, 0.6);
+}
+
+/* Message Styling */
+.message {
+  animation: fadeInUp 1s ease-in-out;
+}
+

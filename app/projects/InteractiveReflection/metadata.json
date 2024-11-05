@@ -1,0 +1,3 @@
+{
+    "description": "The Interactive Reflection project is a mini, simple project that transforms an insightful LinkedIn post into an engaging, interactive website. It allows users to explore key takeaways interactively and reflect on their personal motivations in their careers. I used technologies such as React with TypeScript (TSX), Next.js, and modern CSS for styling. The project implements methods like React hooks for state management, client-side rendering with the Next.js App Router, and responsive design techniques to enhance the user experience. Features include smooth animations, dynamic content transitions, keyboard navigation, all aimed at creating an immersive and reflective environment for users."
+  }
