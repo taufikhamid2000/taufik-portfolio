@@ -1,233 +1,112 @@
+// app/projects/TekaTeki/page.tsx
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import Header from '../../../components/Header';
-import Question from './Question';
-import '../../../styles/commonStyles.css';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Header from '@/components/Header'; // Ensure this path is correct
+import '../../../styles/commonStyles.css'; // Ensure this path is correct
 
-interface ResultSummaryProps {
-  score: number;
-  totalQuestions: number;
-  onRestart: () => void;
+interface Quiz {
+  id: string;
+  title: string;
+  description: string;
+  created_at: string;
 }
 
-interface Option {
-  text: string;
-  isCorrect: boolean;
-}
+const TekaTekiProjectPage: React.FC = () => {
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
-interface QuestionType {
-  questionText: string;
-  options: Option[];
-}
-
-const QuizPage = () => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [isFeedbackVisible, setIsFeedbackVisible] = useState(false);
-  const [isQuizCompleted, setIsQuizCompleted] = useState(false);
-  const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
-  const [shuffledQuestions, setShuffledQuestions] = useState<QuestionType[] | null>(null);
-
-  const questions: QuestionType[] = [
-    {
-      questionText: 'What is 2 + 2?',
-      options: [
-        { text: '1', isCorrect: false },
-        { text: '2', isCorrect: false },
-        { text: '3', isCorrect: false },
-        { text: '4', isCorrect: true },
-      ],
-    },
-    {
-      questionText: 'What is the capital of Malaysia?',
-      options: [
-        { text: 'Bangkok', isCorrect: false },
-        { text: 'Jakarta', isCorrect: false },
-        { text: 'Kuala Lumpur', isCorrect: true },
-        { text: 'Hanoi', isCorrect: false },
-      ],
-    },
-    // Add more questions as needed
-  ];
-
-  // Pure shuffle function using Fisher-Yates algorithm
-  const shuffleArray = <T,>(array: T[]): T[] => {
-    const shuffled = [...array]; // Create a copy to avoid mutating the original array
-    let currentIndex = shuffled.length;
-    let randomIndex: number;
-
-    // Fisher-Yates Shuffle Algorithm
-    while (currentIndex !== 0) {
-      randomIndex = Math.floor(Math.random() * currentIndex);
-      currentIndex--;
-
-      // Swap elements
-      [shuffled[currentIndex], shuffled[randomIndex]] = [
-        shuffled[randomIndex],
-        shuffled[currentIndex],
-      ];
-    }
-
-    return shuffled;
-  };
-
-  // Shuffle questions and their options on the client side once
   useEffect(() => {
-    const shuffled = shuffleArray(
-      questions.map((question) => ({
-        ...question,
-        options: shuffleArray(question.options),
-      }))
-    );
-    setShuffledQuestions(shuffled);
-    // Initialize userAnswers based on the number of questions
-    setUserAnswers(Array(shuffled.length).fill(null));
+    const getQuizzes = async () => {
+      try {
+        const response = await fetch('/api/quizzes');
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to load quizzes.');
+        }
+
+        const data: Quiz[] = await response.json();
+
+        setQuizzes(data);
+      } catch (err: any) {
+        setError(err.message || 'Failed to load quizzes.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getQuizzes();
   }, []);
 
-  const handleAnswer = (selectedIndex: number) => {
-    if (!shuffledQuestions) return;
-
-    // Prevent answering if already answered
-    if (userAnswers[currentQuestionIndex] !== null) return;
-
-    setIsFeedbackVisible(true);
-
-    const selectedOption = shuffledQuestions[currentQuestionIndex].options[selectedIndex];
-
-    // Update userAnswers
-    setUserAnswers((prevUserAnswers) => {
-      const newUserAnswers = [...prevUserAnswers];
-      newUserAnswers[currentQuestionIndex] = selectedIndex;
-      return newUserAnswers;
-    });
-
-    // Update score if the answer is correct
-    if (selectedOption.isCorrect) {
-      setScore((prevScore) => prevScore + 1);
-    }
-  };
-
-  const nextQuestion = () => {
-    if (!shuffledQuestions) return;
-
-    setIsFeedbackVisible(false);
-
-    if (currentQuestionIndex + 1 < shuffledQuestions.length) {
-      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
-    } else {
-      setIsQuizCompleted(true);
-    }
-  };
-
-  const previousQuestion = () => {
-    if (!shuffledQuestions) return;
-
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
-      setIsFeedbackVisible(userAnswers[currentQuestionIndex - 1] !== null);
-    }
-  };
-
-  const restartQuiz = () => {
-    if (!shuffledQuestions) return;
-
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setIsQuizCompleted(false);
-    setIsFeedbackVisible(false);
-    // Reshuffle questions and reset userAnswers
-    const reshuffled = shuffleArray(
-      questions.map((question) => ({
-        ...question,
-        options: shuffleArray(question.options),
-      }))
-    );
-    setShuffledQuestions(reshuffled);
-    setUserAnswers(Array(reshuffled.length).fill(null));
-  };
-
-  const ResultSummary = ({ score, totalQuestions, onRestart }: ResultSummaryProps) => {
-    return (
-      <div>
-        <h2>Quiz Completed</h2>
-        <p>
-          You scored {score} out of {totalQuestions}
-        </p>
-        <button onClick={onRestart} className="bg-blue-500 text-white p-3 rounded hover:bg-blue-700">
-          Try Again
-        </button>
-      </div>
-    );
-  };
-
-  if (!shuffledQuestions) {
-    // Render a loading state while questions are being shuffled
-    return (
-      <div className="text-center">
-        <Header />
-        <h1 className="mb-8">Simple Quiz</h1>
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  const currentQuestion = shuffledQuestions[currentQuestionIndex];
-  const isLastQuestion = currentQuestionIndex === shuffledQuestions.length - 1;
-  const hasAnswered = userAnswers[currentQuestionIndex] !== null;
-
   return (
-    <div className="text-center">
+    <div className="min-h-screen bg-custom-bg-color">
+      {/* Header */}
       <Header />
-      <h1 className="mb-8">Simple Quiz</h1>
-      {isQuizCompleted ? (
-        <ResultSummary score={score} totalQuestions={shuffledQuestions.length} onRestart={restartQuiz} />
-      ) : (
-        <>
-          <div className="mb-4">
-            <p className="text-lg font-semibold">
-              Question {currentQuestionIndex + 1} of {shuffledQuestions.length}
-            </p>
-            <div className="w-full bg-gray-300 h-2 mt-2 rounded-full">
-              <div
-                className="bg-blue-500 h-2 rounded-full"
-                style={{
-                  width: `${((currentQuestionIndex + 1) / shuffledQuestions.length) * 100}%`,
-                }}
-              ></div>
-            </div>
+
+      {/* Project Description */}
+      <section className="mb-8">
+        <p className="text-center text-lg sm:text-xl">
+          Welcome to the TekaTeki Quiz Platform! Create your own quizzes, challenge others, and test your knowledge on various topics.
+        </p>
+      </section>
+
+      {/* Create Quiz Button */}
+      <div className="flex justify-center mb-8">
+        <Link href="/projects/TekaTeki/CreateQuiz">
+          <button className="bg-blue-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded hover:bg-blue-700 transition">
+            Create a New Quiz
+          </button>
+        </Link>
+      </div>
+
+      {/* Quizzes Table */}
+      <section>
+        <h2 className="text-2xl sm:text-3xl font-semibold mb-4 text-center">Available Quizzes</h2>
+        {loading ? (
+          <p className="text-center">Loading quizzes...</p>
+        ) : error ? (
+          <p className="text-center text-red-500">{error}</p>
+        ) : quizzes.length === 0 ? (
+          <p className="text-center">No quizzes available. Create one now!</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full shadow-md rounded-lg">
+              <thead>
+                <tr>
+                  <th className="py-2 px-4 border-b text-left text-sm sm:text-base">Title</th>
+                  <th className="py-2 px-4 border-b text-left text-sm sm:text-base hidden sm:table-cell">Description</th>
+                  <th className="py-2 px-4 border-b text-left text-sm sm:text-base">Created At</th>
+                  <th className="py-2 px-4 border-b text-left text-sm sm:text-base">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {quizzes.map((quiz) => (
+                  <tr key={quiz.id} className="hover:bg-black-100">
+                    <td className="py-2 px-4 border-b text-sm sm:text-base">{quiz.title}</td>
+                    <td className="py-2 px-4 border-b text-sm sm:text-base hidden sm:table-cell">{quiz.description}</td>
+                    <td className="py-2 px-4 border-b text-sm sm:text-base">
+                      {new Date(quiz.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="py-2 px-4 border-b text-sm sm:text-base">
+                      <Link href={`/projects/TekaTeki/AnswerQuiz/${quiz.id}`}>
+                        <button className="bg-green-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded hover:bg-green-700 transition">
+                          Take Quiz
+                        </button>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <Question
-            question={currentQuestion.questionText}
-            options={currentQuestion.options}
-            onAnswer={handleAnswer}
-            isFeedbackVisible={isFeedbackVisible}
-            userAnswer={userAnswers[currentQuestionIndex]}
-            isAnswered={hasAnswered}
-          />
-          <div className="mt-6 flex justify-center gap-4">
-            <button
-              className={`bg-gray-500 text-white p-3 rounded hover:bg-gray-700 ${
-                currentQuestionIndex === 0 ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-              onClick={previousQuestion}
-              disabled={currentQuestionIndex === 0}
-            >
-              Back
-            </button>
-            {hasAnswered && (
-              <button
-                className="bg-blue-500 text-white p-3 rounded hover:bg-blue-700"
-                onClick={nextQuestion}
-              >
-                {isLastQuestion ? 'Finish Quiz' : 'Next'}
-              </button>
-            )}
-          </div>
-        </>
-      )}
+        )}
+      </section>
     </div>
   );
 };
 
-export default QuizPage;
+export default TekaTekiProjectPage;

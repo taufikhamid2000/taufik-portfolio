@@ -1,4 +1,6 @@
-// components/Question.tsx
+// app/projects/TekaTeki/components/Question.tsx
+
+import React from 'react';
 
 interface Option {
   text: string;
@@ -14,20 +16,21 @@ interface QuestionProps {
   isAnswered: boolean;
 }
 
-const Question = ({
+const Question: React.FC<QuestionProps> = ({
   question,
   options,
   onAnswer,
   isFeedbackVisible,
   userAnswer,
   isAnswered,
-}: QuestionProps) => {
+}) => {
   return (
     <div className="mb-4">
       <p className="mb-2 font-medium">{question}</p>
       <ul>
         {options.map((option, index) => {
-          let optionClass = 'bg-blue-400 text-white p-2 rounded w-auto hover:bg-blue-700';
+          let optionClass =
+            'bg-blue-400 text-white p-2 rounded w-auto hover:bg-blue-700';
 
           if (isFeedbackVisible || isAnswered) {
             if (option.isCorrect) {
