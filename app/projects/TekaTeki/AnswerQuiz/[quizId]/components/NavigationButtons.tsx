@@ -1,6 +1,6 @@
-// app/projects/TekaTeki/components/NavigationButtons.tsx
+// D:\taufik-portfolio\app\projects\TekaTeki\AnswerQuiz\[quizId]\components\NavigationButtons.tsx
 
-// import Button from '../../../../styles/commonStyles';
+import React from 'react';
 
 interface NavigationButtonsProps {
   onBack: () => void;
@@ -27,6 +27,7 @@ const NavigationButtons = ({
         }`}
         onClick={onBack}
         disabled={isBackDisabled}
+        aria-label="Go to previous question"
       >
         Back
       </button>
@@ -37,6 +38,7 @@ const NavigationButtons = ({
           }`}
           onClick={onNext}
           disabled={isNextDisabled}
+          aria-label="Go to next question"
         >
           Next
         </button>
@@ -48,6 +50,7 @@ const NavigationButtons = ({
           }`}
           onClick={onFinish}
           disabled={isNextDisabled}
+          aria-label="Finish the quiz"
         >
           Finish Quiz
         </button>

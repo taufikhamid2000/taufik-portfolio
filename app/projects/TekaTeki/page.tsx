@@ -4,8 +4,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Header from '@/components/Header'; // Ensure this path is correct
-import '../../../styles/commonStyles.css'; // Ensure this path is correct
+import Header from '@/components/Header'; 
+import '../../../styles/commonStyles.css';
 
 interface Quiz {
   id: string;
@@ -48,7 +48,7 @@ const TekaTekiProjectPage: React.FC = () => {
       <Header />
 
       {/* Project Description */}
-      <section className="mb-8">
+      <section className="mb-8 mt-12">
         <p className="text-center text-lg sm:text-xl">
           Welcome to the TekaTeki Quiz Platform! Create your own quizzes, challenge others, and test your knowledge on various topics.
         </p>
@@ -74,7 +74,7 @@ const TekaTekiProjectPage: React.FC = () => {
           <p className="text-center">No quizzes available. Create one now!</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full shadow-md rounded-lg">
+            <table className="w-auto mx-auto shadow-md rounded-lg">
               <thead>
                 <tr>
                   <th className="py-2 px-4 border-b text-left text-sm sm:text-base">Title</th>

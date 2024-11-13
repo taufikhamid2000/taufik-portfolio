@@ -1,4 +1,4 @@
-// app/projects/TekaTeki/components/QuizContent.tsx
+// D:\taufik-portfolio\app\projects\TekaTeki\AnswerQuiz\[quizId]\components\QuizContent.tsx
 
 import React from 'react';
 import Question from './Question';
