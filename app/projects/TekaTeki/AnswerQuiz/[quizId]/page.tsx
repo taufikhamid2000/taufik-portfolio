@@ -218,16 +218,18 @@ const QuizPage: React.FC = () => {
                 border: '1px solid #ccc',
                 borderRadius: '5px',
                 cursor: 'pointer',
+                // color: 'white',
               };
 
               if (userAnswer) {
                 if (option.is_correct) {
-                  optionStyle.backgroundColor = '#d4edda'; // Green for correct
+                  optionStyle.backgroundColor = '#28a745'; // Green for correct
                 } else if (option.id === userAnswer) {
-                  optionStyle.backgroundColor = '#f8d7da'; // Red for incorrect
+                  optionStyle.backgroundColor = '#dc3545'; // Red for incorrect
                 } else {
                   optionStyle.backgroundColor = '#e2e3e5'; // Grey for others
                 }
+                optionStyle.color = 'black';
               }
 
               return (
