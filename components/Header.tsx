@@ -6,7 +6,6 @@ import { useState, useEffect, memo, useCallback } from 'react';
 import supabase from '../lib/supabaseClient';
 import ThemeToggle from './ThemeToggle';
 import DropdownMenu from './DropdownMenu';
-// import LanguageSwitcher from './LanguageSwitcher';
 
 interface UserState {
   email: string;
@@ -86,7 +85,6 @@ const Header: React.FC<HeaderProps> = ({ showSignupLink = true, title }) => {
           </>
         )}
         <ThemeToggle />
-        {/* <LanguageSwitcher /> */}
       </div>
     </header>
   );

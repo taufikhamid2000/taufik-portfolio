@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
-    "@supabase/supabase-js": "^2.45.4",
+    "@supabase/supabase-js": "^2.46.1",
     "chart.js": "^4.4.6",
     "classnames": "^2.5.1",
     "leaflet": "^1.9.4",
