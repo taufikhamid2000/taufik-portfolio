@@ -48,6 +48,7 @@ const Header: React.FC<HeaderProps> = ({ showSignupLink = true, title }) => {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
+      window.location.reload();
       setUser(null);
       setShowLogoutModal(false); // Close the modal
     } catch (error) {
