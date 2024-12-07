@@ -159,8 +159,8 @@ const TekaTekiProjectPage: React.FC = () => {
                     <td className="py-2 px-4 border-b text-sm sm:text-base">
                       <Link
                         href={`/projects/TekaTeki/AnswerQuiz/${quiz.id}`}
-                        className="text-blue-600 hover:underline"
-                      >
+                        className="text-green-500 font-semibold hover:text-green-600 cursor-pointer animate-glow transition duration-300 ease-in-out rounded focus-visible:ring focus-visible:ring-green-300 focus:outline-none"
+                        >
                         {quiz.title}
                       </Link>
                     </td>

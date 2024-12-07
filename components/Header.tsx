@@ -6,6 +6,7 @@ import { useState, useEffect, memo, useCallback } from 'react';
 import supabase from '../lib/supabaseClient';
 import ThemeToggle from './ThemeToggle';
 import DropdownMenu from './DropdownMenu';
+import Modal from './Modal';
 
 interface UserState {
   email: string;
@@ -23,6 +24,7 @@ interface Subscription {
 const Header: React.FC<HeaderProps> = ({ showSignupLink = true, title }) => {
   const [user, setUser] = useState<UserState | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const checkSession = useCallback(async () => {
     const { data: { session } }: { data: { session: any } } = await supabase.auth.getSession();
@@ -47,6 +49,7 @@ const Header: React.FC<HeaderProps> = ({ showSignupLink = true, title }) => {
     try {
       await supabase.auth.signOut();
       setUser(null);
+      setShowLogoutModal(false); // Close the modal
     } catch (error) {
       console.error('Error during sign out:', error);
       alert('Failed to log out. Please try again.');
@@ -77,7 +80,7 @@ const Header: React.FC<HeaderProps> = ({ showSignupLink = true, title }) => {
           <>
             <span>Welcome, {user.email}</span>
             <button
-              onClick={handleLogout}
+              onClick={() => setShowLogoutModal(true)}
               className="bg-red-500 text-white p-2 rounded hover:bg-red-700"
             >
               Log Out
@@ -86,6 +89,30 @@ const Header: React.FC<HeaderProps> = ({ showSignupLink = true, title }) => {
         )}
         <ThemeToggle />
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <Modal onClose={() => setShowLogoutModal(false)}>
+          <div className="text-center">
+            <h2 className="text-lg font-bold mb-4 text-black dark:text-white">Confirm Logout</h2>
+            <p className="mb-6 text-gray-800 dark:text-gray-300">Are you sure you want to log out?</p>        
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="px-4 py-2 bg-gray-500 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </header>
   );
 };
