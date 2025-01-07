@@ -1,187 +1,185 @@
-// app/projects/TekaTeki/page.tsx
-
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Header from '@/components/Header'; 
+import Header from '@/components/Header';
+import Table from '@/components/Table';
+import { fetchHierarchyData } from './utils/hierarchyService';
 import '../../../styles/commonStyles.css';
 
-interface Quiz {
+// Define interfaces for Level, Subject, Chapter, and Lesson
+interface Level {
   id: string;
-  title: string;
-  description: string;
-  created_at: string;
-  status: string;
+  name: string;
 }
 
-const TekaTekiProjectPage: React.FC = () => {
-  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [sortedQuizzes, setSortedQuizzes] = useState<Quiz[]>([]);
+interface Subject {
+  id: string;
+  name: string;
+  level_id: string;
+}
+
+interface Chapter {
+  id: string;
+  name: string;
+  subject_id: string;
+}
+
+interface Lesson {
+  id: string;
+  name: string;
+  chapter_id: string;
+}
+
+const HomePage: React.FC = () => {
+  const [levels, setLevels] = useState<Level[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
-  const [sortConfig, setSortConfig] = useState<{ key: keyof Quiz; direction: 'ascending' | 'descending' } | null>(null);
+  const [currentLevel, setCurrentLevel] = useState<string | null>(null);
+  const [currentSubject, setCurrentSubject] = useState<string | null>(null);
+  const [currentChapter, setCurrentChapter] = useState<string | null>(null);
 
+  // Fetch levels on component mount
   useEffect(() => {
-    const getQuizzes = async () => {
+    const fetchLevels = async () => {
+      setLoading(true);
       try {
-        const response = await fetch('/api/quizzes');
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to load quizzes.');
-        }
-
-        const data: Quiz[] = await response.json();
-
-        setQuizzes(data);
-        setSortedQuizzes(data);
+        const levelsData = await fetchHierarchyData('levels');
+        setLevels(levelsData);
       } catch (err: any) {
-        setError(err.message || 'Failed to load quizzes.');
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-
-    getQuizzes();
+    fetchLevels();
   }, []);
 
-  // Sorting logic
-  useEffect(() => {
-    let sortableQuizzes = [...quizzes];
-    if (sortConfig !== null) {
-      sortableQuizzes.sort((a, b) => {
-        if (sortConfig.key === 'created_at') {
-          const dateA = new Date(a.created_at).getTime();
-          const dateB = new Date(b.created_at).getTime();
-          if (dateA < dateB) {
-            return sortConfig.direction === 'ascending' ? -1 : 1;
-          }
-          if (dateA > dateB) {
-            return sortConfig.direction === 'ascending' ? 1 : -1;
-          }
-          return 0;
-        } else {
-          if (a[sortConfig.key] < b[sortConfig.key]) {
-            return sortConfig.direction === 'ascending' ? -1 : 1;
-          }
-          if (a[sortConfig.key] > b[sortConfig.key]) {
-            return sortConfig.direction === 'ascending' ? 1 : -1;
-          }
-          return 0;
-        }
-      });
+  // Fetch subjects for a specific level
+  const fetchSubjects = async (levelId: string) => {
+    setLoading(true);
+    setError('');
+    try {
+      const subjectsData = await fetchHierarchyData('subjects', undefined, levelId);
+      setSubjects(subjectsData);
+      setCurrentLevel(levelId);
+      setCurrentSubject(null);
+      setCurrentChapter(null);
+      setLessons([]);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    setSortedQuizzes(sortableQuizzes);
-  }, [quizzes, sortConfig]);
+  };
 
-  const requestSort = (key: keyof Quiz) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (
-      sortConfig &&
-      sortConfig.key === key &&
-      sortConfig.direction === 'ascending'
-    ) {
-      direction = 'descending';
+  // Fetch chapters for a specific subject
+  const fetchChapters = async (subjectId: string) => {
+    setLoading(true);
+    setError('');
+    try {
+      const chaptersData = await fetchHierarchyData('chapters', subjectId);
+      setChapters(chaptersData);
+      setCurrentSubject(subjectId);
+      setCurrentChapter(null);
+      setLessons([]);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    setSortConfig({ key, direction });
+  };
+
+  // Fetch lessons for a specific chapter
+  const fetchLessons = async (chapterId: string) => {
+    setLoading(true);
+    setError('');
+    try {
+      const lessonsData = await fetchHierarchyData('lessons', chapterId);
+      setLessons(lessonsData);
+      setCurrentChapter(chapterId);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-custom-bg-color">
-      {/* Header */}
       <Header />
+      <main className="p-6">
+        <h1 className="text-2xl font-semibold mb-4 text-center">Hierarchy Viewer</h1>
 
-      {/* Project Description */}
-      <section className="mb-8 mt-12">
-        <p className="text-center text-lg sm:text-xl">
-          Welcome to the TekaTeki Quiz Platform! Create your own quizzes, challenge others, and test your knowledge on various topics.
-        </p>
-      </section>
-
-      {/* Buttons */}
-      <div className="flex justify-center space-x-4 mb-8">
-        <Link href="/projects/TekaTeki/CreateQuiz">
-          <button className="bg-blue-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded hover:bg-blue-700 transition">
-            Create a New Quiz
-          </button>
-        </Link>
-        <Link href="/projects/TekaTeki/VerifyQuiz">
-          <button className="bg-purple-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded hover:bg-purple-700 transition">
-            Verify Quizzes
-          </button>
-        </Link>
-      </div>
-
-      {/* Quizzes Table */}
-      <section>
-        <h2 className="text-2xl sm:text-3xl font-semibold mb-4 text-center">Available Quizzes</h2>
+        {/* Conditional rendering based on state */}
         {loading ? (
-          <p className="text-center">Loading quizzes...</p>
+          <p className="text-center">Loading...</p>
         ) : error ? (
           <p className="text-center text-red-500">{error}</p>
-        ) : sortedQuizzes.length === 0 ? (
-          <p className="text-center">No quizzes available. Create one now!</p>
+        ) : currentLevel ? (
+          currentSubject ? (
+            currentChapter ? (
+              <div>
+                <h2 className="text-xl font-semibold mb-4 text-center">Lessons</h2>
+                <Table
+                  data={lessons}
+                  columns={[{ key: 'name', label: 'Lesson Name' }]}
+                  onRowClick={(lesson) => console.log('Lesson clicked:', lesson)}
+                />
+                <button
+                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  onClick={() => setCurrentChapter(null)}
+                >
+                  Back to Chapters
+                </button>
+              </div>
+            ) : (
+              <div>
+                <h2 className="text-xl font-semibold mb-4 text-center">Chapters</h2>
+                <Table
+                  data={chapters}
+                  columns={[{ key: 'name', label: 'Chapter Name' }]}
+                  onRowClick={(chapter) => fetchLessons(chapter.id)}
+                />
+                <button
+                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  onClick={() => setCurrentSubject(null)}
+                >
+                  Back to Subjects
+                </button>
+              </div>
+            )
+          ) : (
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-center">Subjects</h2>
+              <Table
+                data={subjects}
+                columns={[{ key: 'name', label: 'Subject Name' }]}
+                onRowClick={(subject) => fetchChapters(subject.id)}
+              />
+              <button
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                onClick={() => setCurrentLevel(null)}
+              >
+                Back to Levels
+              </button>
+            </div>
+          )
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-auto mx-auto shadow-md rounded-lg">
-              <thead>
-                <tr>
-                  <th
-                    className="py-2 px-4 border-b text-left text-sm sm:text-base cursor-pointer"
-                    onClick={() => requestSort('title')}
-                  >
-                    Title {sortConfig?.key === 'title' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
-                  </th>
-                  <th
-                    className="py-2 px-4 border-b text-left text-sm sm:text-base hidden sm:table-cell cursor-pointer"
-                    onClick={() => requestSort('description')}
-                  >
-                    Description {sortConfig?.key === 'description' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
-                  </th>
-                  <th
-                    className="py-2 px-4 border-b text-left text-sm sm:text-base cursor-pointer"
-                    onClick={() => requestSort('created_at')}
-                  >
-                    Created At {sortConfig?.key === 'created_at' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
-                  </th>
-                  <th
-                    className="py-2 px-4 border-b text-left text-sm sm:text-base cursor-pointer"
-                    onClick={() => requestSort('status')}
-                  >
-                    Status {sortConfig?.key === 'status' ? (sortConfig.direction === 'ascending' ? '▲' : '▼') : ''}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedQuizzes.map((quiz) => (
-                  <tr key={quiz.id} className="hover:bg-black-100">
-                    <td className="py-2 px-4 border-b text-sm sm:text-base">
-                      <Link
-                        href={`/projects/TekaTeki/AnswerQuiz/${quiz.id}`}
-                        className="text-green-500 font-semibold hover:text-green-600 cursor-pointer animate-glow transition duration-300 ease-in-out rounded focus-visible:ring focus-visible:ring-green-300 focus:outline-none"
-                        >
-                        {quiz.title}
-                      </Link>
-                    </td>
-                    <td className="py-2 px-4 border-b text-sm sm:text-base hidden sm:table-cell">
-                      {quiz.description}
-                    </td>
-                    <td className="py-2 px-4 border-b text-sm sm:text-base">
-                      {new Date(quiz.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="py-2 px-4 border-b text-sm sm:text-base">
-                      {quiz.status}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-center">Levels</h2>
+            <Table
+              data={levels}
+              columns={[{ key: 'name', label: 'Level Name' }]}
+              onRowClick={(level) => fetchSubjects(level.id)}
+            />
           </div>
         )}
-      </section>
+      </main>
     </div>
   );
 };
 
-export default TekaTekiProjectPage;
+export default HomePage;
