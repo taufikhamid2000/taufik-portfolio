@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header'; 
-import '../../../styles/commonStyles.css';
+import '../../../../styles/commonStyles.css';
 
 interface Quiz {
   id: string;
