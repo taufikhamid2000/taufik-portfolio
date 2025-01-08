@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import Table from '@/components/Table';
 import { fetchHierarchyData } from './utils/hierarchyService';
+import HierarchyView from '@/components/HierarchyView';
 import '../../../styles/commonStyles.css';
 
 // Define interfaces for Level, Subject, Chapter, and Lesson
@@ -113,7 +114,6 @@ const HomePage: React.FC = () => {
       <main className="p-6">
         <h1 className="text-2xl font-semibold mb-4 text-center">Hierarchy Viewer</h1>
 
-        {/* Conditional rendering based on state */}
         {loading ? (
           <p className="text-center">Loading...</p>
         ) : error ? (
@@ -121,61 +121,38 @@ const HomePage: React.FC = () => {
         ) : currentLevel ? (
           currentSubject ? (
             currentChapter ? (
-              <div>
-                <h2 className="text-xl font-semibold mb-4 text-center">Lessons</h2>
-                <Table
-                  data={lessons}
-                  columns={[{ key: 'name', label: 'Lesson Name' }]}
-                  onRowClick={(lesson) => console.log('Lesson clicked:', lesson)}
-                />
-                <button
-                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-                  onClick={() => setCurrentChapter(null)}
-                >
-                  Back to Chapters
-                </button>
-              </div>
+              <HierarchyView
+                title="Lessons"
+                data={lessons}
+                columns={[{ key: 'name', label: 'Lesson Name' }]}
+                onRowClick={(lesson) => console.log('Lesson clicked:', lesson)}
+                onBack={() => setCurrentChapter(null)}
+              />
             ) : (
-              <div>
-                <h2 className="text-xl font-semibold mb-4 text-center">Chapters</h2>
-                <Table
-                  data={chapters}
-                  columns={[{ key: 'name', label: 'Chapter Name' }]}
-                  onRowClick={(chapter) => fetchLessons(chapter.id)}
-                />
-                <button
-                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-                  onClick={() => setCurrentSubject(null)}
-                >
-                  Back to Subjects
-                </button>
-              </div>
+              <HierarchyView
+                title="Chapters"
+                data={chapters}
+                columns={[{ key: 'name', label: 'Chapter Name' }]}
+                onRowClick={(chapter) => fetchLessons(chapter.id)}
+                onBack={() => setCurrentSubject(null)}
+              />
             )
           ) : (
-            <div>
-              <h2 className="text-xl font-semibold mb-4 text-center">Subjects</h2>
-              <Table
-                data={subjects}
-                columns={[{ key: 'name', label: 'Subject Name' }]}
-                onRowClick={(subject) => fetchChapters(subject.id)}
-              />
-              <button
-                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
-                onClick={() => setCurrentLevel(null)}
-              >
-                Back to Levels
-              </button>
-            </div>
+            <HierarchyView
+              title="Subjects"
+              data={subjects}
+              columns={[{ key: 'name', label: 'Subject Name' }]}
+              onRowClick={(subject) => fetchChapters(subject.id)}
+              onBack={() => setCurrentLevel(null)}
+            />
           )
         ) : (
-          <div>
-            <h2 className="text-xl font-semibold mb-4 text-center">Levels</h2>
-            <Table
-              data={levels}
-              columns={[{ key: 'name', label: 'Level Name' }]}
-              onRowClick={(level) => fetchSubjects(level.id)}
-            />
-          </div>
+          <HierarchyView
+            title="Levels"
+            data={levels}
+            columns={[{ key: 'name', label: 'Level Name' }]}
+            onRowClick={(level) => fetchSubjects(level.id)}
+          />
         )}
       </main>
     </div>

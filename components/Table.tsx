@@ -2,7 +2,7 @@ import React from 'react';
 
 interface TableProps<T> {
   data: T[];
-  columns: { key: keyof T; label: string }[];
+  columns: { key: keyof T | 'actions'; label: string; render?: (item: T) => React.ReactNode }[];
   onRowClick?: (item: T) => void;
 }
 
@@ -27,7 +27,7 @@ const Table = <T extends object>({ data, columns, onRowClick }: TableProps<T>) =
           >
             {columns.map((col) => (
               <td key={col.key as string} className="py-2 px-4 border-b">
-                {String(item[col.key])}
+                {col.render ? col.render(item) : String(item[col.key as keyof T])}
               </td>
             ))}
           </tr>
