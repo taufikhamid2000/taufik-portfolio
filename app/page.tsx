@@ -1,107 +1,187 @@
-"use client";
-
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Header from '../components/Header';
-import DescriptionWithToggle from '@/components/DescriptionWithToggle';
-import supabase from '@/lib/supabaseClient';
+import { getProjects, type Project, type ProjectStatus } from '../lib/projects';
+import { createClient } from '../lib/supabase/server';
 
-export default function Home() {
-  const [projects, setProjects] = useState<{ name?: string; description?: string }[]>([]);
-  const [user, setUser] = useState<{ email: string } | null>(null);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+export const revalidate = 60; // re-fetch projects at most once per minute
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ? { email: session.user.email } : null);
-    };
+const statusStyles: Record<ProjectStatus, string> = {
+  active: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
+  'in-progress': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
+  'in-portfolio': 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+  concept: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
+  archived: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+};
 
-    fetchUser();
-  }, []);
+const statusLabels: Record<ProjectStatus, string> = {
+  active: 'Active',
+  'in-progress': 'In Progress',
+  'in-portfolio': 'In Portfolio',
+  concept: 'Concept',
+  archived: 'Archived',
+};
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await fetch('/api/projects');
-        const data = await response.json();
-        if (response.ok) {
-          setProjects(data.projects);
-        } else {
-          console.error('Failed to fetch projects:', data.error);
-        }
-      } catch (error) {
-        console.error('Error fetching projects:', error);
-      }
-    };
+export default async function Home() {
+  const projects = await getProjects();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    fetchProjects();
-  }, []);
-
-  const isAdmin = user?.email === 'putrasabah41@gmail.com';
+  const featured = projects.filter((p) => p.featured);
+  const others = projects.filter((p) => !p.featured);
 
   return (
-    <div className="min-h-screen bg-white text-black dark:bg-gray-900 dark:text-white">
-      <Header showSignupLink={true} />
-      <div className="flex flex-col items-center justify-center p-8">
-        <h1 className="text-4xl font-bold mt-8">Hey, welcome to Taufik`s Portfolio!</h1>
-        <p className="mt-4 text-center max-w-md">
-          These are the projects I have so far. Feel free to explore each one of them!
-        </p>
+    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+      <header className="border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
+          <span className="text-lg font-semibold">Taufik&apos;s Portfolio</span>
+          <nav className="flex items-center gap-4 text-sm">
+            <a
+              href="https://github.com/taufikhamid2000"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            >
+              GitHub &rarr;
+            </a>
+            {user ? (
+              <Link
+                href="/admin"
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Admin
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+              >
+                Sign in
+              </Link>
+            )}
+          </nav>
+        </div>
+      </header>
 
-        {/* Admin Only Button */}
-        {isAdmin && (
-          <div className="mt-4">
-            <Link href="/create-project">
-              <button className="text-xs px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
-                (Admin Only) Create New Project
-              </button>
-            </Link>
-          </div>
+      <main className="max-w-5xl mx-auto px-6 py-16">
+        <section className="mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
+            Hi, I&apos;m Muhammad Taufik
+          </h1>
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl text-balance">
+            I build web and mobile applications. Here are some of the projects I&apos;ve worked on,
+            ranging from full-stack platforms to mobile apps and concept prototypes.
+          </p>
+        </section>
+
+        {projects.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <>
+            {featured.length > 0 && (
+              <section className="mb-16">
+                <h2 className="text-2xl font-semibold mb-6">Featured</h2>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {featured.map((project) => (
+                    <ProjectCard key={project.id} project={project} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {others.length > 0 && (
+              <section>
+                <h2 className="text-2xl font-semibold mb-6">All Projects</h2>
+                <div className="grid gap-6 md:grid-cols-2">
+                  {others.map((project) => (
+                    <ProjectCard key={project.id} project={project} />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
+      </main>
 
-        {/* Display Projects Table */}
-        {projects.length > 0 && (
-          <div className="mt-10 w-full max-w-4xl">
-            <h2 className="text-3xl font-bold mb-4">Projects Overview</h2>
-            <table className="w-full table-auto border-collapse border border-gray-300 dark:border-gray-600">
-              <thead>
-                <tr className="bg-gray-200 dark:bg-gray-700">
-                  <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Project Title</th>
-                  <th className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {projects.map((project, index) => (
-                  <tr key={index} className="bg-white dark:bg-gray-800">
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 align-text-top">
-                      {project.name ? (
-                        <Link
-                          href={`/projects/${project.name}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
-                        >
-                          {project.name.replace(/-/g, ' ')}
-                        </Link>
-                      ) : (
-                        'Unnamed Project'
-                      )}
-                    </td>
-                    <td className="border border-gray-300 dark:border-gray-600 px-4 py-2 text-left">
-                      {project.description ? (
-                        <DescriptionWithToggle description={project.description} />
-                      ) : (
-                        'No description available'
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <footer className="border-t border-gray-200 dark:border-gray-800 mt-16">
+        <div className="max-w-5xl mx-auto px-6 py-8 text-sm text-gray-600 dark:text-gray-400">
+          Built with Next.js &amp; Tailwind CSS. &copy; {new Date().getFullYear()} Muhammad Taufik Bin Hamid.
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-12 text-center">
+      <h2 className="text-xl font-semibold mb-2">No projects yet</h2>
+      <p className="text-gray-600 dark:text-gray-400 mb-4">
+        Add your first project from the admin panel.
+      </p>
+      <Link
+        href="/admin"
+        className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        Go to Admin
+      </Link>
+    </div>
+  );
+}
+
+function ProjectCard({ project }: { project: Project }) {
+  return (
+    <article className="border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:border-gray-300 dark:hover:border-gray-700 transition-colors flex flex-col">
+      <div className="flex items-start justify-between gap-3 mb-2">
+        <h3 className="text-xl font-semibold">{project.name}</h3>
+        <span
+          className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${statusStyles[project.status]}`}
+        >
+          {statusLabels[project.status]}
+        </span>
+      </div>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{project.tagline}</p>
+      <p className="text-sm mb-4 flex-grow">{project.description}</p>
+      <div className="flex flex-wrap gap-1.5 mb-4">
+        {project.tech.map((t) => (
+          <span
+            key={t}
+            className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+          >
+            {t}
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-3 text-sm">
+        {project.github_url && (
+          <a
+            href={project.github_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            GitHub &rarr;
+          </a>
+        )}
+        {project.demo_url && (
+          <a
+            href={project.demo_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            Live Demo &rarr;
+          </a>
+        )}
+        {!project.github_url && !project.demo_url && (
+          <Link
+            href={`/projects/${project.name}`}
+            className="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            View in Portfolio &rarr;
+          </Link>
         )}
       </div>
-    </div>
+    </article>
   );
 }

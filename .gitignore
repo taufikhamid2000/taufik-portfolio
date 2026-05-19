@@ -37,3 +37,11 @@ next-env.d.ts
 
 # JWT secrets (additional precaution)
 .env.local
+
+# editor / IDE
+.vs/
+.idea/
+.vscode/
+
+# Claude Code local config
+.claude/
