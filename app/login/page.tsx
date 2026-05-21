@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { signIn } from './actions';
+import { ThemeToggle } from '../_components/theme-toggle';
 
 interface LoginPageProps {
   searchParams: Promise<{ error?: string; redirect?: string }>;
@@ -11,10 +12,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 flex flex-col">
       <header className="border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-5xl mx-auto px-6 py-5">
+        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <Link href="/" className="text-lg font-semibold">
             Taufik&apos;s Portfolio
           </Link>
+          <ThemeToggle />
         </div>
       </header>
 

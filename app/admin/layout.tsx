@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '../../lib/supabase/server';
 import { signOut } from '../login/actions';
+import { ThemeToggle } from '../_components/theme-toggle';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -43,6 +44,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 Sign out
               </button>
             </form>
+            <ThemeToggle />
           </div>
         </div>
       </header>

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getProjects, type Project, type ProjectStatus } from '../lib/projects';
 import { createClient } from '../lib/supabase/server';
+import { ThemeToggle } from './_components/theme-toggle';
 
 export const revalidate = 60; // re-fetch projects at most once per minute
 
@@ -59,6 +60,7 @@ export default async function Home() {
                 Sign in
               </Link>
             )}
+            <ThemeToggle />
           </nav>
         </div>
       </header>
