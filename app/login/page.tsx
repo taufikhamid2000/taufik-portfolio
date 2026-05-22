@@ -77,12 +77,22 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </button>
           </form>
 
-          <p className="mt-6 text-xs text-gray-500 dark:text-gray-500 text-center">
-            Don&apos;t have an account?{' '}
-            <span className="text-gray-700 dark:text-gray-400">
-              Create one in your Supabase dashboard.
-            </span>
-          </p>
+          <div className="mt-6 text-xs text-center space-y-2">
+            <p>
+              <Link
+                href="/auth/reset-password"
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </p>
+            <p className="text-gray-500 dark:text-gray-500">
+              Don&apos;t have an account?{' '}
+              <span className="text-gray-700 dark:text-gray-400">
+                Create one in your Supabase dashboard.
+              </span>
+            </p>
+          </div>
         </div>
       </main>
     </div>
