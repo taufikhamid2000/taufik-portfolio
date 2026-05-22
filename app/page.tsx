@@ -1,9 +1,14 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getProjects, type Project, type ProjectStatus } from '../lib/projects';
 import { createClient } from '../lib/supabase/server';
 import { ThemeToggle } from './_components/theme-toggle';
 
 export const revalidate = 60; // re-fetch projects at most once per minute
+
+interface HomeProps {
+  searchParams: Promise<{ code?: string; error?: string; error_description?: string }>;
+}
 
 const statusStyles: Record<ProjectStatus, string> = {
   active: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
@@ -21,7 +26,23 @@ const statusLabels: Record<ProjectStatus, string> = {
   archived: 'Archived',
 };
 
-export default async function Home() {
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
+
+  // If Supabase redirected here with ?code=... (because Site URL is configured
+  // to the root, not /auth/confirm), bounce it to the proper handler so the
+  // code can be exchanged for a session.
+  if (params.code) {
+    redirect(`/auth/confirm?code=${encodeURIComponent(params.code)}`);
+  }
+  // Similarly, surface auth errors via the dedicated page.
+  if (params.error || params.error_description) {
+    redirect(
+      '/auth/error?reason=' +
+        encodeURIComponent(params.error_description || params.error || 'Unknown error')
+    );
+  }
+
   const projects = await getProjects();
   const supabase = await createClient();
   const {
