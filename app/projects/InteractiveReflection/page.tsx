@@ -1,11 +1,26 @@
-// app/projects/random/page.tsx
-//.html
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Landing, Section, Reflection } from './Component';
+import { ThemeToggle } from '../../_components/theme-toggle';
 import './styles.css';
-import Header from '../../../components/Header';
+
+function MiniHeader() {
+  return (
+    <header className="w-full border-b border-gray-200 dark:border-gray-800">
+      <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+        <Link
+          href="/"
+          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+        >
+          &larr; Portfolio
+        </Link>
+        <ThemeToggle />
+      </div>
+    </header>
+  );
+}
 
 const RandomProject: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(0);
@@ -70,7 +85,7 @@ const RandomProject: React.FC = () => {
 
   return (
     <div className="app-container">
-      <Header />
+      <MiniHeader />
       {currentStep === 0 && <Landing onStart={handleNext} />}
       {currentStep > 0 && currentStep <= sections.length && (
         <Section
