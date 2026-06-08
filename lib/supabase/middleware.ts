@@ -56,8 +56,12 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // If signed in via Google but not on the Google allowlist, sign them out
-  if (user && user.app_metadata?.provider === 'google' && !GOOGLE_ALLOWED_EMAILS.includes(user.email ?? '')) {
+  // Block Google sign-in for non-Google-allowlisted accounts.
+  // Uses user.identities (not app_metadata.provider) because app_metadata.provider
+  // reflects the account's *first* provider, not the current sign-in method —
+  // so it stays 'email' even when the user signs in via Google on an email account.
+  const hasGoogleIdentity = user?.identities?.some((id: { provider: string }) => id.provider === 'google') ?? false;
+  if (user && hasGoogleIdentity && !GOOGLE_ALLOWED_EMAILS.includes(user.email ?? '')) {
     await supabase.auth.signOut();
     const url = request.nextUrl.clone();
     url.pathname = '/login';
