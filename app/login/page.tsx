@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { signIn } from './actions';
 import { ThemeToggle } from '../_components/theme-toggle';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface LoginPageProps {
   searchParams: Promise<{ error?: string; redirect?: string }>;
@@ -76,6 +77,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               Sign in
             </button>
           </form>
+
+          <div className="mt-6 flex items-center gap-3 text-xs text-gray-400 dark:text-gray-600">
+            <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
+            or
+            <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
+          </div>
+
+          <div className="mt-4">
+            <GoogleSignInButton />
+          </div>
 
           <div className="mt-6 text-xs text-center space-y-2">
             <p>
