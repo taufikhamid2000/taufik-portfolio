@@ -66,7 +66,7 @@ export const Reflection: React.FC<ReflectionProps> = ({ onRestart }) => {
 
   return (
     <div className="container">
-      <h2 className="title">What's Your Why?</h2>
+      <h2 className="title">What&apos;s Your Why?</h2>
       {!showMessage ? (
         <>
           <textarea

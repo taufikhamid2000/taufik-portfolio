@@ -43,7 +43,7 @@ export async function getSprints(): Promise<SprintWithCounts[]> {
   type Row = Sprint & { tasks: { status: string }[] };
   return (data as Row[] | null ?? []).map((row) => {
     const tasks = row.tasks ?? [];
-    const { tasks: _ignore, ...rest } = row;
+    const { tasks: _t, ...rest } = row; // eslint-disable-line @typescript-eslint/no-unused-vars
     return {
       ...rest,
       task_count: tasks.length,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Landing, Section, Reflection } from './Component';
 import { ThemeToggle } from '../../_components/theme-toggle';
@@ -57,6 +57,14 @@ const RandomProject: React.FC = () => {
   }, []);
   */
 
+  const handleNext = useCallback(() => {
+    setCurrentStep((prev) => Math.min(prev + 1, sections.length + 1));
+  }, [sections.length]);
+
+  const handlePrevious = useCallback(() => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  }, []);
+
   // Optional: Keyboard Navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -69,15 +77,7 @@ const RandomProject: React.FC = () => {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentStep]);
-
-  const handleNext = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, sections.length + 1));
-  };
-
-  const handlePrevious = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 0));
-  };
+  }, [handleNext, handlePrevious]);
 
   const handleRestart = () => {
     setCurrentStep(0);
