@@ -44,6 +44,17 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const ALLOWED_EMAILS = ['putrasabah41@gmail.com', 'taufikhamid2000@gmail.com'];
+
+  // If signed in but not on the allowlist, sign them out and bounce to login
+  if (user && !ALLOWED_EMAILS.includes(user.email ?? '')) {
+    await supabase.auth.signOut();
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    url.search = '?error=' + encodeURIComponent('Access denied.');
+    return NextResponse.redirect(url);
+  }
+
   // Protect /admin routes
   if (!user && request.nextUrl.pathname.startsWith('/admin')) {
     const url = request.nextUrl.clone();
