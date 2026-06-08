@@ -45,6 +45,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const ALLOWED_EMAILS = ['putrasabah41@gmail.com', 'taufikhamid2000@gmail.com'];
+  const GOOGLE_ALLOWED_EMAILS = ['taufikhamid2000@gmail.com'];
 
   // If signed in but not on the allowlist, sign them out and bounce to login
   if (user && !ALLOWED_EMAILS.includes(user.email ?? '')) {
@@ -52,6 +53,15 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.search = '?error=' + encodeURIComponent('Access denied.');
+    return NextResponse.redirect(url);
+  }
+
+  // If signed in via Google but not on the Google allowlist, sign them out
+  if (user && user.app_metadata?.provider === 'google' && !GOOGLE_ALLOWED_EMAILS.includes(user.email ?? '')) {
+    await supabase.auth.signOut();
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    url.search = '?error=' + encodeURIComponent('Google sign-in not permitted for this account.');
     return NextResponse.redirect(url);
   }
 
