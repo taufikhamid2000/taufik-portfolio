@@ -6,38 +6,44 @@
 -- JWT forwarded as Bearer, full content tree + quiz + progress + leaderboard.
 -- =====================================================
 
--- Upsert Syllabuzz project row
-insert into public.projects (
-  name, tagline, description, tech, github_url, demo_url, status, featured
-)
-values (
-  'Syllabuzz',
-  'Cross-platform mobile quiz app (iOS + Android) powered by the MyQuiza API',
-  'Expo (React Native) mobile client for the MyQuiza/EduBridge ecosystem. Students browse the subject → chapter → topic → quiz content tree, submit attempts with server-side scoring, track progress, and view the leaderboard — all via the MyQuiza REST API. Auth via Supabase Google sign-in using Expo AuthSession.',
-  array['Expo', 'React Native', 'TypeScript', 'Supabase', 'MyQuiza API'],
-  'https://github.com/taufikhamid2000/Syllabuzz',
-  null,
-  'in-progress',
-  false
-)
-on conflict (name) do update set
-  tagline     = excluded.tagline,
-  description = excluded.description,
-  tech        = excluded.tech,
-  github_url  = excluded.github_url,
-  status      = excluded.status,
-  updated_at  = now();
+-- Insert Syllabuzz project row if it doesn't exist, otherwise update
+do $$
+begin
+  if exists (select 1 from public.projects where name = 'Syllabuzz') then
+    update public.projects set
+      tagline     = 'Cross-platform mobile quiz app (iOS + Android) powered by the MyQuiza API',
+      description = 'Expo (React Native) mobile client for the MyQuiza/EduBridge ecosystem. Students browse the subject → chapter → topic → quiz content tree, submit attempts with server-side scoring, track progress, and view the leaderboard — all via the MyQuiza REST API. Auth via Supabase Google sign-in using Expo AuthSession.',
+      tech        = array['Expo', 'React Native', 'TypeScript', 'Supabase', 'MyQuiza API'],
+      github_url  = 'https://github.com/taufikhamid2000/Syllabuzz',
+      status      = 'in-progress',
+      updated_at  = now()
+    where name = 'Syllabuzz';
+  else
+    insert into public.projects (name, tagline, description, tech, github_url, demo_url, status, featured)
+    values (
+      'Syllabuzz',
+      'Cross-platform mobile quiz app (iOS + Android) powered by the MyQuiza API',
+      'Expo (React Native) mobile client for the MyQuiza/EduBridge ecosystem. Students browse the subject → chapter → topic → quiz content tree, submit attempts with server-side scoring, track progress, and view the leaderboard — all via the MyQuiza REST API. Auth via Supabase Google sign-in using Expo AuthSession.',
+      array['Expo', 'React Native', 'TypeScript', 'Supabase', 'MyQuiza API'],
+      'https://github.com/taufikhamid2000/Syllabuzz',
+      null,
+      'in-progress',
+      false
+    );
+  end if;
+end $$;
 
 -- Create Sprint 7
 insert into public.sprints (name, goal, status, start_date, end_date)
-values (
+select
   'Sprint 7 — Syllabuzz Mobile',
   'Build Syllabuzz as a cross-platform Expo app that is the mobile client for the MyQuiza API — same auth, same data, same API contract as EduBridge, native mobile UI.',
   'planned',
   current_date,
   current_date + interval '3 weeks'
-)
-on conflict (name) do nothing;
+where not exists (
+  select 1 from public.sprints where name = 'Sprint 7 — Syllabuzz Mobile'
+);
 
 -- Seed Sprint 7 tasks
 with s as (select id from public.sprints where name = 'Sprint 7 — Syllabuzz Mobile'),
