@@ -1,0 +1,19 @@
+-- =====================================================
+-- MyQuiza: all 3 Syllabuzz bugs confirmed live on master
+-- =====================================================
+-- Verified against production (not from memory):
+--   1. JWT key fix (76a2fe9) — /me/progress → 200 with token, 401 without
+--   2. updated_at fix (ff94251) — GET /quizzes/{id} → 200
+--   3. includeUnverified (864a0d7) — topic returns 4 default, 6 with flag
+--   Bonus: XP/progress gated to verified quizzes only (cb7f027)
+--
+-- displayName null: confirmed NOT a MyQuiza bug.
+--   API maps correctly; 20/22 user_profiles.display_name are null in DB.
+-- Sparse quiz content: confirmed, ~6 quizzes have questions.
+--
+-- Both data flags are writes to EduBridge's shared Supabase data —
+-- MyQuiza offered to draft seed SQL (display names + verified quizzes).
+-- =====================================================
+
+-- No task status changes — this is a confirmation record only.
+-- Pending decision: accept MyQuiza's offer to draft seed SQL?
