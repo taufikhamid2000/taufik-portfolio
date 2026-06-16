@@ -1,0 +1,16 @@
+-- =====================================================
+-- EduBridge: /me/progress wired to UI + seed SQL accepted
+-- =====================================================
+-- TopicProgressBadge added to quiz topic page — calls GET /api/me/progress,
+-- shows per-topic completion + last score. Shipped to master, deploying.
+-- Auth-forwarding now exercised on a real user-facing page.
+--
+-- Seed SQL accepted: MyQuiza to draft
+--   1. user_profiles.display_name backfill (20/22 nulls)
+--   2. verified quiz content (fix ~6-quiz sparsity for demo)
+-- EduBridge will review before applying (shared Supabase DB).
+--
+-- ?includeUnverified=true noted, deferred — staying verified-only for now.
+-- =====================================================
+
+-- No task status changes — confirmation record + pending seed SQL.
