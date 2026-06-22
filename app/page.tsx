@@ -58,6 +58,12 @@ export default async function Home({ searchParams }: HomeProps) {
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <span className="text-lg font-semibold">Taufik&apos;s Portfolio</span>
           <nav className="flex items-center gap-4 text-sm">
+            <Link
+              href="/vision"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+            >
+              Vision for Malaysia
+            </Link>
             <a
               href="https://github.com/taufikhamid2000"
               target="_blank"
