@@ -15,8 +15,9 @@ export async function submitIdea(formData: FormData) {
   const submitterContact = (formData.get('submitter_contact') as string)?.trim() || null;
   // Honeypot — bots fill hidden fields; humans don't.
   const honeypot = (formData.get('website') as string)?.trim();
+  const localePrefix = (formData.get('locale') as string) === 'ms' ? '/ms' : '';
 
-  const redirectBase = ministrySlug ? `/vision/${ministrySlug}` : '/vision';
+  const redirectBase = ministrySlug ? `${localePrefix}/vision/${ministrySlug}` : `${localePrefix}/vision`;
 
   if (honeypot) {
     // Silently pretend success for bots.

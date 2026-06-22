@@ -42,6 +42,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               >
                 Submissions
               </Link>
+              <Link
+                href="/admin/translations"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+              >
+                Translations
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4 text-sm">

@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getMinistryBySlug, getMinistrySlugs } from '../../../lib/vision';
-import { getSiteUrl } from '../../../lib/site-url';
-import { MinistryDetail } from '../_components/MinistryDetail';
+import { getMinistryBySlug, getMinistrySlugs } from '../../../../lib/vision';
+import { getSiteUrl } from '../../../../lib/site-url';
+import { MinistryDetail } from '../../../vision/_components/MinistryDetail';
 
 export const revalidate = 300;
 
@@ -19,24 +19,24 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const data = await getMinistryBySlug(slug, 'en');
-  if (!data) return { title: 'Ministry not found' };
+  const data = await getMinistryBySlug(slug, 'ms');
+  if (!data) return { title: 'Kementerian tidak dijumpai' };
 
-  const title = `${data.ministry.name} — Software Solutions | Vision for Malaysia`;
-  const description = data.ministry.description ?? `Problems and software ideas for the ${data.ministry.name}.`;
+  const title = `${data.ministry.name} — Penyelesaian Perisian | Wawasan untuk Malaysia`;
+  const description = data.ministry.description ?? `Masalah dan idea perisian untuk ${data.ministry.name}.`;
 
   return {
     title,
     description,
     alternates: {
-      canonical: `${SITE_URL}/vision/${slug}`,
+      canonical: `${SITE_URL}/ms/vision/${slug}`,
       languages: { 'en-MY': `${SITE_URL}/vision/${slug}`, 'ms-MY': `${SITE_URL}/ms/vision/${slug}` },
     },
-    openGraph: { title, description, url: `${SITE_URL}/vision/${slug}`, type: 'article' },
+    openGraph: { title, description, url: `${SITE_URL}/ms/vision/${slug}`, type: 'article' },
   };
 }
 
-export default async function MinistryPage({
+export default async function MsMinistryPage({
   params,
   searchParams,
 }: {
@@ -45,12 +45,12 @@ export default async function MinistryPage({
 }) {
   const { slug } = await params;
   const { submitted, error } = await searchParams;
-  const data = await getMinistryBySlug(slug, 'en');
+  const data = await getMinistryBySlug(slug, 'ms');
   if (!data) notFound();
 
   return (
     <MinistryDetail
-      locale="en"
+      locale="ms"
       slug={slug}
       ministry={data.ministry}
       initiatives={data.initiatives}

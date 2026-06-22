@@ -1,5 +1,6 @@
 import { createClient } from './supabase/server';
 import { createPublicClient } from './supabase/public';
+import type { Locale } from './i18n';
 
 export type InitiativeStatus = 'active' | 'planned' | 'concept';
 export type SubmissionStatus = 'pending' | 'approved' | 'rejected';
@@ -44,8 +45,14 @@ export interface MinistryWithCounts extends Ministry {
   initiative_count: number;
 }
 
-/** All ministries, with a count of their curated initiatives. */
-export async function getMinistries(): Promise<MinistryWithCounts[]> {
+// Pick the localized value, falling back to English when the translation is null.
+function pick(en: string | null, ms: string | null | undefined, locale: Locale): string {
+  if (locale === 'ms' && ms) return ms;
+  return en ?? '';
+}
+
+/** All ministries, with a count of their curated initiatives. Localized to `locale`. */
+export async function getMinistries(locale: Locale = 'en'): Promise<MinistryWithCounts[]> {
   const supabase = createPublicClient();
   const { data, error } = await supabase
     .from('ministries')
@@ -57,14 +64,24 @@ export async function getMinistries(): Promise<MinistryWithCounts[]> {
     return [];
   }
 
-  return (data ?? []).map((m: Ministry & { initiatives: { count: number }[] }) => {
-    const { initiatives, ...rest } = m;
-    return { ...rest, initiative_count: initiatives?.[0]?.count ?? 0 };
-  });
+  return (data ?? []).map(
+    (m: Ministry & { name_ms: string | null; description_ms: string | null; initiatives: { count: number }[] }) => {
+      const { initiatives, name_ms, description_ms, ...rest } = m;
+      return {
+        ...rest,
+        name: pick(m.name, name_ms, locale),
+        description: pick(m.description, description_ms, locale) || null,
+        initiative_count: initiatives?.[0]?.count ?? 0,
+      };
+    }
+  );
 }
 
-/** A single ministry by slug, plus its initiatives (with linked project) and approved public submissions. */
-export async function getMinistryBySlug(slug: string): Promise<{
+/** A single ministry by slug, plus its initiatives (with linked project) and approved public submissions. Localized to `locale`. */
+export async function getMinistryBySlug(
+  slug: string,
+  locale: Locale = 'en'
+): Promise<{
   ministry: Ministry;
   initiatives: Initiative[];
   submissions: Submission[];
@@ -93,9 +110,23 @@ export async function getMinistryBySlug(slug: string): Promise<{
       .order('created_at', { ascending: false }),
   ]);
 
+  const localizedMinistry: Ministry = {
+    ...ministry,
+    name: pick(ministry.name, ministry.name_ms, locale),
+    description: pick(ministry.description, ministry.description_ms, locale) || null,
+  };
+
+  const localizedInitiatives = ((initiatives as (Initiative & { problem_ms: string | null; idea_ms: string | null })[]) ?? []).map(
+    (i) => ({
+      ...i,
+      problem: pick(i.problem, i.problem_ms, locale),
+      idea: pick(i.idea, i.idea_ms, locale),
+    })
+  );
+
   return {
-    ministry,
-    initiatives: (initiatives as Initiative[]) ?? [],
+    ministry: localizedMinistry,
+    initiatives: localizedInitiatives,
     submissions: (submissions as Submission[]) ?? [],
   };
 }

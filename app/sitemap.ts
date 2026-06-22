@@ -9,13 +9,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${base}/`, changeFrequency: 'monthly', priority: 1 },
     { url: `${base}/vision`, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${base}/ms/vision`, changeFrequency: 'weekly', priority: 0.9 },
   ];
 
-  const ministryRoutes: MetadataRoute.Sitemap = slugs.map((slug) => ({
-    url: `${base}/vision/${slug}`,
-    changeFrequency: 'weekly',
-    priority: 0.7,
-  }));
+  const ministryRoutes: MetadataRoute.Sitemap = slugs.flatMap((slug) => [
+    { url: `${base}/vision/${slug}`, changeFrequency: 'weekly' as const, priority: 0.7 },
+    { url: `${base}/ms/vision/${slug}`, changeFrequency: 'weekly' as const, priority: 0.7 },
+  ]);
 
   return [...staticRoutes, ...ministryRoutes];
 }
