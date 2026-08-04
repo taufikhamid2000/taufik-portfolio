@@ -1,48 +1,17 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
-import { getProjects, type Project, type ProjectStatus } from '../lib/projects';
+import { getProjects } from '../lib/projects';
 import { AuthNav } from './_components/auth-nav';
 import { ThemeToggle } from './_components/theme-toggle';
 import Hero3DLoader from './_components/Hero3DLoader';
+import ProjectCardTilt from './_components/ProjectCardTilt';
+import Reveal from './_components/Reveal';
 
 export const revalidate = 60; // re-fetch projects at most once per minute
 
 interface HomeProps {
   searchParams: Promise<{ code?: string; error?: string; error_description?: string }>;
-}
-
-const statusStyles: Record<ProjectStatus, string> = {
-  active: 'bg-green-100 text-green-800 dark:bg-green-500/10 dark:text-green-300',
-  'in-progress': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-300',
-  'in-portfolio': 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-300',
-  concept: 'bg-gray-100 text-gray-800 dark:bg-white/5 dark:text-gray-300',
-  archived: 'bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-400',
-};
-
-const statusLabels: Record<ProjectStatus, string> = {
-  active: 'Active',
-  'in-progress': 'In Progress',
-  'in-portfolio': 'In Portfolio',
-  concept: 'Concept',
-  archived: 'Archived',
-};
-
-// Deterministic gradient per card (no project imagery in the data model
-// yet), so each card gets a distinct visual header instead of a flat box.
-const cardGradients = [
-  'from-indigo-500 to-cyan-400',
-  'from-fuchsia-500 to-orange-400',
-  'from-emerald-500 to-teal-400',
-  'from-violet-500 to-pink-400',
-  'from-amber-500 to-rose-400',
-  'from-sky-500 to-indigo-400',
-];
-
-function gradientForProject(id: string) {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  return cardGradients[hash % cardGradients.length];
 }
 
 export default async function Home({ searchParams }: HomeProps) {
@@ -126,7 +95,10 @@ export default async function Home({ searchParams }: HomeProps) {
           </div>
           <div className="relative z-10 sm:max-w-lg dark:[text-shadow:0_2px_20px_rgba(0,0,0,0.4)]">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
-              Hi, I&apos;m Muhammad Taufik
+              Hi, I&apos;m{' '}
+              <span className="dark:bg-gradient-to-r dark:from-indigo-300 dark:via-cyan-300 dark:to-indigo-300 dark:bg-[length:200%_auto] dark:bg-clip-text dark:text-transparent dark:motion-safe:animate-gradient-shimmer">
+                Muhammad Taufik
+              </span>
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl text-balance">
               I build web and mobile applications. Here are some of the projects I&apos;ve worked on,
@@ -140,10 +112,14 @@ export default async function Home({ searchParams }: HomeProps) {
         ) : (
           <>
             <section className="mb-10">
-              <h2 className="text-2xl font-semibold mb-6">A Few Highlights</h2>
+              <Reveal>
+                <h2 className="text-2xl font-semibold mb-6">A Few Highlights</h2>
+              </Reveal>
               <div className="project-grid grid gap-6 md:grid-cols-2">
-                {highlights.map((project) => (
-                  <ProjectCard key={project.id} project={project} />
+                {highlights.map((project, i) => (
+                  <Reveal key={project.id} delay={i * 80}>
+                    <ProjectCardTilt project={project} />
+                  </Reveal>
                 ))}
               </div>
             </section>
@@ -158,7 +134,7 @@ export default async function Home({ searchParams }: HomeProps) {
                 </summary>
                 <div className="project-grid grid gap-6 md:grid-cols-2 mt-6">
                   {rest.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
+                    <ProjectCardTilt key={project.id} project={project} />
                   ))}
                 </div>
               </details>
@@ -190,65 +166,5 @@ function EmptyState() {
         Go to Admin
       </Link>
     </div>
-  );
-}
-
-function ProjectCard({ project }: { project: Project }) {
-  return (
-    <article className="project-card overflow-hidden border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl transition-[opacity,border-color] hover:border-gray-300 dark:bg-white/[0.03] dark:backdrop-blur-xl dark:hover:border-indigo-400/50 flex flex-col">
-      <div className={`h-20 bg-gradient-to-br ${gradientForProject(project.id)} opacity-80 dark:opacity-70`} aria-hidden="true" />
-      <div className="p-6 flex flex-col flex-grow">
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <h3 className="text-xl font-semibold">{project.name}</h3>
-          <span
-            className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${statusStyles[project.status]}`}
-          >
-            {statusLabels[project.status]}
-          </span>
-        </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{project.tagline}</p>
-        <p className="text-sm mb-4 flex-grow">{project.description}</p>
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {project.tech.map((t) => (
-            <span
-              key={t}
-              className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-        <div className="flex gap-3 text-sm">
-          {project.github_url && (
-            <a
-              href={project.github_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 dark:text-cyan-300 hover:underline"
-            >
-              GitHub &rarr;
-            </a>
-          )}
-          {project.demo_url && (
-            <a
-              href={project.demo_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 dark:text-cyan-300 hover:underline"
-            >
-              Live Demo &rarr;
-            </a>
-          )}
-          {!project.github_url && !project.demo_url && (
-            <Link
-              href={`/projects/${project.name}`}
-              className="text-blue-600 dark:text-cyan-300 hover:underline"
-            >
-              View in Portfolio &rarr;
-            </Link>
-          )}
-        </div>
-      </div>
-    </article>
   );
 }

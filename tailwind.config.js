@@ -14,13 +14,18 @@ module.exports = {
       },
       animation: {
         glow: 'glow 1.5s infinite',
+        'gradient-shimmer': 'gradient-shimmer 4s ease-in-out infinite',
       },
       keyframes: {
         glow: {
           '0%, 100%': { boxShadow: '1 0 10px rgba(34, 197, 94, 0.4)' },
           '50%': { boxShadow: '0 0 30px rgba(34, 197, 94, 0.8)' },
         },
-      },      
+        'gradient-shimmer': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+      },
     },
   },
   plugins: [],
