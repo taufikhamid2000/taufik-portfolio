@@ -7,6 +7,7 @@ import { ThemeToggle } from './_components/theme-toggle';
 import Hero3DLoader from './_components/Hero3DLoader';
 import ProjectCardTilt from './_components/ProjectCardTilt';
 import Reveal from './_components/Reveal';
+import TextScramble from './_components/TextScramble';
 
 export const revalidate = 60; // re-fetch projects at most once per minute
 
@@ -96,9 +97,10 @@ export default async function Home({ searchParams }: HomeProps) {
           <div className="relative z-10 sm:max-w-lg dark:[text-shadow:0_2px_20px_rgba(0,0,0,0.4)]">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
               Hi, I&apos;m{' '}
-              <span className="dark:bg-gradient-to-r dark:from-indigo-300 dark:via-cyan-300 dark:to-indigo-300 dark:bg-[length:200%_auto] dark:bg-clip-text dark:text-transparent dark:motion-safe:animate-gradient-shimmer">
-                Muhammad Taufik
-              </span>
+              <TextScramble
+                text="Muhammad Taufik"
+                className="dark:bg-gradient-to-r dark:from-indigo-300 dark:via-cyan-300 dark:to-indigo-300 dark:bg-[length:200%_auto] dark:bg-clip-text dark:text-transparent dark:motion-safe:animate-gradient-shimmer"
+              />
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl text-balance">
               I build web and mobile applications. Here are some of the projects I&apos;ve worked on,

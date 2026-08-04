@@ -31,3 +31,12 @@ body {
   opacity: 0.55;
 }
 
+/* CustomCursor replaces the system cursor when active (see component
+   for the gating: dark mode, fine pointer, motion-safe only). */
+.custom-cursor-active,
+.custom-cursor-active a,
+.custom-cursor-active button,
+.custom-cursor-active summary {
+  cursor: none;
+}
+

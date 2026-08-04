@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "./_components/theme-provider";
 import CursorGlow from "./_components/CursorGlow";
+import CustomCursor from "./_components/CustomCursor";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -37,6 +38,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <CursorGlow />
+          <CustomCursor />
           {children}
         </ThemeProvider>
       </body>
