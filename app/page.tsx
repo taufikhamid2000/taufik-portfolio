@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 import { getProjects, type Project, type ProjectStatus } from '../lib/projects';
-import { createClient } from '../lib/supabase/server';
+import { AuthNav } from './_components/auth-nav';
 import { ThemeToggle } from './_components/theme-toggle';
 
 export const revalidate = 60; // re-fetch projects at most once per minute
@@ -44,10 +45,6 @@ export default async function Home({ searchParams }: HomeProps) {
   }
 
   const projects = await getProjects();
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   const featured = projects.filter((p) => p.featured);
   const others = projects.filter((p) => !p.featured);
@@ -72,21 +69,9 @@ export default async function Home({ searchParams }: HomeProps) {
             >
               GitHub &rarr;
             </a>
-            {user ? (
-              <Link
-                href="/admin"
-                className="text-blue-600 dark:text-blue-400 hover:underline"
-              >
-                Admin
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className="text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-              >
-                Sign in
-              </Link>
-            )}
+            <Suspense fallback={null}>
+              <AuthNav />
+            </Suspense>
             <ThemeToggle />
           </nav>
         </div>

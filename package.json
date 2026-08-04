@@ -12,7 +12,7 @@
     "@anthropic-ai/sdk": "^0.105.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.46.1",
-    "next": "^16.3.0-canary.45",
+    "next": "16.3.0",
     "next-themes": "^0.4.6",
     "react": "^18",
     "react-dom": "^18"
@@ -24,7 +24,7 @@
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.39.4",
-    "eslint-config-next": "^16.3.0-canary.45",
+    "eslint-config-next": "16.3.0",
     "jiti": "^2.3.3",
     "postcss": "^8.4.47",
     "supabase": "^2.101.0",
