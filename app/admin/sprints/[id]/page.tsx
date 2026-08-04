@@ -75,14 +75,14 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
       <div className="mb-6">
         <Link
           href="/admin/sprints"
-          className="text-sm text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100"
+          className="text-sm text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-cyan-300"
         >
           &larr; Back to sprints
         </Link>
       </div>
 
       {/* Sprint header card */}
-      <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-6 mb-8">
+      <div className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl p-6 mb-8">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div>
             <div className="flex items-center gap-3 mb-1">
@@ -97,7 +97,7 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
           </div>
           <Link
             href={`/admin/sprints/${id}/edit`}
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-sm text-blue-600 dark:text-cyan-300 hover:underline"
           >
             Edit
           </Link>
@@ -109,7 +109,7 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
           <span>{done} of {total} tasks done</span>
           <span>{progress}%</span>
         </div>
-        <div className="mt-2 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+        <div className="mt-2 h-1.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
           <div className="h-full bg-green-500 dark:bg-green-600 transition-all" style={{ width: `${progress}%` }} />
         </div>
       </div>
@@ -123,7 +123,7 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
       {/* Add task form */}
       <form
         action={createTaskAction.bind(null, id)}
-        className="mb-8 border border-gray-200 dark:border-gray-800 rounded-lg p-4 flex flex-wrap items-end gap-3"
+        className="mb-8 border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl p-4 flex flex-wrap items-end gap-3"
       >
         <div className="flex-1 min-w-[200px]">
           <label htmlFor="title" className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
@@ -135,7 +135,7 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
             type="text"
             required
             placeholder="What needs to be done?"
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-cyan-400"
           />
         </div>
         <div>
@@ -145,7 +145,7 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
           <select
             id="project_id"
             name="project_id"
-            className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+            className="px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5"
           >
             <option value="">— None —</option>
             {projects.map((p) => (
@@ -161,7 +161,7 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
             id="priority"
             name="priority"
             defaultValue="medium"
-            className="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+            className="px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5"
           >
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -179,7 +179,7 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
             type="number"
             min="0"
             placeholder="pts"
-            className="w-20 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+            className="w-20 px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5"
           />
         </div>
         <button
@@ -195,7 +195,7 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
         {COLUMNS.map((col) => (
           <div
             key={col.status}
-            className="border border-gray-200 dark:border-gray-800 rounded-lg p-3 min-h-[200px] bg-gray-50/50 dark:bg-gray-900/30"
+            className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl p-3 min-h-[200px] bg-gray-50/50 dark:bg-white/[0.02] dark:backdrop-blur-xl"
           >
             <div className="flex items-center justify-between mb-3 px-1">
               <h3 className="font-semibold text-sm">{col.title}</h3>
@@ -223,7 +223,7 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
 
 function TaskCard({ task, sprintId }: { task: TaskWithProject; sprintId: string }) {
   return (
-    <article className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-md p-3 text-sm">
+    <article className="bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 rounded-md dark:rounded-xl p-3 text-sm dark:backdrop-blur-xl">
       <p className="font-medium mb-2 break-words">{task.title}</p>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         {task.project && (

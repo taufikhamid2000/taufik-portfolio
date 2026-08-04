@@ -47,7 +47,7 @@ export default async function SprintsPage({ searchParams }: SprintsPageProps) {
       )}
 
       {sprints.length === 0 ? (
-        <div className="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-12 text-center">
+        <div className="border border-dashed border-gray-300 dark:border-white/15 rounded-lg dark:rounded-2xl dark:bg-white/[0.02] dark:backdrop-blur-xl p-12 text-center">
           <p className="text-gray-600 dark:text-gray-400 mb-4">
             No sprints yet. Plan your first one.
           </p>
@@ -66,7 +66,7 @@ export default async function SprintsPage({ searchParams }: SprintsPageProps) {
               <Link
                 key={s.id}
                 href={`/admin/sprints/${s.id}`}
-                className="block border border-gray-200 dark:border-gray-800 rounded-lg p-5 hover:border-gray-300 dark:hover:border-gray-700 transition-colors"
+                className="block border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl p-5 hover:border-gray-300 dark:hover:border-indigo-400/50 transition-colors"
               >
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <h2 className="font-semibold">{s.name}</h2>
@@ -86,7 +86,7 @@ export default async function SprintsPage({ searchParams }: SprintsPageProps) {
                   <span>{s.done_count} / {s.task_count} done</span>
                   <span>{progress}%</span>
                 </div>
-                <div className="mt-2 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                <div className="mt-2 h-1.5 bg-gray-100 dark:bg-white/10 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-green-500 dark:bg-green-600 transition-all"
                     style={{ width: `${progress}%` }}

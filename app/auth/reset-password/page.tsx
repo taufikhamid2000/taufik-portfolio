@@ -10,18 +10,30 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
   const { error, message } = await searchParams;
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 flex flex-col">
-      <header className="border-b border-gray-200 dark:border-gray-800">
+    <div className="relative min-h-screen overflow-hidden bg-white text-gray-900 dark:bg-[#0a0a0f] dark:text-gray-100 flex flex-col">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-40 left-1/2 hidden h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-indigo-500/20 blur-[120px] dark:block"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-[-10%] top-[20%] hidden h-96 w-96 rounded-full bg-cyan-400/10 blur-[110px] dark:block"
+      />
+
+      <header className="relative z-10 border-b border-gray-200 dark:border-white/10">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold">
+          <Link
+            href="/"
+            className="text-lg font-semibold dark:bg-gradient-to-r dark:from-indigo-300 dark:to-cyan-300 dark:bg-clip-text dark:text-transparent"
+          >
             Taufik&apos;s Portfolio
           </Link>
           <ThemeToggle />
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-6 py-16">
-        <div className="w-full max-w-sm">
+      <main className="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
+        <div className="w-full max-w-sm dark:rounded-2xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-8 dark:backdrop-blur-xl">
           <h1 className="text-2xl font-bold mb-2">Reset password</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-8">
             Enter your email and we&apos;ll send you a link to set a new password.
@@ -49,7 +61,7 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
                 type="email"
                 required
                 autoComplete="email"
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-cyan-400"
               />
             </div>
             <button
@@ -61,7 +73,7 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
           </form>
 
           <p className="mt-6 text-xs text-center text-gray-500 dark:text-gray-500">
-            <Link href="/login" className="hover:underline">
+            <Link href="/login" className="hover:underline dark:hover:text-cyan-300">
               &larr; Back to sign in
             </Link>
           </p>

@@ -18,7 +18,10 @@ const STATUSES: { value: ProjectStatus; label: string }[] = [
 
 export function ProjectForm({ project, action, submitLabel, error }: ProjectFormProps) {
   return (
-    <form action={action} className="space-y-6 max-w-2xl">
+    <form
+      action={action}
+      className="space-y-6 max-w-2xl dark:rounded-2xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-8 dark:backdrop-blur-xl"
+    >
       {error && (
         <div className="p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300">
           {error}
@@ -133,12 +136,12 @@ export function ProjectForm({ project, action, submitLabel, error }: ProjectForm
           type="checkbox"
           name="featured"
           defaultChecked={project?.featured}
-          className="w-4 h-4 rounded border-gray-300 dark:border-gray-700"
+          className="w-4 h-4 rounded border-gray-300 dark:border-white/20"
         />
         <span className="text-sm">Featured (shown at the top of the portfolio)</span>
       </label>
 
-      <div className="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-white/10">
         <button
           type="submit"
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
@@ -147,7 +150,7 @@ export function ProjectForm({ project, action, submitLabel, error }: ProjectForm
         </button>
         <Link
           href="/admin"
-          className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 text-sm"
+          className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-cyan-300 text-sm"
         >
           Cancel
         </Link>
@@ -157,7 +160,7 @@ export function ProjectForm({ project, action, submitLabel, error }: ProjectForm
 }
 
 const inputClasses =
-  'w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent';
+  'w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-cyan-400 focus:border-transparent';
 
 function Field({
   label,

@@ -16,35 +16,52 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-      <header className="border-b border-gray-200 dark:border-gray-800">
+    <div className="relative min-h-screen overflow-hidden bg-white text-gray-900 dark:bg-[#0a0a0f] dark:text-gray-100">
+      {/* Ambient glow orbs — dark mode only. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-40 left-1/2 hidden h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-indigo-500/20 blur-[120px] dark:block"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-[-10%] top-[20%] hidden h-96 w-96 rounded-full bg-cyan-400/10 blur-[110px] dark:block"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-[-10%] left-[-10%] hidden h-96 w-96 rounded-full bg-emerald-400/10 blur-[110px] dark:block"
+      />
+
+      <header className="relative z-10 border-b border-gray-200 dark:border-white/10">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link href="/" className="text-lg font-semibold">
+            <Link
+              href="/"
+              className="text-lg font-semibold dark:bg-gradient-to-r dark:from-indigo-300 dark:to-cyan-300 dark:bg-clip-text dark:text-transparent"
+            >
               Taufik&apos;s Portfolio
             </Link>
             <nav className="flex items-center gap-4 text-sm">
               <Link
                 href="/admin"
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-cyan-300"
               >
                 Projects
               </Link>
               <Link
                 href="/admin/sprints"
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-cyan-300"
               >
                 Sprints
               </Link>
               <Link
                 href="/admin/submissions"
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-cyan-300"
               >
                 Submissions
               </Link>
               <Link
                 href="/admin/translations"
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-cyan-300"
               >
                 Translations
               </Link>
@@ -57,7 +74,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <form action={signOut}>
               <button
                 type="submit"
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-cyan-300"
               >
                 Sign out
               </button>
@@ -66,7 +83,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </div>
         </div>
       </header>
-      <main className="max-w-5xl mx-auto px-6 py-10">{children}</main>
+      <main className="relative z-10 max-w-5xl mx-auto px-6 py-10">{children}</main>
     </div>
   );
 }

@@ -39,7 +39,7 @@ export default async function TranslationsPage({
         </div>
       )}
 
-      <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-6">
+      <div className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl p-6">
         <p className="text-sm mb-4">
           {pending === 0
             ? 'All content is translated. ✓'

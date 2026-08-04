@@ -23,7 +23,7 @@ export default async function EditSprintPage({ params, searchParams }: EditSprin
         <div>
           <Link
             href={`/admin/sprints/${id}`}
-            className="text-sm text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100"
+            className="text-sm text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-cyan-300"
           >
             &larr; Back to sprint
           </Link>
@@ -32,7 +32,7 @@ export default async function EditSprintPage({ params, searchParams }: EditSprin
         <form action={remove}>
           <button
             type="submit"
-            className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/40 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+            className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10"
           >
             Delete sprint
           </button>

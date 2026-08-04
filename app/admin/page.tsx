@@ -41,7 +41,7 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
       )}
 
       {projects.length === 0 ? (
-        <div className="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-12 text-center">
+        <div className="border border-dashed border-gray-300 dark:border-white/15 rounded-lg dark:rounded-2xl dark:bg-white/[0.02] dark:backdrop-blur-xl p-12 text-center">
           <p className="text-gray-600 dark:text-gray-400 mb-4">
             No projects yet. Add your first one.
           </p>
@@ -53,9 +53,9 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
           </Link>
         </div>
       ) : (
-        <div className="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+        <div className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+            <thead className="bg-gray-50 dark:bg-white/[0.04] border-b border-gray-200 dark:border-white/10">
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Order</th>
                 <th className="text-left px-4 py-3 font-medium">Name</th>
@@ -68,7 +68,7 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
               {projects.map((project) => (
                 <tr
                   key={project.id}
-                  className="border-b border-gray-200 dark:border-gray-800 last:border-0"
+                  className="border-b border-gray-200 dark:border-white/10 last:border-0"
                 >
                   <td className="px-4 py-3 text-gray-500 dark:text-gray-500 tabular-nums">
                     {project.display_order}
@@ -99,7 +99,7 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
                     <div className="flex justify-end gap-3">
                       <Link
                         href={`/admin/${project.id}/edit`}
-                        className="text-blue-600 dark:text-blue-400 hover:underline"
+                        className="text-blue-600 dark:text-cyan-300 hover:underline"
                       >
                         Edit
                       </Link>

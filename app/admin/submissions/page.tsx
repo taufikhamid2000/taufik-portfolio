@@ -58,7 +58,7 @@ function SubmissionCard({
   pending: boolean;
 }) {
   return (
-    <article className="border border-gray-200 dark:border-gray-800 rounded-lg p-5">
+    <article className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="text-sm text-gray-500 dark:text-gray-400">
           {s.ministry?.name ?? 'No ministry specified'}
@@ -87,7 +87,7 @@ function SubmissionCard({
             </form>
             <form action={rejectSubmission}>
               <input type="hidden" name="id" value={s.id} />
-              <button type="submit" className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors">Reject</button>
+              <button type="submit" className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">Reject</button>
             </form>
           </>
         )}
