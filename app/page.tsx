@@ -12,11 +12,11 @@ interface HomeProps {
 }
 
 const statusStyles: Record<ProjectStatus, string> = {
-  active: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
-  'in-progress': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
-  'in-portfolio': 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
-  concept: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
-  archived: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+  active: 'bg-green-100 text-green-800 dark:bg-green-500/10 dark:text-green-300',
+  'in-progress': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-300',
+  'in-portfolio': 'bg-blue-100 text-blue-800 dark:bg-blue-500/10 dark:text-blue-300',
+  concept: 'bg-gray-100 text-gray-800 dark:bg-white/5 dark:text-gray-300',
+  archived: 'bg-gray-100 text-gray-600 dark:bg-white/5 dark:text-gray-400',
 };
 
 const statusLabels: Record<ProjectStatus, string> = {
@@ -50,10 +50,26 @@ export default async function Home({ searchParams }: HomeProps) {
   const others = projects.filter((p) => !p.featured);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-      <header className="border-b border-gray-200 dark:border-gray-800">
+    <div className="relative min-h-screen overflow-hidden bg-white text-gray-900 dark:bg-[#0a0a0f] dark:text-gray-100">
+      {/* Ambient glow orbs — dark mode only. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-40 left-1/2 hidden h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-indigo-500/20 blur-[120px] dark:block"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-[-10%] top-[20%] hidden h-96 w-96 rounded-full bg-cyan-400/10 blur-[110px] dark:block"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-[-10%] left-[-10%] hidden h-96 w-96 rounded-full bg-emerald-400/10 blur-[110px] dark:block"
+      />
+
+      <header className="relative z-10 border-b border-gray-200 dark:border-white/10">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
-          <span className="text-lg font-semibold">Taufik&apos;s Portfolio</span>
+          <span className="text-lg font-semibold dark:bg-gradient-to-r dark:from-indigo-300 dark:to-cyan-300 dark:bg-clip-text dark:text-transparent">
+            Taufik&apos;s Portfolio
+          </span>
           <nav className="flex items-center gap-4 text-sm">
             <Link
               href="/vision"
@@ -77,8 +93,8 @@ export default async function Home({ searchParams }: HomeProps) {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-16">
-        <section className="mb-16">
+      <main className="relative z-10 max-w-5xl mx-auto px-6 py-16">
+        <section className="mb-16 dark:rounded-3xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-10 dark:backdrop-blur-xl">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
             Hi, I&apos;m Muhammad Taufik
           </h1>
@@ -117,7 +133,7 @@ export default async function Home({ searchParams }: HomeProps) {
         )}
       </main>
 
-      <footer className="border-t border-gray-200 dark:border-gray-800 mt-16">
+      <footer className="relative z-10 border-t border-gray-200 dark:border-white/10 mt-16">
         <div className="max-w-5xl mx-auto px-6 py-8 text-sm text-gray-600 dark:text-gray-400">
           Built with Next.js &amp; Tailwind CSS. &copy; {new Date().getFullYear()} Muhammad Taufik Bin Hamid.
         </div>
@@ -128,7 +144,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
 function EmptyState() {
   return (
-    <div className="border border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-12 text-center">
+    <div className="border border-dashed border-gray-300 dark:border-white/15 rounded-lg dark:rounded-2xl p-12 text-center dark:bg-white/[0.02] dark:backdrop-blur-xl">
       <h2 className="text-xl font-semibold mb-2">No projects yet</h2>
       <p className="text-gray-600 dark:text-gray-400 mb-4">
         Add your first project from the admin panel.
@@ -145,7 +161,7 @@ function EmptyState() {
 
 function ProjectCard({ project }: { project: Project }) {
   return (
-    <article className="border border-gray-200 dark:border-gray-800 rounded-lg p-6 hover:border-gray-300 dark:hover:border-gray-700 transition-colors flex flex-col">
+    <article className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl p-6 transition-colors hover:border-gray-300 dark:bg-white/[0.03] dark:backdrop-blur-xl dark:hover:border-indigo-400/50 flex flex-col">
       <div className="flex items-start justify-between gap-3 mb-2">
         <h3 className="text-xl font-semibold">{project.name}</h3>
         <span
@@ -160,7 +176,7 @@ function ProjectCard({ project }: { project: Project }) {
         {project.tech.map((t) => (
           <span
             key={t}
-            className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+            className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300"
           >
             {t}
           </span>
@@ -172,7 +188,7 @@ function ProjectCard({ project }: { project: Project }) {
             href={project.github_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-blue-600 dark:text-cyan-300 hover:underline"
           >
             GitHub &rarr;
           </a>
@@ -182,7 +198,7 @@ function ProjectCard({ project }: { project: Project }) {
             href={project.demo_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-blue-600 dark:text-cyan-300 hover:underline"
           >
             Live Demo &rarr;
           </a>
@@ -190,7 +206,7 @@ function ProjectCard({ project }: { project: Project }) {
         {!project.github_url && !project.demo_url && (
           <Link
             href={`/projects/${project.name}`}
-            className="text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-blue-600 dark:text-cyan-300 hover:underline"
           >
             View in Portfolio &rarr;
           </Link>
