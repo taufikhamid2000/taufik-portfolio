@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { getProjects, type Project, type ProjectStatus } from '../lib/projects';
 import { AuthNav } from './_components/auth-nav';
 import { ThemeToggle } from './_components/theme-toggle';
+import Hero3DLoader from './_components/Hero3DLoader';
 
 export const revalidate = 60; // re-fetch projects at most once per minute
 
@@ -119,14 +120,19 @@ export default async function Home({ searchParams }: HomeProps) {
       </header>
 
       <main className="relative z-10 max-w-5xl mx-auto px-6 py-16">
-        <section className="mb-16 dark:rounded-3xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-10 dark:backdrop-blur-xl">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
-            Hi, I&apos;m Muhammad Taufik
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl text-balance">
-            I build web and mobile applications. Here are some of the projects I&apos;ve worked on,
-            ranging from full-stack platforms to mobile apps and concept prototypes.
-          </p>
+        <section className="relative mb-16 overflow-hidden dark:rounded-3xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-10 dark:backdrop-blur-xl">
+          <div aria-hidden="true" className="absolute inset-0 hidden dark:motion-safe:block">
+            <Hero3DLoader />
+          </div>
+          <div className="relative z-10 sm:max-w-lg dark:[text-shadow:0_2px_20px_rgba(0,0,0,0.4)]">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
+              Hi, I&apos;m Muhammad Taufik
+            </h1>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl text-balance">
+              I build web and mobile applications. Here are some of the projects I&apos;ve worked on,
+              ranging from full-stack platforms to mobile apps and concept prototypes.
+            </p>
+          </div>
         </section>
 
         {projects.length === 0 ? (
