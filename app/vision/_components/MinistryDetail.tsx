@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { ThemeToggle } from '../../_components/theme-toggle';
+import Reveal from '../../_components/Reveal';
+import TiltWrapper from '../../_components/TiltWrapper';
 import { submitIdea } from '../actions';
 import { dict, localePrefix, type Locale } from '../../../lib/i18n';
 import type { Ministry, Initiative, Submission } from '../../../lib/vision';
@@ -61,42 +63,50 @@ export function MinistryDetail({
       </header>
 
       <main className="relative z-10 max-w-3xl mx-auto px-6 py-12">
-        <section className="mb-10 dark:rounded-3xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-10 dark:backdrop-blur-xl">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3 text-balance">{ministry.name}</h1>
-          {ministry.description && (
-            <p className="text-lg text-gray-600 dark:text-gray-400 text-balance">{ministry.description}</p>
-          )}
-        </section>
+        <Reveal>
+          <section className="mb-10 dark:rounded-3xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-10 dark:backdrop-blur-xl">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3 text-balance">{ministry.name}</h1>
+            {ministry.description && (
+              <p className="text-lg text-gray-600 dark:text-gray-400 text-balance">{ministry.description}</p>
+            )}
+          </section>
+        </Reveal>
 
         <section className="mb-12">
-          <h2 className="text-xl font-semibold mb-4">{t.problemsAndIdeas}</h2>
+          <Reveal>
+            <h2 className="text-xl font-semibold mb-4">{t.problemsAndIdeas}</h2>
+          </Reveal>
           {initiatives.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-white/15 rounded-lg dark:rounded-2xl dark:bg-white/[0.02] dark:backdrop-blur-xl p-6">
               {t.noInitiatives}
             </p>
           ) : (
             <div className="space-y-4">
-              {initiatives.map((i) => (
-                <article key={i.id} className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl p-5">
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <h3 className="font-semibold">{t.problem}</h3>
-                    <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${statusStyles[i.status]}`}>{i.status}</span>
-                  </div>
-                  <p className="text-sm mb-3 text-gray-700 dark:text-gray-300">{i.problem}</p>
-                  <h3 className="font-semibold mb-1">{t.idea}</h3>
-                  <p className="text-sm mb-3 text-gray-700 dark:text-gray-300">{i.idea}</p>
-                  {i.project && (
-                    <div className="flex flex-wrap items-center gap-3 text-sm pt-2 border-t border-gray-100 dark:border-white/10">
-                      <span className="text-gray-500 dark:text-gray-400">{t.poweredBy} <span className="font-medium text-gray-700 dark:text-gray-300">{i.project.name}</span></span>
-                      {i.project.github_url && (
-                        <a href={i.project.github_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-cyan-300 hover:underline">GitHub →</a>
+              {initiatives.map((i, idx) => (
+                <Reveal key={i.id} delay={idx * 80}>
+                  <TiltWrapper className="rounded-lg dark:rounded-2xl">
+                    <article className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl p-5">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <h3 className="font-semibold">{t.problem}</h3>
+                        <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${statusStyles[i.status]}`}>{i.status}</span>
+                      </div>
+                      <p className="text-sm mb-3 text-gray-700 dark:text-gray-300">{i.problem}</p>
+                      <h3 className="font-semibold mb-1">{t.idea}</h3>
+                      <p className="text-sm mb-3 text-gray-700 dark:text-gray-300">{i.idea}</p>
+                      {i.project && (
+                        <div className="flex flex-wrap items-center gap-3 text-sm pt-2 border-t border-gray-100 dark:border-white/10">
+                          <span className="text-gray-500 dark:text-gray-400">{t.poweredBy} <span className="font-medium text-gray-700 dark:text-gray-300">{i.project.name}</span></span>
+                          {i.project.github_url && (
+                            <a href={i.project.github_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-cyan-300 hover:underline">GitHub →</a>
+                          )}
+                          {i.project.demo_url && (
+                            <a href={i.project.demo_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-cyan-300 hover:underline">Demo →</a>
+                          )}
+                        </div>
                       )}
-                      {i.project.demo_url && (
-                        <a href={i.project.demo_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-cyan-300 hover:underline">Demo →</a>
-                      )}
-                    </div>
-                  )}
-                </article>
+                    </article>
+                  </TiltWrapper>
+                </Reveal>
               ))}
             </div>
           )}
@@ -104,14 +114,20 @@ export function MinistryDetail({
 
         {submissions.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-xl font-semibold mb-4">{t.fromCommunity}</h2>
+            <Reveal>
+              <h2 className="text-xl font-semibold mb-4">{t.fromCommunity}</h2>
+            </Reveal>
             <div className="space-y-4">
-              {submissions.map((s) => (
-                <article key={s.id} className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl p-5 bg-gray-50 dark:bg-white/[0.02] dark:backdrop-blur-xl">
-                  <p className="text-sm mb-2 text-gray-700 dark:text-gray-300"><span className="font-semibold">{t.problem}:</span> {s.problem}</p>
-                  <p className="text-sm text-gray-700 dark:text-gray-300"><span className="font-semibold">{t.idea}:</span> {s.idea}</p>
-                  {s.submitter_name && <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">— {s.submitter_name}</p>}
-                </article>
+              {submissions.map((s, idx) => (
+                <Reveal key={s.id} delay={idx * 80}>
+                  <TiltWrapper className="rounded-lg dark:rounded-2xl">
+                    <article className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl p-5 bg-gray-50 dark:bg-white/[0.02] dark:backdrop-blur-xl">
+                      <p className="text-sm mb-2 text-gray-700 dark:text-gray-300"><span className="font-semibold">{t.problem}:</span> {s.problem}</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300"><span className="font-semibold">{t.idea}:</span> {s.idea}</p>
+                      {s.submitter_name && <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">— {s.submitter_name}</p>}
+                    </article>
+                  </TiltWrapper>
+                </Reveal>
               ))}
             </div>
           </section>
