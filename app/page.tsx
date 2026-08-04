@@ -8,6 +8,7 @@ import Hero3DLoader from './_components/Hero3DLoader';
 import ProjectCardTilt from './_components/ProjectCardTilt';
 import Reveal from './_components/Reveal';
 import TextScramble from './_components/TextScramble';
+import ExpandProjects from './_components/ExpandProjects';
 
 export const revalidate = 60; // re-fetch projects at most once per minute
 
@@ -127,19 +128,15 @@ export default async function Home({ searchParams }: HomeProps) {
             </section>
 
             {rest.length > 0 && (
-              <details className="group mb-16">
-                <summary className="cursor-pointer select-none list-none text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors inline-flex items-center gap-1.5">
-                  <span className="inline-block transition-transform group-open:rotate-90">
-                    &rsaquo;
-                  </span>
-                  View all projects ({rest.length} more)
-                </summary>
-                <div className="project-grid grid gap-6 md:grid-cols-2 mt-6">
-                  {rest.map((project) => (
-                    <ProjectCardTilt key={project.id} project={project} />
+              <ExpandProjects count={rest.length}>
+                <div className="project-grid grid gap-6 md:grid-cols-2">
+                  {rest.map((project, i) => (
+                    <Reveal key={project.id} delay={i * 80}>
+                      <ProjectCardTilt project={project} />
+                    </Reveal>
                   ))}
                 </div>
-              </details>
+              </ExpandProjects>
             )}
           </>
         )}

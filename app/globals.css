@@ -40,3 +40,16 @@ body {
   cursor: none;
 }
 
+/* ExpandProjects confetti burst — one shared keyframe, per-particle
+   trajectory driven by --tx/--ty/--rot custom properties. */
+@keyframes confetti-burst {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
