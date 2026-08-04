@@ -63,8 +63,16 @@ export default async function Home({ searchParams }: HomeProps) {
 
   const projects = await getProjects();
 
-  const featured = projects.filter((p) => p.featured);
-  const others = projects.filter((p) => !p.featured);
+  // Show only a handful of highlights up front — a wall of every project
+  // reads like a task list to review rather than a curated showcase.
+  // Prefer `featured` projects; if fewer than HIGHLIGHT_COUNT are marked
+  // featured, fill the remaining slots from the rest by display order.
+  const HIGHLIGHT_COUNT = 3;
+  const featuredProjects = projects.filter((p) => p.featured);
+  const restProjects = projects.filter((p) => !p.featured);
+  const highlights = [...featuredProjects, ...restProjects].slice(0, HIGHLIGHT_COUNT);
+  const highlightIds = new Set(highlights.map((p) => p.id));
+  const rest = projects.filter((p) => !highlightIds.has(p.id));
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-white text-gray-900 dark:bg-[#0a0a0f] dark:text-gray-100">
@@ -125,26 +133,29 @@ export default async function Home({ searchParams }: HomeProps) {
           <EmptyState />
         ) : (
           <>
-            {featured.length > 0 && (
-              <section className="mb-16">
-                <h2 className="text-2xl font-semibold mb-6">Featured</h2>
-                <div className="project-grid grid gap-6 md:grid-cols-2">
-                  {featured.map((project) => (
-                    <ProjectCard key={project.id} project={project} />
-                  ))}
-                </div>
-              </section>
-            )}
+            <section className="mb-10">
+              <h2 className="text-2xl font-semibold mb-6">A Few Highlights</h2>
+              <div className="project-grid grid gap-6 md:grid-cols-2">
+                {highlights.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            </section>
 
-            {others.length > 0 && (
-              <section>
-                <h2 className="text-2xl font-semibold mb-6">All Projects</h2>
-                <div className="project-grid grid gap-6 md:grid-cols-2">
-                  {others.map((project) => (
+            {rest.length > 0 && (
+              <details className="group mb-16">
+                <summary className="cursor-pointer select-none list-none text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors inline-flex items-center gap-1.5">
+                  <span className="inline-block transition-transform group-open:rotate-90">
+                    &rsaquo;
+                  </span>
+                  View all projects ({rest.length} more)
+                </summary>
+                <div className="project-grid grid gap-6 md:grid-cols-2 mt-6">
+                  {rest.map((project) => (
                     <ProjectCard key={project.id} project={project} />
                   ))}
                 </div>
-              </section>
+              </details>
             )}
           </>
         )}
