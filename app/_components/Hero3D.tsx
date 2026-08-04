@@ -1,51 +1,9 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { MeshDistortMaterial, Icosahedron } from '@react-three/drei';
-import * as THREE from 'three';
+import { useEffect, useRef } from 'react';
 
-/**
- * Distorted wireframe sphere that drifts on its own and gently leans
- * toward the pointer — the hero's signature "wow" element. Kept to a
- * single low-poly mesh + a scattered point cloud so it stays light on
- * the GPU despite the visual presence.
- */
-function DistortedBlob() {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const { viewport } = useThree();
-
-  useFrame((state) => {
-    if (!meshRef.current) return;
-    const t = state.clock.getElapsedTime();
-    meshRef.current.rotation.x = t * 0.08;
-    meshRef.current.rotation.y = t * 0.12;
-
-    // Lean toward the pointer, normalized to viewport so it works at any size.
-    const targetX = (state.pointer.x * viewport.width) / 8;
-    const targetY = (state.pointer.y * viewport.height) / 8;
-    meshRef.current.rotation.z += (targetX * 0.02 - meshRef.current.rotation.z) * 0.05;
-    meshRef.current.position.x += (targetX * 0.15 - meshRef.current.position.x) * 0.05;
-    meshRef.current.position.y += (targetY * 0.15 - meshRef.current.position.y) * 0.05;
-  });
-
-  return (
-    <Icosahedron ref={meshRef} args={[1.8, 6]}>
-      <MeshDistortMaterial
-        color="#7c8cff"
-        attach="material"
-        distort={0.45}
-        speed={1.4}
-        roughness={0.15}
-        metalness={0.6}
-        wireframe
-      />
-    </Icosahedron>
-  );
-}
-
-// Deterministic PRNG (mulberry32) — a fixed seed keeps particle layout
-// stable across renders instead of calling the impure Math.random.
+// Deterministic PRNG (mulberry32) so the initial layout is stable
+// across renders instead of relying on Math.random in render.
 function mulberry32(seed: number) {
   let a = seed;
   return () => {
@@ -57,52 +15,145 @@ function mulberry32(seed: number) {
   };
 }
 
-function ParticleField() {
-  const pointsRef = useRef<THREE.Points>(null);
-  const positions = useMemo(() => {
-    const count = 220;
-    const rand = mulberry32(1337);
-    const arr = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      arr[i * 3] = (rand() - 0.5) * 12;
-      arr[i * 3 + 1] = (rand() - 0.5) * 12;
-      arr[i * 3 + 2] = (rand() - 0.5) * 6 - 2;
-    }
-    return arr;
-  }, []);
-
-  useFrame((state) => {
-    if (!pointsRef.current) return;
-    pointsRef.current.rotation.y = state.clock.getElapsedTime() * 0.02;
-  });
-
-  return (
-    <points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={positions.length / 3}
-          array={positions}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial color="#5eead4" size={0.035} sizeAttenuation transparent opacity={0.6} />
-    </points>
-  );
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
 }
 
+const PARTICLE_COUNT = 70;
+const LINK_DISTANCE = 130;
+const CURSOR_RADIUS = 140;
+
+/**
+ * Plain-canvas interactive particle constellation for the hero — nodes
+ * drift, link to nearby neighbors, and get pushed away from the pointer.
+ * Deliberately built without a WebGL/React-reconciler library: see
+ * commit history for why (a react-reconciler/React-internals
+ * incompatibility that kept crashing the page in production).
+ */
 export default function Hero3D() {
-  return (
-    <Canvas
-      dpr={[1, 1.75]}
-      camera={{ position: [0, 0, 6], fov: 45 }}
-      gl={{ antialias: true, alpha: true }}
-    >
-      <ambientLight intensity={0.6} />
-      <pointLight position={[5, 5, 5]} intensity={1.2} color="#ff3ea5" />
-      <pointLight position={[-5, -3, -5]} intensity={0.8} color="#2dd4bf" />
-      <ParticleField />
-      <DistortedBlob />
-    </Canvas>
-  );
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let width = 0;
+    let height = 0;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const pointer = { x: -9999, y: -9999 };
+    const rand = mulberry32(1337);
+
+    const particles: Particle[] = Array.from({ length: PARTICLE_COUNT }, () => ({
+      x: rand(),
+      y: rand(),
+      vx: (rand() - 0.5) * 0.0006,
+      vy: (rand() - 0.5) * 0.0006,
+    }));
+
+    function resize() {
+      const el = canvas;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      el.width = width * dpr;
+      el.height = height * dpr;
+      ctx?.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function onPointerMove(e: PointerEvent) {
+      const rect = canvas!.getBoundingClientRect();
+      pointer.x = (e.clientX - rect.left) / rect.width;
+      pointer.y = (e.clientY - rect.top) / rect.height;
+    }
+
+    function onPointerLeave() {
+      pointer.x = -9999;
+      pointer.y = -9999;
+    }
+
+    let frameId = 0;
+    function tick() {
+      if (!ctx) return;
+      ctx.clearRect(0, 0, width, height);
+
+      // Update + draw nodes in normalized [0,1] space, scaled to pixels.
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > 1) p.vx *= -1;
+        if (p.y < 0 || p.y > 1) p.vy *= -1;
+        p.x = Math.min(1, Math.max(0, p.x));
+        p.y = Math.min(1, Math.max(0, p.y));
+
+        // Push away from the pointer.
+        const dx = (p.x - pointer.x) * width;
+        const dy = (p.y - pointer.y) * height;
+        const dist = Math.hypot(dx, dy);
+        if (dist < CURSOR_RADIUS && dist > 0.001) {
+          const force = ((CURSOR_RADIUS - dist) / CURSOR_RADIUS) * 0.0025;
+          p.vx += (dx / dist) * force;
+          p.vy += (dy / dist) * force;
+        }
+        // Gentle drag so pointer pushes decay instead of accumulating.
+        p.vx *= 0.985;
+        p.vy *= 0.985;
+      }
+
+      // Links between nearby nodes.
+      ctx.lineWidth = 1;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const a = particles[i];
+          const b = particles[j];
+          const dx = (a.x - b.x) * width;
+          const dy = (a.y - b.y) * height;
+          const dist = Math.hypot(dx, dy);
+          if (dist < LINK_DISTANCE) {
+            const alpha = (1 - dist / LINK_DISTANCE) * 0.35;
+            ctx.strokeStyle = `rgba(129, 140, 248, ${alpha})`;
+            ctx.beginPath();
+            ctx.moveTo(a.x * width, a.y * height);
+            ctx.lineTo(b.x * width, b.y * height);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Nodes on top.
+      for (const p of particles) {
+        ctx.beginPath();
+        ctx.arc(p.x * width, p.y * height, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(94, 234, 212, 0.8)';
+        ctx.fill();
+      }
+
+      if (!prefersReducedMotion) frameId = requestAnimationFrame(tick);
+    }
+
+    resize();
+    tick();
+
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+    canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('pointerleave', onPointerLeave);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      ro.disconnect();
+      canvas.removeEventListener('pointermove', onPointerMove);
+      canvas.removeEventListener('pointerleave', onPointerLeave);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="h-full w-full" />;
 }
