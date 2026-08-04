@@ -27,6 +27,23 @@ const statusLabels: Record<ProjectStatus, string> = {
   archived: 'Archived',
 };
 
+// Deterministic gradient per card (no project imagery in the data model
+// yet), so each card gets a distinct visual header instead of a flat box.
+const cardGradients = [
+  'from-indigo-500 to-cyan-400',
+  'from-fuchsia-500 to-orange-400',
+  'from-emerald-500 to-teal-400',
+  'from-violet-500 to-pink-400',
+  'from-amber-500 to-rose-400',
+  'from-sky-500 to-indigo-400',
+];
+
+function gradientForProject(id: string) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return cardGradients[hash % cardGradients.length];
+}
+
 export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams;
 
@@ -111,7 +128,7 @@ export default async function Home({ searchParams }: HomeProps) {
             {featured.length > 0 && (
               <section className="mb-16">
                 <h2 className="text-2xl font-semibold mb-6">Featured</h2>
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="project-grid grid gap-6 md:grid-cols-2">
                   {featured.map((project) => (
                     <ProjectCard key={project.id} project={project} />
                   ))}
@@ -122,7 +139,7 @@ export default async function Home({ searchParams }: HomeProps) {
             {others.length > 0 && (
               <section>
                 <h2 className="text-2xl font-semibold mb-6">All Projects</h2>
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="project-grid grid gap-6 md:grid-cols-2">
                   {others.map((project) => (
                     <ProjectCard key={project.id} project={project} />
                   ))}
@@ -161,56 +178,59 @@ function EmptyState() {
 
 function ProjectCard({ project }: { project: Project }) {
   return (
-    <article className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl p-6 transition-colors hover:border-gray-300 dark:bg-white/[0.03] dark:backdrop-blur-xl dark:hover:border-indigo-400/50 flex flex-col">
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <h3 className="text-xl font-semibold">{project.name}</h3>
-        <span
-          className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${statusStyles[project.status]}`}
-        >
-          {statusLabels[project.status]}
-        </span>
-      </div>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{project.tagline}</p>
-      <p className="text-sm mb-4 flex-grow">{project.description}</p>
-      <div className="flex flex-wrap gap-1.5 mb-4">
-        {project.tech.map((t) => (
+    <article className="project-card overflow-hidden border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl transition-[opacity,border-color] hover:border-gray-300 dark:bg-white/[0.03] dark:backdrop-blur-xl dark:hover:border-indigo-400/50 flex flex-col">
+      <div className={`h-20 bg-gradient-to-br ${gradientForProject(project.id)} opacity-80 dark:opacity-70`} aria-hidden="true" />
+      <div className="p-6 flex flex-col flex-grow">
+        <div className="flex items-start justify-between gap-3 mb-2">
+          <h3 className="text-xl font-semibold">{project.name}</h3>
           <span
-            key={t}
-            className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300"
+            className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${statusStyles[project.status]}`}
           >
-            {t}
+            {statusLabels[project.status]}
           </span>
-        ))}
-      </div>
-      <div className="flex gap-3 text-sm">
-        {project.github_url && (
-          <a
-            href={project.github_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 dark:text-cyan-300 hover:underline"
-          >
-            GitHub &rarr;
-          </a>
-        )}
-        {project.demo_url && (
-          <a
-            href={project.demo_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 dark:text-cyan-300 hover:underline"
-          >
-            Live Demo &rarr;
-          </a>
-        )}
-        {!project.github_url && !project.demo_url && (
-          <Link
-            href={`/projects/${project.name}`}
-            className="text-blue-600 dark:text-cyan-300 hover:underline"
-          >
-            View in Portfolio &rarr;
-          </Link>
-        )}
+        </div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{project.tagline}</p>
+        <p className="text-sm mb-4 flex-grow">{project.description}</p>
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {project.tech.map((t) => (
+            <span
+              key={t}
+              className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-3 text-sm">
+          {project.github_url && (
+            <a
+              href={project.github_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 dark:text-cyan-300 hover:underline"
+            >
+              GitHub &rarr;
+            </a>
+          )}
+          {project.demo_url && (
+            <a
+              href={project.demo_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 dark:text-cyan-300 hover:underline"
+            >
+              Live Demo &rarr;
+            </a>
+          )}
+          {!project.github_url && !project.demo_url && (
+            <Link
+              href={`/projects/${project.name}`}
+              className="text-blue-600 dark:text-cyan-300 hover:underline"
+            >
+              View in Portfolio &rarr;
+            </Link>
+          )}
+        </div>
       </div>
     </article>
   );

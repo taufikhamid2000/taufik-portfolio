@@ -24,3 +24,10 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Project grid hover: dim unhovered cards while one is focused, so
+   attention narrows to whichever project the visitor is looking at. */
+.project-grid:has(.project-card:hover) .project-card:not(:hover) {
+  opacity: 0.55;
+}
+
