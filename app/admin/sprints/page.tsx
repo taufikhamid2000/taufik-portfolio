@@ -3,6 +3,7 @@ import { getSprints, type SprintStatus } from '../../../lib/sprints';
 import { deleteSprintAction } from './actions';
 import Reveal from '../../_components/Reveal';
 import TiltWrapper from '../../_components/TiltWrapper';
+import { getIsOwner } from '../../../lib/auth';
 
 interface SprintsPageProps {
   searchParams: Promise<{ error?: string }>;
@@ -23,7 +24,7 @@ function formatDateRange(start: string | null, end: string | null) {
 }
 
 export default async function SprintsPage({ searchParams }: SprintsPageProps) {
-  const [{ error }, sprints] = await Promise.all([searchParams, getSprints()]);
+  const [{ error }, sprints, isOwner] = await Promise.all([searchParams, getSprints(), getIsOwner()]);
 
   return (
     <div>
@@ -35,12 +36,14 @@ export default async function SprintsPage({ searchParams }: SprintsPageProps) {
               {sprints.length} {sprints.length === 1 ? 'sprint' : 'sprints'}
             </p>
           </div>
-          <Link
-            href="/admin/sprints/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-          >
-            + New sprint
-          </Link>
+          {isOwner && (
+            <Link
+              href="/admin/sprints/new"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              + New sprint
+            </Link>
+          )}
         </div>
       </Reveal>
 
@@ -55,14 +58,16 @@ export default async function SprintsPage({ searchParams }: SprintsPageProps) {
           <TiltWrapper className="rounded-lg dark:rounded-2xl">
             <div className="border border-dashed border-gray-300 dark:border-white/15 rounded-lg dark:rounded-2xl dark:bg-white/[0.02] dark:backdrop-blur-xl p-12 text-center">
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                No sprints yet. Plan your first one.
+                No sprints yet{isOwner ? '. Plan your first one.' : '.'}
               </p>
-              <Link
-                href="/admin/sprints/new"
-                className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Create sprint
-              </Link>
+              {isOwner && (
+                <Link
+                  href="/admin/sprints/new"
+                  className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Create sprint
+                </Link>
+              )}
             </div>
           </TiltWrapper>
         </Reveal>

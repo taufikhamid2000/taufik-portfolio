@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getProject } from '../../../../lib/projects';
 import { ProjectForm } from '../../_components/ProjectForm';
 import { updateProjectAction } from '../../actions';
+import { getIsOwner } from '../../../../lib/auth';
 
 interface EditProjectPageProps {
   params: Promise<{ id: string }>;
@@ -10,6 +11,7 @@ interface EditProjectPageProps {
 }
 
 export default async function EditProjectPage({ params, searchParams }: EditProjectPageProps) {
+  if (!(await getIsOwner())) redirect('/admin');
   const [{ id }, { error }] = await Promise.all([params, searchParams]);
   const project = await getProject(id);
 

@@ -1,5 +1,6 @@
 import { createClient } from '../../../lib/supabase/server';
 import { backfillTranslations } from './actions';
+import { getIsOwner } from '../../../lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,6 +10,7 @@ export default async function TranslationsPage({
   searchParams: Promise<{ done?: string; error?: string }>;
 }) {
   const { done, error } = await searchParams;
+  const isOwner = await getIsOwner();
   const supabase = await createClient();
 
   const [{ count: ministriesTodo }, { count: initiativesTodo }] = await Promise.all([
@@ -45,18 +47,22 @@ export default async function TranslationsPage({
             ? 'All content is translated. ✓'
             : `${pending} record${pending === 1 ? '' : 's'} still need Bahasa Malaysia translations (${ministriesTodo ?? 0} ministries, ${initiativesTodo ?? 0} initiatives).`}
         </p>
-        <form action={backfillTranslations}>
-          <button
-            type="submit"
-            disabled={pending === 0}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
-          >
-            Translate missing content to BM
-          </button>
-        </form>
-        <p className="text-xs text-gray-500 dark:text-gray-500 mt-3">
-          Note: this calls the Anthropic API and may take a moment per record. Requires <code>ANTHROPIC_API_KEY</code> in the environment.
-        </p>
+        {isOwner && (
+          <>
+            <form action={backfillTranslations}>
+              <button
+                type="submit"
+                disabled={pending === 0}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
+              >
+                Translate missing content to BM
+              </button>
+            </form>
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-3">
+              Note: this calls the Anthropic API and may take a moment per record. Requires <code>ANTHROPIC_API_KEY</code> in the environment.
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createProject, deleteProject, updateProject, type ProjectInput, type ProjectStatus } from '../../lib/projects';
+import { requireOwner } from '../../lib/auth';
 
 const VALID_STATUSES: ProjectStatus[] = [
   'active',
@@ -50,6 +51,7 @@ function parseFormData(formData: FormData): { input: ProjectInput | null; error:
 }
 
 export async function createProjectAction(formData: FormData) {
+  await requireOwner('/admin/new');
   const { input, error } = parseFormData(formData);
   if (!input) {
     redirect('/admin/new?error=' + encodeURIComponent(error || 'Invalid input.'));
@@ -68,6 +70,7 @@ export async function createProjectAction(formData: FormData) {
 }
 
 export async function updateProjectAction(id: string, formData: FormData) {
+  await requireOwner(`/admin/${id}/edit`);
   const { input, error } = parseFormData(formData);
   if (!input) {
     redirect(`/admin/${id}/edit?error=` + encodeURIComponent(error || 'Invalid input.'));
@@ -86,6 +89,7 @@ export async function updateProjectAction(id: string, formData: FormData) {
 }
 
 export async function deleteProjectAction(id: string) {
+  await requireOwner('/admin');
   try {
     await deleteProject(id);
   } catch (e) {

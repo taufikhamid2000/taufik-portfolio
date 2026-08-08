@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
 import { Suspense } from 'react';
+import { cookies } from 'next/headers';
 import { getProjects } from '../lib/projects';
 import { THEME_COOKIE, isTheme } from '../lib/theme';
 import { AuthNav } from './_components/auth-nav';
-import { ThemeToggle } from './_components/theme-toggle';
+import { SiteShell } from './_components/SiteShell';
 import Hero3DLoader from './_components/Hero3DLoader';
 import ProjectCardTilt from './_components/ProjectCardTilt';
 import Reveal from './_components/Reveal';
@@ -52,50 +52,8 @@ export default async function Home({ searchParams }: HomeProps) {
   const rest = projects.filter((p) => !highlightIds.has(p.id));
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground animate-page-in">
-      {/* Ambient glow orbs — dark mode only. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-40 left-1/2 hidden h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-indigo-500/20 blur-[120px] dark:block"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute right-[-10%] top-[20%] hidden h-96 w-96 rounded-full bg-cyan-400/10 blur-[110px] dark:block"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute bottom-[-10%] left-[-10%] hidden h-96 w-96 rounded-full bg-emerald-400/10 blur-[110px] dark:block"
-      />
-
-      <header className="relative z-10 border-b border-border">
-        <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
-          <span className="text-lg font-semibold dark:bg-gradient-to-r dark:from-indigo-300 dark:to-cyan-300 dark:bg-clip-text dark:text-transparent">
-            Taufik&apos;s Portfolio
-          </span>
-          <nav className="flex items-center gap-4 text-sm">
-            <Link
-              href="/vision"
-              className="text-foreground/60 hover:text-foreground transition-colors"
-            >
-              Vision for Malaysia
-            </Link>
-            <a
-              href="https://github.com/taufikhamid2000"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground/60 hover:text-foreground transition-colors"
-            >
-              GitHub &rarr;
-            </a>
-            <Suspense fallback={null}>
-              <AuthNav />
-            </Suspense>
-            <ThemeToggle initialTheme={initialTheme} />
-          </nav>
-        </div>
-      </header>
-
-      <main className="relative z-10 max-w-5xl mx-auto px-6 py-16">
+    <SiteShell initialTheme={initialTheme} authSlot={<Suspense fallback={null}><AuthNav /></Suspense>}>
+      <div className="animate-page-in">
         <section className="relative mb-16 overflow-hidden dark:rounded-3xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-10 dark:backdrop-blur-xl">
           <div aria-hidden="true" className="absolute inset-0 hidden dark:motion-safe:block">
             <Hero3DLoader />
@@ -108,10 +66,18 @@ export default async function Home({ searchParams }: HomeProps) {
                 className="dark:bg-gradient-to-r dark:from-indigo-300 dark:via-cyan-300 dark:to-indigo-300 dark:bg-[length:200%_auto] dark:bg-clip-text dark:text-transparent dark:motion-safe:animate-gradient-shimmer"
               />
             </h1>
-            <p className="text-lg text-foreground/70 max-w-2xl text-balance">
+            <p className="text-lg text-foreground/70 max-w-2xl text-balance mb-3">
               I build web and mobile applications. Here are some of the projects I&apos;ve worked on,
               ranging from full-stack platforms to mobile apps and concept prototypes.
             </p>
+            <a
+              href="https://github.com/taufikhamid2000"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary dark:text-cyan-300 hover:underline"
+            >
+              GitHub &rarr;
+            </a>
           </div>
         </section>
 
@@ -145,14 +111,8 @@ export default async function Home({ searchParams }: HomeProps) {
             )}
           </>
         )}
-      </main>
-
-      <footer className="relative z-10 border-t border-border mt-16">
-        <div className="max-w-5xl mx-auto px-6 py-8 text-sm text-foreground/60">
-          Built with Next.js &amp; Tailwind CSS. &copy; {new Date().getFullYear()} Muhammad Taufik Bin Hamid.
-        </div>
-      </footer>
-    </div>
+      </div>
+    </SiteShell>
   );
 }
 

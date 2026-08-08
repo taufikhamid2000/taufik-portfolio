@@ -6,6 +6,7 @@ import { getProjects } from '../../../../lib/projects';
 import { createTaskAction, deleteTaskAction, updateTaskStatusAction } from '../actions';
 import Reveal from '../../../_components/Reveal';
 import TiltWrapper from '../../../_components/TiltWrapper';
+import { getIsOwner } from '../../../../lib/auth';
 
 interface SprintDetailPageProps {
   params: Promise<{ id: string }>;
@@ -52,9 +53,10 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
   const sprint = await getSprint(id);
   if (!sprint) notFound();
 
-  const [tasks, projects] = await Promise.all([
+  const [tasks, projects, isOwner] = await Promise.all([
     getTasksForSprint(id),
     getProjects(),
+    getIsOwner(),
   ]);
 
   const tasksByStatus: Record<TaskStatus, TaskWithProject[]> = {
@@ -99,12 +101,14 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
                   <p className="text-sm text-gray-500 dark:text-gray-500">{dateRange}</p>
                 )}
               </div>
-              <Link
-                href={`/admin/sprints/${id}/edit`}
-                className="text-sm text-blue-600 dark:text-cyan-300 hover:underline"
-              >
-                Edit
-              </Link>
+              {isOwner && (
+                <Link
+                  href={`/admin/sprints/${id}/edit`}
+                  className="text-sm text-blue-600 dark:text-cyan-300 hover:underline"
+                >
+                  Edit
+                </Link>
+              )}
             </div>
             {sprint.goal && (
               <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">{sprint.goal}</p>
@@ -127,74 +131,76 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
       )}
 
       {/* Add task form */}
-      <form
-        action={createTaskAction.bind(null, id)}
-        className="mb-8 border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl p-4 flex flex-wrap items-end gap-3"
-      >
-        <div className="flex-1 min-w-[200px]">
-          <label htmlFor="title" className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
-            New task
-          </label>
-          <input
-            id="title"
-            name="title"
-            type="text"
-            required
-            placeholder="What needs to be done?"
-            className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-cyan-400"
-          />
-        </div>
-        <div>
-          <label htmlFor="project_id" className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
-            Project
-          </label>
-          <select
-            id="project_id"
-            name="project_id"
-            className="px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5"
-          >
-            <option value="">— None —</option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="priority" className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
-            Priority
-          </label>
-          <select
-            id="priority"
-            name="priority"
-            defaultValue="medium"
-            className="px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5"
-          >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="urgent">Urgent</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="effort" className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
-            Effort
-          </label>
-          <input
-            id="effort"
-            name="effort"
-            type="number"
-            min="0"
-            placeholder="pts"
-            className="w-20 px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5"
-          />
-        </div>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+      {isOwner && (
+        <form
+          action={createTaskAction.bind(null, id)}
+          className="mb-8 border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl p-4 flex flex-wrap items-end gap-3"
         >
-          Add
-        </button>
-      </form>
+          <div className="flex-1 min-w-[200px]">
+            <label htmlFor="title" className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+              New task
+            </label>
+            <input
+              id="title"
+              name="title"
+              type="text"
+              required
+              placeholder="What needs to be done?"
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-cyan-400"
+            />
+          </div>
+          <div>
+            <label htmlFor="project_id" className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+              Project
+            </label>
+            <select
+              id="project_id"
+              name="project_id"
+              className="px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5"
+            >
+              <option value="">— None —</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="priority" className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+              Priority
+            </label>
+            <select
+              id="priority"
+              name="priority"
+              defaultValue="medium"
+              className="px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5"
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="effort" className="block text-xs font-medium mb-1 text-gray-600 dark:text-gray-400">
+              Effort
+            </label>
+            <input
+              id="effort"
+              name="effort"
+              type="number"
+              min="0"
+              placeholder="pts"
+              className="w-20 px-3 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-white/5"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+          >
+            Add
+          </button>
+        </form>
+      )}
 
       {/* Kanban columns */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -214,7 +220,7 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
                   </p>
                 ) : (
                   tasksByStatus[col.status].map((task) => (
-                    <TaskCard key={task.id} task={task} sprintId={id} />
+                    <TaskCard key={task.id} task={task} sprintId={id} isOwner={isOwner} />
                   ))
                 )}
               </div>
@@ -226,7 +232,7 @@ export default async function SprintDetailPage({ params, searchParams }: SprintD
   );
 }
 
-function TaskCard({ task, sprintId }: { task: TaskWithProject; sprintId: string }) {
+function TaskCard({ task, sprintId, isOwner }: { task: TaskWithProject; sprintId: string; isOwner: boolean }) {
   return (
     <TiltWrapper className="rounded-md dark:rounded-xl">
       <article className="bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/10 rounded-md dark:rounded-xl p-3 text-sm dark:backdrop-blur-xl">
@@ -244,37 +250,39 @@ function TaskCard({ task, sprintId }: { task: TaskWithProject; sprintId: string 
             <span className="text-gray-400 dark:text-gray-600">{task.effort}pt</span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-          {(['todo', 'in-progress', 'blocked', 'done'] as TaskStatus[])
-            .filter((s) => s !== task.status)
-            .map((s) => (
-              <form
-                key={s}
-                action={updateTaskStatusAction.bind(null, task.id, sprintId, s)}
-                className="inline"
-              >
-                <button
-                  type="submit"
-                  className={`text-[10px] px-1.5 py-0.5 rounded ${taskStatusStyles[s]} hover:opacity-80`}
-                  title={`Move to ${s}`}
+        {isOwner && (
+          <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+            {(['todo', 'in-progress', 'blocked', 'done'] as TaskStatus[])
+              .filter((s) => s !== task.status)
+              .map((s) => (
+                <form
+                  key={s}
+                  action={updateTaskStatusAction.bind(null, task.id, sprintId, s)}
+                  className="inline"
                 >
-                  → {s}
-                </button>
-              </form>
-            ))}
-          <form
-            action={deleteTaskAction.bind(null, task.id, sprintId)}
-            className="inline ml-auto"
-          >
-            <button
-              type="submit"
-              className="text-[10px] text-red-500 dark:text-red-400 hover:underline"
-              title="Delete task"
+                  <button
+                    type="submit"
+                    className={`text-[10px] px-1.5 py-0.5 rounded ${taskStatusStyles[s]} hover:opacity-80`}
+                    title={`Move to ${s}`}
+                  >
+                    → {s}
+                  </button>
+                </form>
+              ))}
+            <form
+              action={deleteTaskAction.bind(null, task.id, sprintId)}
+              className="inline ml-auto"
             >
-              ✕
-            </button>
-          </form>
-        </div>
+              <button
+                type="submit"
+                className="text-[10px] text-red-500 dark:text-red-400 hover:underline"
+                title="Delete task"
+              >
+                ✕
+              </button>
+            </form>
+          </div>
+        )}
       </article>
     </TiltWrapper>
   );

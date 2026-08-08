@@ -69,13 +69,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Protect /admin routes
-  if (!user && request.nextUrl.pathname.startsWith('/admin')) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    url.searchParams.set('redirect', request.nextUrl.pathname);
-    return NextResponse.redirect(url);
-  }
+  // /admin is public-read now (see lib/auth.ts) — no blanket redirect here.
+  // Owner-only writes are gated per-page/per-action instead, backed by RLS.
 
   // If already logged in and hitting /login, send to /admin
   if (user && request.nextUrl.pathname === '/login') {

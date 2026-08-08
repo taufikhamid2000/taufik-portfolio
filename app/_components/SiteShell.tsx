@@ -3,35 +3,51 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ThemeToggle } from '../../_components/theme-toggle';
-import { dict, localePrefix, type Locale } from '../../../lib/i18n';
-import type { Theme } from '../../../lib/theme';
+import { ThemeToggle } from './theme-toggle';
+import type { Theme } from '../../lib/theme';
 
-// Mini-app shell for the Vision section — sticky header + a static sidebar
-// from md up + a slide-in mobile drawer, same structural pattern as
-// /admin's AppShell. Three top-level sections replace what used to be a
-// single flat grid: Overview (the landing pitch), Ministries (browse all),
-// Initiatives (every idea across every ministry, in one place).
-export function VisionShell({
-  locale,
+type NavLink = { href: string; label: string };
+
+const ADMIN_LINKS: NavLink[] = [
+  { href: '/admin', label: 'Projects' },
+  { href: '/admin/sprints', label: 'Sprints' },
+  { href: '/admin/submissions', label: 'Submissions' },
+  { href: '/admin/translations', label: 'Translations' },
+];
+
+const VISION_LINKS_EN: NavLink[] = [
+  { href: '/vision', label: 'Overview' },
+  { href: '/vision/ministries', label: 'Ministries' },
+  { href: '/vision/initiatives', label: 'Initiatives' },
+];
+
+const VISION_LINKS_MS: NavLink[] = [
+  { href: '/ms/vision', label: 'Gambaran Keseluruhan' },
+  { href: '/ms/vision/ministries', label: 'Kementerian' },
+  { href: '/ms/vision/initiatives', label: 'Inisiatif' },
+];
+
+// One sidebar for the whole site — Home, Vision (Overview/Ministries/
+// Initiatives), Admin (Projects/Sprints/Submissions/Translations, public
+// read — see lib/auth.ts for the owner-only write gate). Replaces the
+// separate AppShell (admin-only) and VisionShell (vision-only) shells so
+// navigating between sections feels like one app instead of three.
+export function SiteShell({
   initialTheme,
+  authSlot,
   children,
 }: {
-  locale: Locale;
   initialTheme: Theme;
+  authSlot: React.ReactNode;
   children: React.ReactNode;
 }) {
-  const t = dict[locale];
-  const prefix = localePrefix(locale);
-  const otherPrefix = locale === 'ms' ? '' : '/ms';
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
-  const NAV_LINKS = [
-    { href: `${prefix}/vision`, label: t.overview },
-    { href: `${prefix}/vision/ministries`, label: t.ministries },
-    { href: `${prefix}/vision/initiatives`, label: t.initiativesNav },
-  ];
+  const isVisionSection = pathname.startsWith('/vision') || pathname.startsWith('/ms/vision');
+  const locale: 'en' | 'ms' = pathname.startsWith('/ms') ? 'ms' : 'en';
+  const visionLinks = locale === 'ms' ? VISION_LINKS_MS : VISION_LINKS_EN;
+  const otherLocaleHref = locale === 'ms' ? pathname.replace(/^\/ms/, '') || '/vision' : `/ms${pathname}`;
 
   useEffect(() => {
     if (!open) return;
@@ -49,11 +65,6 @@ export function VisionShell({
       mql.removeEventListener('change', onMqlChange);
     };
   }, [open]);
-
-  // The other-locale link should land on the equivalent section, not
-  // always the vision root — swap only the /vision prefix, keep the rest
-  // of the path (ministries, initiatives, or a ministry slug).
-  const otherLocaleHref = `${otherPrefix}${pathname.replace(/^\/ms/, '')}`;
 
   return (
     <div className="relative flex min-h-screen flex-1 flex-col overflow-hidden bg-background text-foreground">
@@ -94,17 +105,20 @@ export function VisionShell({
             href="/"
             className="text-sm font-semibold dark:bg-gradient-to-r dark:from-indigo-300 dark:to-cyan-300 dark:bg-clip-text dark:text-transparent"
           >
-            {t.portfolio}
+            Taufik&apos;s Portfolio
           </Link>
         </div>
 
         <div className="flex items-center gap-4 text-sm">
-          <Link
-            href={otherLocaleHref}
-            className="rounded-md border border-border px-2 py-1 text-foreground/60 transition-colors hover:text-foreground"
-          >
-            {t.langLabel}
-          </Link>
+          {isVisionSection && (
+            <Link
+              href={otherLocaleHref}
+              className="rounded-md border border-border px-2 py-1 text-foreground/60 transition-colors hover:text-foreground"
+            >
+              {locale === 'ms' ? 'EN' : 'BM'}
+            </Link>
+          )}
+          {authSlot}
           <ThemeToggle initialTheme={initialTheme} />
         </div>
       </header>
@@ -120,20 +134,16 @@ export function VisionShell({
         <aside
           role="dialog"
           aria-modal="true"
-          aria-label={t.portfolio}
+          aria-label="Taufik's Portfolio"
           className={`fixed top-14 bottom-0 left-0 z-30 flex w-64 flex-col overflow-y-auto border-r border-border bg-background px-4 py-4 shadow-xl transition-transform duration-200 md:hidden ${
             open ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          <nav className="flex flex-1 flex-col gap-1">
-            <NavLinks links={NAV_LINKS} pathname={pathname} onNavigate={() => setOpen(false)} />
-          </nav>
+          <SidebarNav pathname={pathname} visionLinks={visionLinks} onNavigate={() => setOpen(false)} />
         </aside>
 
         <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-56 shrink-0 flex-col overflow-y-auto border-r border-border bg-background px-4 py-6 md:flex">
-          <nav className="flex flex-1 flex-col gap-1">
-            <NavLinks links={NAV_LINKS} pathname={pathname} />
-          </nav>
+          <SidebarNav pathname={pathname} visionLinks={visionLinks} />
         </aside>
 
         <main className="relative z-10 mx-auto w-full max-w-5xl flex-1 px-6 py-12">{children}</main>
@@ -148,35 +158,72 @@ export function VisionShell({
   );
 }
 
-function NavLinks({
-  links,
-  pathname,
+// Several admin hrefs share the "/admin" prefix (Projects lives at the
+// bare /admin, Sprints/Submissions/Translations are siblings under it),
+// so a simple prefix match would highlight Projects on every admin page.
+// Picking the *longest* matching href across the whole nav resolves it.
+function pickActiveHref(pathname: string, hrefs: string[]): string | null {
+  let best: string | null = null;
+  for (const href of hrefs) {
+    const matches = href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+    if (matches && (best === null || href.length > best.length)) {
+      best = href;
+    }
+  }
+  return best;
+}
+
+function NavLinkItem({
+  link,
+  isActive,
   onNavigate,
 }: {
-  links: { href: string; label: string }[];
-  pathname: string;
+  link: NavLink;
+  isActive: boolean;
   onNavigate?: () => void;
 }) {
   return (
-    <>
-      {links.map((link) => {
-        const isActive = pathname === link.href;
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            onClick={onNavigate}
-            aria-current={isActive ? 'page' : undefined}
-            className={
-              isActive
-                ? 'flex min-h-11 items-center rounded-lg bg-muted px-3 text-sm font-medium text-foreground'
-                : 'flex min-h-11 items-center rounded-lg px-3 text-sm text-foreground/60 transition-colors hover:bg-muted hover:text-foreground'
-            }
-          >
-            {link.label}
-          </Link>
-        );
-      })}
-    </>
+    <Link
+      href={link.href}
+      onClick={onNavigate}
+      aria-current={isActive ? 'page' : undefined}
+      className={
+        isActive
+          ? 'flex min-h-11 items-center rounded-lg bg-muted px-3 text-sm font-medium text-foreground'
+          : 'flex min-h-11 items-center rounded-lg px-3 text-sm text-foreground/60 transition-colors hover:bg-muted hover:text-foreground'
+      }
+    >
+      {link.label}
+    </Link>
+  );
+}
+
+function SidebarNav({
+  pathname,
+  visionLinks,
+  onNavigate,
+}: {
+  pathname: string;
+  visionLinks: NavLink[];
+  onNavigate?: () => void;
+}) {
+  const homeLink: NavLink = { href: '/', label: 'Home' };
+  const allHrefs = [homeLink, ...visionLinks, ...ADMIN_LINKS].map((l) => l.href);
+  const activeHref = pickActiveHref(pathname, allHrefs);
+
+  return (
+    <nav className="flex flex-1 flex-col gap-1">
+      <NavLinkItem link={homeLink} isActive={activeHref === homeLink.href} onNavigate={onNavigate} />
+
+      <p className="mt-4 mb-1 px-3 text-xs font-medium uppercase tracking-wide text-foreground/40">Vision</p>
+      {visionLinks.map((link) => (
+        <NavLinkItem key={link.href} link={link} isActive={activeHref === link.href} onNavigate={onNavigate} />
+      ))}
+
+      <p className="mt-4 mb-1 px-3 text-xs font-medium uppercase tracking-wide text-foreground/40">Admin</p>
+      {ADMIN_LINKS.map((link) => (
+        <NavLinkItem key={link.href} link={link} isActive={activeHref === link.href} onNavigate={onNavigate} />
+      ))}
+    </nav>
   );
 }

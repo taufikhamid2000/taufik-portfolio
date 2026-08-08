@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createSprint, deleteSprint, updateSprint, type SprintInput, type SprintStatus } from '../../../lib/sprints';
 import { createTask, deleteTask, updateTask, type TaskInput, type TaskPriority, type TaskStatus } from '../../../lib/tasks';
+import { requireOwner } from '../../../lib/auth';
 
 const SPRINT_STATUSES: SprintStatus[] = ['planned', 'active', 'completed', 'cancelled'];
 const TASK_STATUSES: TaskStatus[] = ['todo', 'in-progress', 'blocked', 'done'];
@@ -28,6 +29,7 @@ function parseSprint(formData: FormData): { input: SprintInput | null; error: st
 }
 
 export async function createSprintAction(formData: FormData) {
+  await requireOwner('/admin/sprints/new');
   const { input, error } = parseSprint(formData);
   if (!input) {
     redirect('/admin/sprints/new?error=' + encodeURIComponent(error || 'Invalid input.'));
@@ -45,6 +47,7 @@ export async function createSprintAction(formData: FormData) {
 }
 
 export async function updateSprintAction(id: string, formData: FormData) {
+  await requireOwner(`/admin/sprints/${id}/edit`);
   const { input, error } = parseSprint(formData);
   if (!input) {
     redirect(`/admin/sprints/${id}/edit?error=` + encodeURIComponent(error || 'Invalid input.'));
@@ -61,6 +64,7 @@ export async function updateSprintAction(id: string, formData: FormData) {
 }
 
 export async function deleteSprintAction(id: string) {
+  await requireOwner('/admin/sprints');
   try {
     await deleteSprint(id);
   } catch (e) {
@@ -74,6 +78,7 @@ export async function deleteSprintAction(id: string) {
 // ----------- Task actions -----------
 
 export async function createTaskAction(sprintId: string, formData: FormData) {
+  await requireOwner(`/admin/sprints/${sprintId}`);
   const title = (formData.get('title') as string)?.trim();
   if (!title) {
     redirect(`/admin/sprints/${sprintId}?error=` + encodeURIComponent('Title is required.'));
@@ -107,6 +112,7 @@ export async function createTaskAction(sprintId: string, formData: FormData) {
 }
 
 export async function updateTaskStatusAction(taskId: string, sprintId: string, status: TaskStatus) {
+  await requireOwner(`/admin/sprints/${sprintId}`);
   if (!TASK_STATUSES.includes(status)) {
     redirect(`/admin/sprints/${sprintId}?error=` + encodeURIComponent('Invalid status.'));
   }
@@ -121,6 +127,7 @@ export async function updateTaskStatusAction(taskId: string, sprintId: string, s
 }
 
 export async function deleteTaskAction(taskId: string, sprintId: string) {
+  await requireOwner(`/admin/sprints/${sprintId}`);
   try {
     await deleteTask(taskId);
   } catch (e) {

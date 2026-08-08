@@ -1,12 +1,15 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { ProjectForm } from '../_components/ProjectForm';
 import { createProjectAction } from '../actions';
+import { getIsOwner } from '../../../lib/auth';
 
 interface NewProjectPageProps {
   searchParams: Promise<{ error?: string }>;
 }
 
 export default async function NewProjectPage({ searchParams }: NewProjectPageProps) {
+  if (!(await getIsOwner())) redirect('/admin');
   const { error } = await searchParams;
 
   return (

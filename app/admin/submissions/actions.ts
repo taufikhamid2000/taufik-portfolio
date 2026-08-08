@@ -2,8 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '../../../lib/supabase/server';
+import { requireOwner } from '../../../lib/auth';
 
 async function setStatus(id: string, status: 'approved' | 'rejected') {
+  await requireOwner('/admin/submissions');
   const supabase = await createClient();
   const { error } = await supabase
     .from('submissions')
@@ -23,6 +25,7 @@ export async function rejectSubmission(formData: FormData) {
 }
 
 export async function deleteSubmission(formData: FormData) {
+  await requireOwner('/admin/submissions');
   const supabase = await createClient();
   const { error } = await supabase
     .from('submissions')

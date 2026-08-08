@@ -2,6 +2,7 @@ import { getAllSubmissions } from '../../../lib/vision';
 import { approveSubmission, rejectSubmission, deleteSubmission } from './actions';
 import Reveal from '../../_components/Reveal';
 import TiltWrapper from '../../_components/TiltWrapper';
+import { getIsOwner } from '../../../lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +13,7 @@ const statusStyles: Record<string, string> = {
 };
 
 export default async function SubmissionsPage() {
-  const submissions = await getAllSubmissions();
+  const [submissions, isOwner] = await Promise.all([getAllSubmissions(), getIsOwner()]);
   const pending = submissions.filter((s) => s.status === 'pending');
   const reviewed = submissions.filter((s) => s.status !== 'pending');
 
@@ -25,24 +26,26 @@ export default async function SubmissionsPage() {
         </p>
       </Reveal>
 
-      <section className="mb-10">
-        <Reveal>
-          <h2 className="text-lg font-semibold mb-4">
-            Pending review {pending.length > 0 && <span className="text-sm font-normal text-gray-500">({pending.length})</span>}
-          </h2>
-        </Reveal>
-        {pending.length === 0 ? (
-          <p className="text-sm text-gray-500 dark:text-gray-400">Nothing waiting for review.</p>
-        ) : (
-          <div className="space-y-4">
-            {pending.map((s, i) => (
-              <Reveal key={s.id} delay={i * 80}>
-                <SubmissionCard s={s} pending />
-              </Reveal>
-            ))}
-          </div>
-        )}
-      </section>
+      {isOwner && (
+        <section className="mb-10">
+          <Reveal>
+            <h2 className="text-lg font-semibold mb-4">
+              Pending review {pending.length > 0 && <span className="text-sm font-normal text-gray-500">({pending.length})</span>}
+            </h2>
+          </Reveal>
+          {pending.length === 0 ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400">Nothing waiting for review.</p>
+          ) : (
+            <div className="space-y-4">
+              {pending.map((s, i) => (
+                <Reveal key={s.id} delay={i * 80}>
+                  <SubmissionCard s={s} pending isOwner={isOwner} />
+                </Reveal>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {reviewed.length > 0 && (
         <section>
@@ -52,7 +55,7 @@ export default async function SubmissionsPage() {
           <div className="space-y-4">
             {reviewed.map((s, i) => (
               <Reveal key={s.id} delay={i * 80}>
-                <SubmissionCard s={s} pending={false} />
+                <SubmissionCard s={s} pending={false} isOwner={isOwner} />
               </Reveal>
             ))}
           </div>
@@ -65,9 +68,11 @@ export default async function SubmissionsPage() {
 function SubmissionCard({
   s,
   pending,
+  isOwner,
 }: {
   s: Awaited<ReturnType<typeof getAllSubmissions>>[number];
   pending: boolean;
+  isOwner: boolean;
 }) {
   return (
     <TiltWrapper className="rounded-lg dark:rounded-2xl">
@@ -91,24 +96,26 @@ function SubmissionCard({
             {s.submitter_contact && <span>{s.submitter_contact}</span>}
           </p>
         )}
-        <div className="flex flex-wrap gap-2 text-sm">
-          {pending && (
-            <>
-              <form action={approveSubmission}>
-                <input type="hidden" name="id" value={s.id} />
-                <button type="submit" className="px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors">Approve</button>
-              </form>
-              <form action={rejectSubmission}>
-                <input type="hidden" name="id" value={s.id} />
-                <button type="submit" className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">Reject</button>
-              </form>
-            </>
-          )}
-          <form action={deleteSubmission}>
-            <input type="hidden" name="id" value={s.id} />
-            <button type="submit" className="px-3 py-1.5 rounded-lg border border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors">Delete</button>
-          </form>
-        </div>
+        {isOwner && (
+          <div className="flex flex-wrap gap-2 text-sm">
+            {pending && (
+              <>
+                <form action={approveSubmission}>
+                  <input type="hidden" name="id" value={s.id} />
+                  <button type="submit" className="px-3 py-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors">Approve</button>
+                </form>
+                <form action={rejectSubmission}>
+                  <input type="hidden" name="id" value={s.id} />
+                  <button type="submit" className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">Reject</button>
+                </form>
+              </>
+            )}
+            <form action={deleteSubmission}>
+              <input type="hidden" name="id" value={s.id} />
+              <button type="submit" className="px-3 py-1.5 rounded-lg border border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors">Delete</button>
+            </form>
+          </div>
+        )}
       </article>
     </TiltWrapper>
   );

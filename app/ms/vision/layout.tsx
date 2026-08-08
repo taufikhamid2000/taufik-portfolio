@@ -1,6 +1,8 @@
+import { Suspense } from 'react';
 import { cookies } from 'next/headers';
 import { THEME_COOKIE, isTheme } from '../../../lib/theme';
-import { VisionShell } from '../../vision/_components/VisionShell';
+import { SiteShell } from '../../_components/SiteShell';
+import { AuthNav } from '../../_components/auth-nav';
 
 export default async function MsVisionLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -8,8 +10,8 @@ export default async function MsVisionLayout({ children }: { children: React.Rea
   const initialTheme = isTheme(themeCookie) ? themeCookie : 'system';
 
   return (
-    <VisionShell locale="ms" initialTheme={initialTheme}>
+    <SiteShell initialTheme={initialTheme} authSlot={<Suspense fallback={null}><AuthNav /></Suspense>}>
       {children}
-    </VisionShell>
+    </SiteShell>
   );
 }

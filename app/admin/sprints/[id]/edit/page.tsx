@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getSprint } from '../../../../../lib/sprints';
 import { SprintForm } from '../../_components/SprintForm';
 import { updateSprintAction, deleteSprintAction } from '../../actions';
+import { getIsOwner } from '../../../../../lib/auth';
 
 interface EditSprintPageProps {
   params: Promise<{ id: string }>;
@@ -10,6 +11,7 @@ interface EditSprintPageProps {
 }
 
 export default async function EditSprintPage({ params, searchParams }: EditSprintPageProps) {
+  if (!(await getIsOwner())) redirect('/admin/sprints');
   const [{ id }, { error }] = await Promise.all([params, searchParams]);
   const sprint = await getSprint(id);
   if (!sprint) notFound();

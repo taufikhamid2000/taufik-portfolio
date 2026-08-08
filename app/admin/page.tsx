@@ -3,6 +3,7 @@ import { getProjects, type ProjectStatus } from '../../lib/projects';
 import { deleteProjectAction } from './actions';
 import Reveal from '../_components/Reveal';
 import TiltWrapper from '../_components/TiltWrapper';
+import { getIsOwner } from '../../lib/auth';
 
 interface AdminPageProps {
   searchParams: Promise<{ error?: string }>;
@@ -17,7 +18,7 @@ const statusStyles: Record<ProjectStatus, string> = {
 };
 
 export default async function AdminProjectsPage({ searchParams }: AdminPageProps) {
-  const [{ error }, projects] = await Promise.all([searchParams, getProjects()]);
+  const [{ error }, projects, isOwner] = await Promise.all([searchParams, getProjects(), getIsOwner()]);
 
   return (
     <div>
@@ -29,12 +30,14 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
               {projects.length} {projects.length === 1 ? 'project' : 'projects'} total
             </p>
           </div>
-          <Link
-            href="/admin/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-          >
-            + New project
-          </Link>
+          {isOwner && (
+            <Link
+              href="/admin/new"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              + New project
+            </Link>
+          )}
         </div>
       </Reveal>
 
@@ -49,14 +52,16 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
           <TiltWrapper className="rounded-lg dark:rounded-2xl">
             <div className="border border-dashed border-gray-300 dark:border-white/15 rounded-lg dark:rounded-2xl dark:bg-white/[0.02] dark:backdrop-blur-xl p-12 text-center">
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                No projects yet. Add your first one.
+                No projects yet{isOwner ? '. Add your first one.' : '.'}
               </p>
-              <Link
-                href="/admin/new"
-                className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Add project
-              </Link>
+              {isOwner && (
+                <Link
+                  href="/admin/new"
+                  className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Add project
+                </Link>
+              )}
             </div>
           </TiltWrapper>
         </Reveal>
@@ -70,7 +75,7 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
                 <th className="text-left px-4 py-3 font-medium">Name</th>
                 <th className="text-left px-4 py-3 font-medium">Status</th>
                 <th className="text-left px-4 py-3 font-medium">Featured</th>
-                <th className="text-right px-4 py-3 font-medium">Actions</th>
+                {isOwner && <th className="text-right px-4 py-3 font-medium">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -104,27 +109,29 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
                       <span className="text-xs text-gray-400 dark:text-gray-600">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex justify-end gap-3">
-                      <Link
-                        href={`/admin/${project.id}/edit`}
-                        className="text-blue-600 dark:text-cyan-300 hover:underline"
-                      >
-                        Edit
-                      </Link>
-                      <form
-                        action={deleteProjectAction.bind(null, project.id)}
-                        className="inline"
-                      >
-                        <button
-                          type="submit"
-                          className="text-red-600 dark:text-red-400 hover:underline"
+                  {isOwner && (
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-3">
+                        <Link
+                          href={`/admin/${project.id}/edit`}
+                          className="text-blue-600 dark:text-cyan-300 hover:underline"
                         >
-                          Delete
-                        </button>
-                      </form>
-                    </div>
-                  </td>
+                          Edit
+                        </Link>
+                        <form
+                          action={deleteProjectAction.bind(null, project.id)}
+                          className="inline"
+                        >
+                          <button
+                            type="submit"
+                            className="text-red-600 dark:text-red-400 hover:underline"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

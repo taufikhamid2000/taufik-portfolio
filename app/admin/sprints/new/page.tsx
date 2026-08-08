@@ -1,12 +1,15 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { SprintForm } from '../_components/SprintForm';
 import { createSprintAction } from '../actions';
+import { getIsOwner } from '../../../../lib/auth';
 
 interface NewSprintPageProps {
   searchParams: Promise<{ error?: string }>;
 }
 
 export default async function NewSprintPage({ searchParams }: NewSprintPageProps) {
+  if (!(await getIsOwner())) redirect('/admin/sprints');
   const { error } = await searchParams;
 
   return (

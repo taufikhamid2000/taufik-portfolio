@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '../../../lib/supabase/server';
 import { translateToMalay } from '../../../lib/translate';
+import { requireOwner } from '../../../lib/auth';
 
 /**
  * Fill missing Bahasa Malaysia translations for ministries + initiatives.
@@ -11,6 +12,12 @@ import { translateToMalay } from '../../../lib/translate';
  * rows whose _ms column is still null, so it's safe to re-run.
  */
 export async function backfillTranslations() {
+  // Checked before any work happens, not just before the DB write — this
+  // calls the paid Anthropic API per untranslated field, so an
+  // unauthorized caller must be stopped before that cost is incurred, not
+  // just when the final RLS-guarded write would fail.
+  await requireOwner('/admin/translations');
+
   const supabase = await createClient();
   let done = 0;
 
