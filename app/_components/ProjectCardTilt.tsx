@@ -76,7 +76,7 @@ export default function ProjectCardTilt({ project }: { project: Project }) {
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
       style={{ transitionProperty: 'transform, opacity, border-color', willChange: 'transform' }}
-      className="project-card project-card-spotlight relative overflow-hidden border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl transition-[opacity,border-color] duration-300 ease-out hover:border-gray-300 dark:bg-white/[0.03] dark:backdrop-blur-xl dark:hover:border-indigo-400/50 flex flex-col"
+      className="project-card project-card-spotlight relative overflow-hidden border border-border bg-muted/40 rounded-lg dark:rounded-2xl transition-[opacity,border-color] duration-300 ease-out hover:border-foreground/20 dark:backdrop-blur-xl dark:hover:border-indigo-400/50 flex flex-col"
     >
       <div
         aria-hidden="true"
@@ -96,13 +96,13 @@ export default function ProjectCardTilt({ project }: { project: Project }) {
             {statusLabels[project.status]}
           </span>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">{project.tagline}</p>
+        <p className="text-sm text-foreground/50 mb-3">{project.tagline}</p>
         <p className="text-sm mb-4 flex-grow">{project.description}</p>
         <div className="flex flex-wrap gap-1.5 mb-4">
           {project.tech.map((t) => (
             <span
               key={t}
-              className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300"
+              className="text-xs px-2 py-0.5 rounded bg-muted text-foreground/70"
             >
               {t}
             </span>
@@ -114,7 +114,7 @@ export default function ProjectCardTilt({ project }: { project: Project }) {
               href={project.github_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 dark:text-cyan-300 hover:underline"
+              className="text-primary dark:text-cyan-300 hover:underline"
             >
               GitHub &rarr;
             </a>
@@ -124,7 +124,7 @@ export default function ProjectCardTilt({ project }: { project: Project }) {
               href={project.demo_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 dark:text-cyan-300 hover:underline"
+              className="text-primary dark:text-cyan-300 hover:underline"
             >
               Live Demo &rarr;
             </a>
@@ -132,7 +132,7 @@ export default function ProjectCardTilt({ project }: { project: Project }) {
           {!project.github_url && !project.demo_url && (
             <Link
               href={`/projects/${project.name}`}
-              className="text-blue-600 dark:text-cyan-300 hover:underline"
+              className="text-primary dark:text-cyan-300 hover:underline"
             >
               View in Portfolio &rarr;
             </Link>

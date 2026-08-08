@@ -9,7 +9,7 @@ export async function AuthNav() {
 
   if (user) {
     return (
-      <Link href="/admin" className="text-blue-600 dark:text-blue-400 hover:underline">
+      <Link href="/admin" className="text-primary hover:underline">
         Admin
       </Link>
     );
@@ -18,7 +18,7 @@ export async function AuthNav() {
   return (
     <Link
       href="/login"
-      className="text-gray-500 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+      className="text-foreground/50 hover:text-foreground transition-colors"
     >
       Sign in
     </Link>

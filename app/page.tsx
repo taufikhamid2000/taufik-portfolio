@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { Suspense } from 'react';
 import { getProjects } from '../lib/projects';
+import { THEME_COOKIE, isTheme } from '../lib/theme';
 import { AuthNav } from './_components/auth-nav';
 import { ThemeToggle } from './_components/theme-toggle';
 import Hero3DLoader from './_components/Hero3DLoader';
@@ -34,6 +36,9 @@ export default async function Home({ searchParams }: HomeProps) {
   }
 
   const projects = await getProjects();
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
+  const initialTheme = isTheme(themeCookie) ? themeCookie : 'system';
 
   // Show only a handful of highlights up front — a wall of every project
   // reads like a task list to review rather than a curated showcase.
@@ -47,7 +52,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const rest = projects.filter((p) => !highlightIds.has(p.id));
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-white text-gray-900 dark:bg-[#0a0a0f] dark:text-gray-100">
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground animate-page-in">
       {/* Ambient glow orbs — dark mode only. */}
       <div
         aria-hidden="true"
@@ -62,7 +67,7 @@ export default async function Home({ searchParams }: HomeProps) {
         className="pointer-events-none absolute bottom-[-10%] left-[-10%] hidden h-96 w-96 rounded-full bg-emerald-400/10 blur-[110px] dark:block"
       />
 
-      <header className="relative z-10 border-b border-gray-200 dark:border-white/10">
+      <header className="relative z-10 border-b border-border">
         <div className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
           <span className="text-lg font-semibold dark:bg-gradient-to-r dark:from-indigo-300 dark:to-cyan-300 dark:bg-clip-text dark:text-transparent">
             Taufik&apos;s Portfolio
@@ -70,7 +75,7 @@ export default async function Home({ searchParams }: HomeProps) {
           <nav className="flex items-center gap-4 text-sm">
             <Link
               href="/vision"
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+              className="text-foreground/60 hover:text-foreground transition-colors"
             >
               Vision for Malaysia
             </Link>
@@ -78,14 +83,14 @@ export default async function Home({ searchParams }: HomeProps) {
               href="https://github.com/taufikhamid2000"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+              className="text-foreground/60 hover:text-foreground transition-colors"
             >
               GitHub &rarr;
             </a>
             <Suspense fallback={null}>
               <AuthNav />
             </Suspense>
-            <ThemeToggle />
+            <ThemeToggle initialTheme={initialTheme} />
           </nav>
         </div>
       </header>
@@ -103,7 +108,7 @@ export default async function Home({ searchParams }: HomeProps) {
                 className="dark:bg-gradient-to-r dark:from-indigo-300 dark:via-cyan-300 dark:to-indigo-300 dark:bg-[length:200%_auto] dark:bg-clip-text dark:text-transparent dark:motion-safe:animate-gradient-shimmer"
               />
             </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl text-balance">
+            <p className="text-lg text-foreground/70 max-w-2xl text-balance">
               I build web and mobile applications. Here are some of the projects I&apos;ve worked on,
               ranging from full-stack platforms to mobile apps and concept prototypes.
             </p>
@@ -142,8 +147,8 @@ export default async function Home({ searchParams }: HomeProps) {
         )}
       </main>
 
-      <footer className="relative z-10 border-t border-gray-200 dark:border-white/10 mt-16">
-        <div className="max-w-5xl mx-auto px-6 py-8 text-sm text-gray-600 dark:text-gray-400">
+      <footer className="relative z-10 border-t border-border mt-16">
+        <div className="max-w-5xl mx-auto px-6 py-8 text-sm text-foreground/60">
           Built with Next.js &amp; Tailwind CSS. &copy; {new Date().getFullYear()} Muhammad Taufik Bin Hamid.
         </div>
       </footer>
@@ -153,14 +158,14 @@ export default async function Home({ searchParams }: HomeProps) {
 
 function EmptyState() {
   return (
-    <div className="border border-dashed border-gray-300 dark:border-white/15 rounded-lg dark:rounded-2xl p-12 text-center dark:bg-white/[0.02] dark:backdrop-blur-xl">
+    <div className="border border-dashed border-border rounded-2xl bg-muted/40 p-12 text-center">
       <h2 className="text-xl font-semibold mb-2">No projects yet</h2>
-      <p className="text-gray-600 dark:text-gray-400 mb-4">
+      <p className="text-foreground/60 mb-4">
         Add your first project from the admin panel.
       </p>
       <Link
         href="/admin"
-        className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors"
       >
         Go to Admin
       </Link>

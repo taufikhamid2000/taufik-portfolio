@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { cookies } from "next/headers";
 import "./globals.css";
-import { ThemeProvider } from "./_components/theme-provider";
+import { THEME_COOKIE, isTheme } from "../lib/theme";
 import CursorGlow from "./_components/CursorGlow";
 import CustomCursor from "./_components/CustomCursor";
+
+// Keeps the legacy next-themes-era `.dark` class accurate for the pages
+// that haven't been re-platformed onto the data-theme token system yet
+// (admin, vision, login/auth) so their existing `dark:` utility classes
+// keep working with no flash — mirrors what next-themes itself injected.
+// New/redesigned surfaces (the home page) don't need this class at all;
+// they're driven by the --background/--foreground tokens directly.
+const NO_FLASH_DARK_CLASS_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )theme=([^;]*)/);var t=m?decodeURIComponent(m[1]):null;var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);}catch(e){}})();`;
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -21,26 +30,26 @@ export const metadata: Metadata = {
   description: "Created by Muhammad Taufik Bin Hamid",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
+  const theme = isTheme(themeCookie) ? themeCookie : "system";
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-theme={theme === "system" ? undefined : theme} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_DARK_CLASS_SCRIPT }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <CursorGlow />
-          <CustomCursor />
-          {children}
-        </ThemeProvider>
+        <CursorGlow />
+        <CustomCursor />
+        {children}
       </body>
     </html>
   );

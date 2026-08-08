@@ -2,21 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Design tokens — shared roles across the portfolio (see DESIGN.md in the
+ * `template` repo for the full system this is ported from). Everything in
+ * markup should reference a role (bg-background, text-foreground, etc.),
+ * never a literal hex — a re-theme becomes a token edit here, not a
+ * find-and-replace across every component. Decorative flourishes (the
+ * hero glow orbs, confetti particles, card gradients, cursor glow) are
+ * deliberately exempt — those are personality, not surface color.
+ */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
+  --muted: #f1f5f9;
+  --border: rgba(15, 23, 42, 0.08);
+  --primary: #4338ca;
+  --primary-foreground: #ffffff;
+  --secondary: #6366f1;
+  --accent: #0e7490;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --ring: #4338ca;
 }
 
-/* next-themes adds `class="dark"` on <html> when dark mode is active. */
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+/* System preference drives dark mode by default; an explicit data-theme
+   override (set via the header toggle) wins over it either direction. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --background: #0a0a0f;
+    --foreground: #f5f5f5;
+    --muted: #13131c;
+    --border: rgba(255, 255, 255, 0.08);
+    --ring: #6366f1;
+  }
+}
+
+:root[data-theme='dark'] {
+  --background: #0a0a0f;
+  --foreground: #f5f5f5;
+  --muted: #13131c;
+  --border: rgba(255, 255, 255, 0.08);
+  --ring: #6366f1;
+}
+
+:root[data-theme='light'] {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --muted: #f1f5f9;
+  --border: rgba(15, 23, 42, 0.08);
+  --ring: #4338ca;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 @layer utilities {
@@ -53,3 +94,29 @@ body {
   }
 }
 
+/* Shared page/card-enter motion — transform/opacity only, 150-350ms. */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-page-in {
+  animation: fade-in-up 350ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

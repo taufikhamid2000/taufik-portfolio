@@ -1,30 +1,57 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useTheme } from 'next-themes';
+import { useEffect, useState, useTransition } from 'react';
+import { setTheme } from '../actions/theme';
+import type { Theme } from '../../lib/theme';
 
-export function ThemeToggle() {
-  const { theme, resolvedTheme, setTheme } = useTheme();
+// Applies instantly client-side as a preview (data-theme attribute for the
+// token colors, plus the legacy `.dark` class for pages not yet on the
+// token system) — the server action call below just persists the cookie
+// in the background, no reload needed to make it "take".
+function applyTheme(theme: Theme) {
+  const html = document.documentElement;
+  const resolvedDark =
+    theme === 'dark' ||
+    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+  if (theme === 'system') html.removeAttribute('data-theme');
+  else html.setAttribute('data-theme', theme);
+  html.classList.toggle('dark', resolvedDark);
+
+  return resolvedDark;
+}
+
+export function ThemeToggle({ initialTheme = 'system' }: { initialTheme?: Theme }) {
+  const [theme, setThemeLocal] = useState<Theme>(initialTheme);
   const [mounted, setMounted] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+  const [, startTransition] = useTransition();
 
-  // Avoid hydration mismatch — only render the actual state after mount.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setMounted(true); }, []);
-
-  const current = mounted ? resolvedTheme : undefined;
-  const isDark = current === 'dark';
+  // Avoid a hydration mismatch — the actual resolved appearance (for
+  // "system") is only knowable client-side.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+    setIsDark(
+      theme === 'dark' ||
+        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    );
+  }, [theme]);
 
   // Cycle: system -> light -> dark -> system
   function cycle() {
-    if (theme === 'system') setTheme('light');
-    else if (theme === 'light') setTheme('dark');
-    else setTheme('system');
+    const next: Theme = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system';
+    setThemeLocal(next);
+    setIsDark(applyTheme(next));
+    startTransition(() => {
+      setTheme(next);
+    });
   }
 
   const label = !mounted
     ? 'Toggle theme'
     : theme === 'system'
-      ? `System (${resolvedTheme})`
+      ? `System (${isDark ? 'dark' : 'light'})`
       : isDark
         ? 'Dark'
         : 'Light';
@@ -35,11 +62,9 @@ export function ThemeToggle() {
       onClick={cycle}
       aria-label={`Switch theme — current: ${label}`}
       title={label}
-      className="inline-flex items-center justify-center w-9 h-9 rounded-md border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
+      className="inline-flex items-center justify-center w-9 h-9 rounded-md border border-border text-foreground/60 hover:text-foreground hover:bg-muted transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
-      {/* Render both icons; visibility controlled by dark class to avoid SSR mismatch */}
-      <SunIcon className="w-4 h-4 dark:hidden" />
-      <MoonIcon className="w-4 h-4 hidden dark:block" />
+      {mounted && isDark ? <MoonIcon className="w-4 h-4" /> : <SunIcon className="w-4 h-4" />}
       <span className="sr-only">{label}</span>
     </button>
   );

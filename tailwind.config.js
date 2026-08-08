@@ -9,8 +9,24 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "#1a1a1a",
-        foreground: "#f5f5f5",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        muted: "var(--muted)",
+        border: "var(--border)",
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+        },
+        secondary: "var(--secondary)",
+        accent: {
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+        },
+        destructive: {
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
+        },
+        ring: "var(--ring)",
       },
       animation: {
         glow: 'glow 1.5s infinite',

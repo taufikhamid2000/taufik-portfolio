@@ -65,7 +65,7 @@ export default function ExpandProjects({
         type="button"
         onClick={handleToggle}
         aria-expanded={open}
-        className="relative cursor-pointer select-none text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors inline-flex items-center gap-1.5"
+        className="relative cursor-pointer select-none text-sm font-medium text-foreground/60 hover:text-foreground transition-colors inline-flex items-center gap-1.5"
       >
         <span
           className={`inline-block transition-transform duration-300 ${open ? 'rotate-90' : ''}`}
