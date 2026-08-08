@@ -45,6 +45,10 @@ export interface MinistryWithCounts extends Ministry {
   initiative_count: number;
 }
 
+export interface InitiativeWithMinistry extends Initiative {
+  ministry: { name: string; slug: string };
+}
+
 // Pick the localized value, falling back to English when the translation is null.
 function pick(en: string | null, ms: string | null | undefined, locale: Locale): string {
   if (locale === 'ms' && ms) return ms;
@@ -129,6 +133,36 @@ export async function getMinistryBySlug(
     initiatives: localizedInitiatives,
     submissions: (submissions as Submission[]) ?? [],
   };
+}
+
+/** Every initiative across every ministry, joined with its ministry name/slug and linked project. Localized to `locale`. */
+export async function getAllInitiatives(locale: Locale = 'en'): Promise<InitiativeWithMinistry[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from('initiatives')
+    .select('*, project:projects(id, name, github_url, demo_url), ministry:ministries(name, name_ms, slug)')
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.error('Failed to fetch initiatives:', error);
+    return [];
+  }
+
+  return (
+    (data ?? []) as (Initiative & {
+      problem_ms: string | null;
+      idea_ms: string | null;
+      ministry: { name: string; name_ms: string | null; slug: string };
+    })[]
+  ).map((i) => {
+    const { problem_ms, idea_ms, ministry, ...rest } = i;
+    return {
+      ...rest,
+      problem: pick(i.problem, problem_ms, locale),
+      idea: pick(i.idea, idea_ms, locale),
+      ministry: { name: pick(ministry.name, ministry.name_ms, locale), slug: ministry.slug },
+    };
+  });
 }
 
 /** All ministry slugs — for static params / sitemap. */
