@@ -198,6 +198,63 @@ function NavLinkItem({
   );
 }
 
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 20 20"
+      fill="none"
+      aria-hidden="true"
+      className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
+    >
+      <path d="M7 4l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// Collapsible nav group — same CSS grid-template-rows disclosure trick as
+// ExpandProjects (see DESIGN.md), just driven by section state here
+// instead of a one-shot local toggle.
+function SidebarGroup({
+  label,
+  links,
+  isOpen,
+  onToggle,
+  activeHref,
+  onNavigate,
+}: {
+  label: string;
+  links: NavLink[];
+  isOpen: boolean;
+  onToggle: () => void;
+  activeHref: string | null;
+  onNavigate?: () => void;
+}) {
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        className="flex w-full cursor-pointer items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-foreground/40 transition-colors hover:text-foreground/70"
+      >
+        <ChevronIcon open={isOpen} />
+        {label}
+      </button>
+      <div className="grid transition-[grid-template-rows] duration-200 ease-out" style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}>
+        <div className="overflow-hidden">
+          <nav className="flex flex-col gap-1 pt-1">
+            {links.map((link) => (
+              <NavLinkItem key={link.href} link={link} isActive={activeHref === link.href} onNavigate={onNavigate} />
+            ))}
+          </nav>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SidebarNav({
   pathname,
   visionLinks,
@@ -211,19 +268,46 @@ function SidebarNav({
   const allHrefs = [homeLink, ...visionLinks, ...ADMIN_LINKS].map((l) => l.href);
   const activeHref = pickActiveHref(pathname, allHrefs);
 
+  const visionActive = pathname.startsWith('/vision') || pathname.startsWith('/ms/vision');
+  const adminActive = pathname.startsWith('/admin');
+
+  const [openGroups, setOpenGroups] = useState({ vision: visionActive, admin: adminActive });
+  const [lastPathname, setLastPathname] = useState(pathname);
+
+  // Landing directly on a section (typed URL, link from elsewhere) should
+  // expand that group even if it was previously collapsed — but doesn't
+  // fight a group the visitor collapsed on purpose while browsing within
+  // a different section. Adjusted during render (not an effect) per
+  // React's guidance for state that depends on a prop change.
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
+    setOpenGroups((prev) => ({
+      vision: prev.vision || visionActive,
+      admin: prev.admin || adminActive,
+    }));
+  }
+
   return (
     <nav className="flex flex-1 flex-col gap-1">
       <NavLinkItem link={homeLink} isActive={activeHref === homeLink.href} onNavigate={onNavigate} />
 
-      <p className="mt-4 mb-1 px-3 text-xs font-medium uppercase tracking-wide text-foreground/40">Vision</p>
-      {visionLinks.map((link) => (
-        <NavLinkItem key={link.href} link={link} isActive={activeHref === link.href} onNavigate={onNavigate} />
-      ))}
+      <SidebarGroup
+        label="Vision"
+        links={visionLinks}
+        isOpen={openGroups.vision}
+        onToggle={() => setOpenGroups((prev) => ({ ...prev, vision: !prev.vision }))}
+        activeHref={activeHref}
+        onNavigate={onNavigate}
+      />
 
-      <p className="mt-4 mb-1 px-3 text-xs font-medium uppercase tracking-wide text-foreground/40">Admin</p>
-      {ADMIN_LINKS.map((link) => (
-        <NavLinkItem key={link.href} link={link} isActive={activeHref === link.href} onNavigate={onNavigate} />
-      ))}
+      <SidebarGroup
+        label="Admin"
+        links={ADMIN_LINKS}
+        isOpen={openGroups.admin}
+        onToggle={() => setOpenGroups((prev) => ({ ...prev, admin: !prev.admin }))}
+        activeHref={activeHref}
+        onNavigate={onNavigate}
+      />
     </nav>
   );
 }
