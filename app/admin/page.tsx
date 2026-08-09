@@ -73,6 +73,7 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Order</th>
                 <th className="text-left px-4 py-3 font-medium">Name</th>
+                <th className="text-left px-4 py-3 font-medium">Demo</th>
                 <th className="text-left px-4 py-3 font-medium">Status</th>
                 <th className="text-left px-4 py-3 font-medium">Featured</th>
                 {isOwner && <th className="text-right px-4 py-3 font-medium">Actions</th>}
@@ -92,6 +93,20 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
                     <div className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
                       {project.tagline}
                     </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {project.demo_url || project.github_url ? (
+                      <a
+                        href={project.demo_url ?? project.github_url ?? undefined}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 dark:text-cyan-300 hover:underline"
+                      >
+                        {project.demo_url ? 'Demo' : 'GitHub'} &rarr;
+                      </a>
+                    ) : (
+                      <span className="text-xs text-gray-400 dark:text-gray-600">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <span
