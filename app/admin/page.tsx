@@ -67,8 +67,8 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
         </Reveal>
       ) : (
         <Reveal>
-        <div className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl overflow-x-auto">
+          <table className="w-full min-w-[560px] text-sm">
             <thead className="bg-gray-50 dark:bg-white/[0.04] border-b border-gray-200 dark:border-white/10">
               <tr>
                 <th className="text-left px-4 py-3 font-medium">Order</th>
