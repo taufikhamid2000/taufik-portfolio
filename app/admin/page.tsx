@@ -68,14 +68,14 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
       ) : (
         <Reveal>
         <div className="border border-gray-200 dark:border-white/10 rounded-lg dark:rounded-2xl dark:bg-white/[0.03] dark:backdrop-blur-xl overflow-x-auto">
-          <table className="w-full min-w-[560px] text-sm">
+          <table className="w-full min-w-[420px] md:min-w-[640px] text-sm">
             <thead className="bg-gray-50 dark:bg-white/[0.04] border-b border-gray-200 dark:border-white/10">
               <tr>
-                <th className="text-left px-4 py-3 font-medium">Order</th>
+                <th className="hidden md:table-cell text-left px-4 py-3 font-medium">Order</th>
                 <th className="text-left px-4 py-3 font-medium">Name</th>
                 <th className="text-left px-4 py-3 font-medium">Demo</th>
                 <th className="text-left px-4 py-3 font-medium">Status</th>
-                <th className="text-left px-4 py-3 font-medium">Featured</th>
+                <th className="hidden md:table-cell text-left px-4 py-3 font-medium">Featured</th>
                 {isOwner && <th className="text-right px-4 py-3 font-medium">Actions</th>}
               </tr>
             </thead>
@@ -85,7 +85,7 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
                   key={project.id}
                   className="border-b border-gray-200 dark:border-white/10 last:border-0"
                 >
-                  <td className="px-4 py-3 text-gray-500 dark:text-gray-500 tabular-nums">
+                  <td className="hidden md:table-cell px-4 py-3 text-gray-500 dark:text-gray-500 tabular-nums">
                     {project.display_order}
                   </td>
                   <td className="px-4 py-3">
@@ -115,7 +115,7 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
                       {project.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="hidden md:table-cell px-4 py-3">
                     {project.featured ? (
                       <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">
                         Yes
