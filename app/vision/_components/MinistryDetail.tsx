@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Reveal from '../../_components/Reveal';
 import TiltWrapper from '../../_components/TiltWrapper';
+import { SubmitButton } from '../../_components/submit-button';
 import { submitIdea } from '../actions';
 import { dict, localePrefix, type Locale } from '../../../lib/i18n';
 import type { Ministry, Initiative, Submission } from '../../../lib/vision';
@@ -162,9 +163,12 @@ export function MinistryDetail({
                 placeholder={t.contactPlaceholder} />
             </div>
           </div>
-          <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors font-medium">
+          <SubmitButton
+            pendingText={t.submitting}
+            className="rounded-full bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90"
+          >
             {t.submitButton}
-          </button>
+          </SubmitButton>
         </form>
       </section>
     </div>

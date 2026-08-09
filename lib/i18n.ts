@@ -45,6 +45,7 @@ export const dict = {
     contact: 'Contact (optional)',
     contactPlaceholder: 'Email or @handle',
     submitButton: 'Submit idea',
+    submitting: 'Submitting…',
     langLabel: 'BM',
   },
   ms: {
@@ -88,6 +89,7 @@ export const dict = {
     contact: 'Hubungan (pilihan)',
     contactPlaceholder: 'E-mel atau @handle',
     submitButton: 'Hantar idea',
+    submitting: 'Menghantar…',
     langLabel: 'EN',
   },
 } as const;
