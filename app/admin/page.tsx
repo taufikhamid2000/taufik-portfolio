@@ -42,7 +42,10 @@ export default async function AdminProjectsPage({ searchParams }: AdminPageProps
       </Reveal>
 
       {error && (
-        <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300">
+        <div
+          role="alert"
+          className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300"
+        >
           {error}
         </div>
       )}

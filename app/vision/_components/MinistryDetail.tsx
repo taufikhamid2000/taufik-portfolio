@@ -123,12 +123,18 @@ export function MinistryDetail({
         <p className="text-sm text-foreground/60 mb-5">{t.submitIntro}</p>
 
         {submitted && (
-          <div className="mb-5 p-3 rounded-lg bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-900/40 text-sm text-green-800 dark:text-green-300">
+          <div
+            role="status"
+            className="mb-5 p-3 rounded-lg bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-900/40 text-sm text-green-800 dark:text-green-300"
+          >
             {t.submitted}
           </div>
         )}
         {error && (
-          <div className="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300">
+          <div
+            role="alert"
+            className="mb-5 p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300"
+          >
             {error}
           </div>
         )}

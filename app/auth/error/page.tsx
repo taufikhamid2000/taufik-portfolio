@@ -31,7 +31,7 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
         </div>
       </header>
 
-      <main className="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
+      <main id="main-content" className="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-sm text-center dark:rounded-2xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-8 dark:backdrop-blur-xl">
           <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">

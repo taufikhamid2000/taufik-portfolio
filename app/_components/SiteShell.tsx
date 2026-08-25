@@ -146,7 +146,9 @@ export function SiteShell({
           <SidebarNav pathname={pathname} visionLinks={visionLinks} />
         </aside>
 
-        <main className="relative z-10 mx-auto w-full max-w-5xl flex-1 px-6 py-12">{children}</main>
+        <main id="main-content" className="relative z-10 mx-auto w-full max-w-5xl flex-1 px-6 py-12">
+          {children}
+        </main>
       </div>
 
       <footer className="relative z-10 border-t border-border">

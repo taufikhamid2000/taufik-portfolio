@@ -25,7 +25,10 @@ export function SprintForm({ sprint, action, submitLabel, error }: SprintFormPro
       className="space-y-6 max-w-2xl dark:rounded-2xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-8 dark:backdrop-blur-xl"
     >
       {error && (
-        <div className="p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300">
+        <div
+          role="alert"
+          className="p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300"
+        >
           {error}
         </div>
       )}

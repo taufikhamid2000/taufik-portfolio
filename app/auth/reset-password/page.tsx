@@ -32,7 +32,7 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
         </div>
       </header>
 
-      <main className="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
+      <main id="main-content" className="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-sm dark:rounded-2xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-8 dark:backdrop-blur-xl">
           <h1 className="text-2xl font-bold mb-2">Reset password</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-8">
@@ -40,12 +40,18 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
           </p>
 
           {error && (
-            <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300">
+            <div
+              role="alert"
+              className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300"
+            >
               {error}
             </div>
           )}
           {message && (
-            <div className="mb-6 p-3 rounded-lg bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-900/40 text-sm text-green-800 dark:text-green-300">
+            <div
+              role="status"
+              className="mb-6 p-3 rounded-lg bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-900/40 text-sm text-green-800 dark:text-green-300"
+            >
               {message}
             </div>
           )}

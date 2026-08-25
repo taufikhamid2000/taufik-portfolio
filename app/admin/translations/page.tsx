@@ -29,12 +29,18 @@ export default async function TranslationsPage({
       </p>
 
       {done !== undefined && (
-        <div className="mb-6 p-3 rounded-lg bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-900/40 text-sm text-green-800 dark:text-green-300">
+        <div
+          role="status"
+          className="mb-6 p-3 rounded-lg bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-900/40 text-sm text-green-800 dark:text-green-300"
+        >
           Done — translated {done} record{done === '1' ? '' : 's'}.
         </div>
       )}
       {error && (
-        <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300">
+        <div
+          role="alert"
+          className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300"
+        >
           {error.includes('ANTHROPIC_API_KEY') || error.toLowerCase().includes('api key') || error.includes('401')
             ? 'Translation failed — ANTHROPIC_API_KEY is not set on this deployment. Add it in Vercel → Environment Variables, redeploy, then run this again.'
             : error}

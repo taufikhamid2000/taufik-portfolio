@@ -44,7 +44,7 @@ export default async function UpdatePasswordPage({ searchParams }: UpdatePasswor
         </div>
       </header>
 
-      <main className="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
+      <main id="main-content" className="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-sm dark:rounded-2xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-8 dark:backdrop-blur-xl">
           <h1 className="text-2xl font-bold mb-2">Set a new password</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
@@ -55,7 +55,10 @@ export default async function UpdatePasswordPage({ searchParams }: UpdatePasswor
           </p>
 
           {error && (
-            <div className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300">
+            <div
+              role="alert"
+              className="mb-6 p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300"
+            >
               {error}
             </div>
           )}

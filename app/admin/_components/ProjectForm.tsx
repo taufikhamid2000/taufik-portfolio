@@ -1,3 +1,4 @@
+import { cloneElement, isValidElement } from 'react';
 import Link from 'next/link';
 import type { Project, ProjectStatus } from '../../../lib/projects';
 
@@ -23,7 +24,10 @@ export function ProjectForm({ project, action, submitLabel, error }: ProjectForm
       className="space-y-6 max-w-2xl dark:rounded-2xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-8 dark:backdrop-blur-xl"
     >
       {error && (
-        <div className="p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300">
+        <div
+          role="alert"
+          className="p-3 rounded-lg bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-900/40 text-sm text-red-800 dark:text-red-300"
+        >
           {error}
         </div>
       )}
@@ -173,14 +177,25 @@ function Field({
   hint?: string;
   children: React.ReactNode;
 }) {
+  const hintId = hint ? `${htmlFor}-hint` : undefined;
+  // Field only ever wraps a single input/select/textarea (see call sites
+  // above) — cloning it to add aria-describedby here means every Field
+  // usage gets the hint wired up without touching each call site.
+  const control =
+    hintId && isValidElement<{ 'aria-describedby'?: string }>(children)
+      ? cloneElement(children, { 'aria-describedby': hintId })
+      : children;
+
   return (
     <div>
       <label htmlFor={htmlFor} className="block text-sm font-medium mb-1.5">
         {label}
       </label>
-      {children}
+      {control}
       {hint && (
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-500">{hint}</p>
+        <p id={hintId} className="mt-1 text-xs text-gray-500 dark:text-gray-500">
+          {hint}
+        </p>
       )}
     </div>
   );
