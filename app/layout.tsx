@@ -4,7 +4,6 @@ import { cookies } from "next/headers";
 import "./globals.css";
 import { THEME_COOKIE, isTheme } from "../lib/theme";
 import CursorGlow from "./_components/CursorGlow";
-import CustomCursor from "./_components/CustomCursor";
 
 // Keeps the legacy next-themes-era `.dark` class accurate for the pages
 // that haven't been re-platformed onto the data-theme token system yet
@@ -54,7 +53,6 @@ export default async function RootLayout({
           Skip to main content
         </a>
         <CursorGlow />
-        <CustomCursor />
         {children}
       </body>
     </html>
