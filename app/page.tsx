@@ -42,12 +42,10 @@ export default async function Home({ searchParams }: HomeProps) {
 
   // Show only a handful of highlights up front — a wall of every project
   // reads like a task list to review rather than a curated showcase.
-  // Prefer `featured` projects; if fewer than HIGHLIGHT_COUNT are marked
-  // featured, fill the remaining slots from the rest by display order.
+  // Only explicitly `featured` projects appear here; no backfill from the
+  // rest, so the strip can show fewer than HIGHLIGHT_COUNT (or none).
   const HIGHLIGHT_COUNT = 3;
-  const featuredProjects = projects.filter((p) => p.featured);
-  const restProjects = projects.filter((p) => !p.featured);
-  const highlights = [...featuredProjects, ...restProjects].slice(0, HIGHLIGHT_COUNT);
+  const highlights = projects.filter((p) => p.featured).slice(0, HIGHLIGHT_COUNT);
   const highlightIds = new Set(highlights.map((p) => p.id));
   const rest = projects.filter((p) => !highlightIds.has(p.id));
 
@@ -85,18 +83,20 @@ export default async function Home({ searchParams }: HomeProps) {
           <EmptyState />
         ) : (
           <>
-            <section className="mb-10">
-              <Reveal>
-                <h2 className="text-2xl font-semibold mb-6">A Few Highlights</h2>
-              </Reveal>
-              <div className="project-grid grid gap-6 md:grid-cols-2">
-                {highlights.map((project, i) => (
-                  <Reveal key={project.id} delay={i * 80}>
-                    <ProjectCardTilt project={project} />
-                  </Reveal>
-                ))}
-              </div>
-            </section>
+            {highlights.length > 0 && (
+              <section className="mb-10">
+                <Reveal>
+                  <h2 className="text-2xl font-semibold mb-6">A Few Highlights</h2>
+                </Reveal>
+                <div className="project-grid grid gap-6 md:grid-cols-2">
+                  {highlights.map((project, i) => (
+                    <Reveal key={project.id} delay={i * 80}>
+                      <ProjectCardTilt project={project} />
+                    </Reveal>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {rest.length > 0 && (
               <ExpandProjects count={rest.length}>
