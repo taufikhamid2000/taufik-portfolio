@@ -1,8 +1,40 @@
 # Repository Audit & Strategic Plan
 
-**Generated:** 2026-05-19
+**Generated:** 2026-05-19 (original audit). The inventory and recommendations from "Executive Summary" onward are **historical** — they describe the state on that date. The status update immediately below records what has changed since, verified against this repo's git log, `supabase/migrations/`, and `gh repo list` on 2026-09-02.
 **Total repositories audited:** 18 (including this portfolio)
 **Owner:** taufikhamid2000
+
+---
+
+## Status update — 2026-09-02
+
+Evidence: `git log` since 2026-05-19 (~85 commits), migration files dated 20260524 onward (they double as a changelog), and `gh repo list --json name,isArchived,updatedAt`.
+
+### Portfolio (this repo)
+- **Slim-down done, but not as a static site.** Part 6 said "auth/admin/Supabase removed"; the opposite happened. On 2026-05-20 the portfolio became a DB-backed showcase (`public.projects`) with an owner-only admin CMS, sprint planning, Google/email sign-in, and password reset. Sprints/tasks were made publicly readable on 2026-08-08.
+- All standalone-worthy subprojects left `app/projects/`: SBMP and JobMatch migrated to new repos `sbmp`/`jobmatch`; TekaTeki, UYE, Veyoyee, ACCodeSEA folders deleted (2026-05-24). Only `InteractiveReflection` remains, as recommended.
+- Dead API routes and 12 unused npm deps trimmed; Next.js 14 -> 16.3; ESLint 8 -> 9 with lint re-enabled (2026-06-08); Node pinned to >= 24 (2026-08-25).
+- New since May: "Vision for Malaysia" section (`/vision`, `/ms/vision`) with public idea submissions and Claude-backed BM translations (2026-06-22); full visual redesign (WebGL hero, tilt cards, glassmorphism dark mode, unified sidebar, 2026-08); accessibility pass; `projects.image_url` + `public/screenshots/` (2026-09-02).
+
+### Standalone repos — corrections to the May inventory
+- **myquiza** is no longer "empty boilerplate". It is an ASP.NET Core (.NET 10) REST API, live on Render at https://myquiza-api.onrender.com (Scalar docs at `/scalar/v1`), validating Supabase JWTs and serving content/quiz/attempt/progress/leaderboard endpoints against EduBridge's Supabase DB. Sprint 5 built it (2026-06-09), live-verified the same day; Sprint 6 wired EduBridge to consume it (2026-06-14). The TekaTeki -> myquiza migration never happened; the Next.js boilerplate was removed instead.
+- **Syllabuzz** is no longer an incomplete stub. Sprint 7 (2026-06-14 to 06-16) turned it into a native Android (Kotlin) client for the MyQuiza API — Retrofit, Supabase auth via REST, subject/chapter/topic/quiz tree, scoring, progress, leaderboard — verified on a physical device. It was **archived on 2026-06-08 and then un-archived**; `gh` shows `isArchived: false`.
+- **EduBridge** ran a hardening sprint (Sprint 8, 2026-06-17): 8/10 shipped (privilege-escalation fix, lint/type-check in CI, ~20 debug routes deleted, API tests, dependency monitoring), 2 blocked.
+- **contoh** and **studenthub** no longer exist (deleted 2026-06-08).
+- **mysertifico** deployment taken down (2026-05-24); repo is archived and private.
+- **ACCodeSEA**: `nextjs-animated-slider` is archived; the new home is `ac-code-sea` (pivoted to a platformer, 2026-05-24).
+- **nogipin** was renamed to **MyBeratur**.
+- Archive recommendation vs reality (`gh`, 2026-09-02): `WXGeoDemo.API` archived; `pokemonapp` archived; `tiwikom` archived (tiwikom-v2 is canonical); `Syllabuzz` **not** archived (revived, see above); `proxlox` **not** archived — it was archived on 2026-06-08 but has fresh commits from 2026-08-04 (dark-mode fixes, tab titles), so it was un-archived and is being developed.
+- New repos not in the May audit: `duitduit` (private), `atlas` (private), `quizapp`, `TongTong`, `JomKomute`, `georepo-webapp-taufik` (private). Current total: 25 repos, 5 archived.
+
+### Still open
+- [ ] Decide `proxlox`'s purpose (Part 4 item 2) — it is active again but still has no stated goal in the audit.
+- [ ] `myquiza -> tekateki` rename is moot; consider closing that item. `TekaTeki`'s hierarchical quiz code was deleted, not migrated.
+- [ ] `selectyourleague` / `slidemarket` remain concept-only cards (deliberate, per Part 6).
+- [ ] EduBridge Sprint 8 leftovers: per-question results breakdown (blocked on MyQuiza returning per-question correctness) and the auth-session caching refactor (held for sign-off).
+- [ ] MyQuiza data flags from Sprint 7: sparse quiz content, leaderboard `displayName` all null.
+- [ ] Portfolio: `ANTHROPIC_API_KEY` is not in `.env.example`; `docs/` audit refresh cadence is manual.
+- [ ] Update this document's Part 5 "final repo list" — the real list has grown (6 new repos) rather than shrunk to 13.
 
 ---
 

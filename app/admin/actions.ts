@@ -20,6 +20,7 @@ function parseFormData(formData: FormData): { input: ProjectInput | null; error:
   const techRaw = (formData.get('tech') as string)?.trim() || '';
   const github_url = ((formData.get('github_url') as string) || '').trim() || null;
   const demo_url = ((formData.get('demo_url') as string) || '').trim() || null;
+  const image_url = ((formData.get('image_url') as string) || '').trim() || null;
   const status = formData.get('status') as ProjectStatus;
   const featured = formData.get('featured') === 'on';
   const display_order = parseInt((formData.get('display_order') as string) || '0', 10);
@@ -42,6 +43,7 @@ function parseFormData(formData: FormData): { input: ProjectInput | null; error:
       tech,
       github_url,
       demo_url,
+      image_url,
       status,
       featured,
       display_order: Number.isFinite(display_order) ? display_order : 0,

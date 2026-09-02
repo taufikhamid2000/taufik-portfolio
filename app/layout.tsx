@@ -24,9 +24,21 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+const SITE_URL = "https://taufik.vercel.app";
+const SITE_TITLE = "Muhammad Taufik — Full-stack Developer";
+const SITE_DESCRIPTION =
+  "Portfolio of Muhammad Taufik, a full-stack developer in Malaysia building web, API and mobile products with Next.js, ASP.NET Core, Supabase and Kotlin.";
+
 export const metadata: Metadata = {
-  title: "Taufik`s Portfolio",
-  description: "Created by Muhammad Taufik Bin Hamid",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    type: "website",
+    url: SITE_URL,
+  },
 };
 
 export default async function RootLayout({

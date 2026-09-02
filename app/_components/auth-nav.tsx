@@ -1,10 +1,9 @@
-import Link from 'next/link';
 import { createClient } from '../../lib/supabase/server';
 import { signOut } from '../login/actions';
 import { SubmitButton } from './submit-button';
 
-// Admin is always in the sidebar now (public read, owner-only writes), so
-// this only needs to surface sign-in state, not gate access to it.
+// Only the owner ever signs in, so anonymous visitors get nothing here —
+// no "Sign in" link in the public header. /login stays reachable by URL.
 export async function AuthNav() {
   const supabase = await createClient();
   const {
@@ -21,9 +20,5 @@ export async function AuthNav() {
     );
   }
 
-  return (
-    <Link href="/login" className="text-foreground/50 hover:text-foreground transition-colors">
-      Sign in
-    </Link>
-  );
+  return null;
 }

@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# taufik-portfolio
 
-## Getting Started
+Personal portfolio and project showcase for Taufik Hamid, plus a small owner-only CMS and a bilingual "Vision for Malaysia" planning section.
 
-First, run the development server:
+Live: https://taufik.vercel.app
+
+Stack: Next.js 16.3 (App Router, Server Actions) + React 18 + TypeScript 5 + Tailwind CSS 3, backed by Supabase (Postgres with Row Level Security, Auth). Deployed on Vercel. Requires Node >= 24 (`engines` in `package.json`).
+
+## What's in it
+
+- **Public home page** (`app/page.tsx`) — hero, contact links, and project cards read from Supabase `public.projects`. Featured projects are shown as highlights; the rest are collapsed behind "View all projects".
+- **Admin CMS** (`/admin`) — CRUD for project cards, sprint/task planning (`/admin/sprints`), moderation of community idea submissions (`/admin/submissions`), and a one-click Bahasa Malaysia backfill (`/admin/translations`). Reads are public; writes are gated to a single owner email. `ADMIN_EMAIL` in `lib/auth.ts` is the app-level check (`requireOwner()` runs at the top of every mutating Server Action) and the same email is hardcoded into every "Admin can write ..." RLS policy in `supabase/migrations/`, so the app and the database cannot drift apart. Login is at `/login` (email/password or Google via Supabase Auth); password reset lives under `app/auth/`.
+- **Vision** (`/vision`, Malay at `/ms/vision`) — public planning pages that map Malaysian government ministries to problems and software ideas. Anyone can submit an idea (anonymous, honeypot-protected, stored as `pending`); it appears only after the owner approves it. UI strings live in `lib/i18n.ts`; content translations are `_ms` columns on `ministries`/`initiatives`, filled by `lib/translate.ts` (Claude Haiku via `@anthropic-ai/sdk`).
+- **InteractiveReflection** (`app/projects/InteractiveReflection/`) — a small self-contained interactive demo (React hooks, keyboard navigation, CSS transitions). The only subproject still embedded in the portfolio; everything else was migrated out to standalone repos in May 2026 (see `docs/REPOSITORY_AUDIT.md`).
+
+Other bits: `proxy.ts` (Next 16's middleware equivalent) refreshes the Supabase session on every request; `app/sitemap.ts` and `app/robots.ts` generate SEO files from `lib/site-url.ts`; light/dark/system theme is a cookie set by `app/actions/theme.ts`.
+
+## Local development
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local   # then fill in the values below
+npm install
+npm run dev                  # http://localhost:3000
+npm run lint                 # eslint app lib proxy.ts
+npm run build                # what Vercel runs
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Environment variables:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Required | Used by |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | yes | all Supabase clients in `lib/supabase/` |
+| `NEXT_PUBLIC_SUPABASE_KEY` | yes | anon/publishable key, same clients |
+| `ANTHROPIC_API_KEY` | only for `/admin/translations` | `lib/translate.ts` (read implicitly by the Anthropic SDK; not in `.env.example`) |
+| `NEXT_PUBLIC_SITE_URL` | no | `lib/site-url.ts`; falls back to `VERCEL_URL`, then `http://localhost:3000` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+You can run the public site and admin reads with just the two Supabase variables. Writes require signing in as `ADMIN_EMAIL`.
 
-## Learn More
+## Data and migrations
 
-To learn more about Next.js, take a look at the following resources:
+All application data lives in the hosted Supabase project (schema `public`): `projects`, `sprints`, `tasks`, `ministries`, `initiatives`, `submissions`. Project cards on the home page are simply rows in `public.projects`; `image_url` is an optional path to a screenshot under `public/screenshots/<slug>.png` (referenced as `/screenshots/<slug>.png`), falling back to a gradient header when null.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Conventions for `supabase/migrations/`:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Every change is a timestamped SQL file (`YYYYMMDDHHMMSS_snake_case_title.sql`) and is applied to the hosted project via the Supabase CLI (`supabase db push`, config in `supabase/config.toml`) or the SQL editor. There is no local Postgres in the loop.
+- Schema and *content* both go through migrations. Card copy, sprint/task status updates, and even bookkeeping notes ("SBMP migrated out", "MyQuiza live-verified") are committed as `update public.projects ...` / `update public.tasks ...` files, so the git history doubles as a changelog.
+- Files are idempotent where practical (`if not exists`, `drop policy if exists`, `where status <> 'done'`) and carry a header comment explaining the why.
+- RLS is the security boundary: public `select` policies, owner-email `insert/update/delete` policies. If the owner email ever changes, update `lib/auth.ts` and add a migration that recreates the policies (see `20260519130000_update_admin_email.sql`).
 
-## Deploy on Vercel
+`types/supabase.d.ts` holds the generated database types.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/
+  page.tsx, layout.tsx      home page + root layout (SiteShell sidebar, theme)
+  _components/              shared UI: Hero, ProjectCardTilt, Reveal, TiltWrapper, ShaderBackground, theme-toggle, ...
+  actions/theme.ts          theme cookie Server Action
+  admin/                    CMS: projects CRUD, sprints/, submissions/, translations/
+  auth/                     Supabase auth callbacks, reset/update password
+  login/                    email/password + Google sign-in
+  vision/                   Vision for Malaysia (EN): ministries, initiatives, [slug], submit action
+  ms/vision/                same pages, Malay locale
+  projects/InteractiveReflection/   embedded demo
+  robots.ts, sitemap.ts
+lib/
+  auth.ts                   ADMIN_EMAIL, getIsOwner(), requireOwner()
+  supabase/                 server / client / public / middleware clients
+  projects.ts, sprints.ts, tasks.ts, vision.ts   typed data access
+  i18n.ts, translate.ts     locale strings; Claude-backed EN->BM translation
+  site.ts, site-url.ts, theme.ts, types.ts
+supabase/
+  config.toml               CLI config (project id, auth redirect URLs)
+  migrations/               timestamped schema + content migrations
+public/screenshots/         project card images referenced by projects.image_url
+types/supabase.d.ts         generated DB types
+proxy.ts                    session-refresh middleware (Next 16 naming)
+docs/REPOSITORY_AUDIT.md    cross-repo audit (May 2026) + status updates
+```
+
+## Deployment
+
+Hosted on Vercel; every push to `main` auto-deploys to https://taufik.vercel.app. Set the environment variables above in the Vercel project (only `ANTHROPIC_API_KEY` is secret). Supabase Auth redirect URLs for production and localhost are listed in `supabase/config.toml` and must match the hosted project's Auth settings.
