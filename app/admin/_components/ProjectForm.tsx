@@ -103,6 +103,21 @@ export function ProjectForm({ project, action, submitLabel, error }: ProjectForm
         </Field>
       </div>
 
+      <Field
+        label="Image URL"
+        htmlFor="image_url"
+        hint="Optional screenshot shown as the card header (e.g. /screenshots/edubridge.png)"
+      >
+        <input
+          id="image_url"
+          name="image_url"
+          type="text"
+          defaultValue={project?.image_url ?? ''}
+          placeholder="/screenshots/..."
+          className={inputClasses}
+        />
+      </Field>
+
       <div className="grid md:grid-cols-2 gap-6">
         <Field label="Status" htmlFor="status">
           <select

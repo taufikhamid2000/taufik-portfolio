@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import type { Project, ProjectStatus } from '../../lib/projects';
 
@@ -20,8 +21,8 @@ const statusLabels: Record<ProjectStatus, string> = {
   archived: 'Archived',
 };
 
-// Deterministic gradient per card (no project imagery in the data model
-// yet), so each card gets a distinct visual header instead of a flat box.
+// Deterministic gradient per card, used as the header fallback when a
+// project has no image_url, so each card still gets a distinct header.
 const cardGradients = [
   'from-indigo-500 to-cyan-400',
   'from-fuchsia-500 to-orange-400',
@@ -86,7 +87,19 @@ export default function ProjectCardTilt({ project }: { project: Project }) {
             'radial-gradient(320px circle at var(--spotlight-x, 50%) var(--spotlight-y, 50%), rgba(129, 140, 248, 0.12), transparent 65%)',
         }}
       />
-      <div className={`h-20 bg-gradient-to-br ${gradientForProject(project.id)} opacity-80 dark:opacity-70`} aria-hidden="true" />
+      {project.image_url ? (
+        <div className="relative aspect-[16/10] w-full overflow-hidden border-b border-border bg-muted">
+          <Image
+            src={project.image_url}
+            alt={`${project.name} screenshot`}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+            className="object-cover object-top"
+          />
+        </div>
+      ) : (
+        <div className={`h-20 bg-gradient-to-br ${gradientForProject(project.id)} opacity-80 dark:opacity-70`} aria-hidden="true" />
+      )}
       <div className="relative z-0 p-6 flex flex-col flex-grow">
         <div className="flex items-start justify-between gap-3 mb-2">
           <h3 className="text-xl font-semibold">{project.name}</h3>

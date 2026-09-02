@@ -10,6 +10,7 @@ export interface Project {
   tech: string[];
   github_url: string | null;
   demo_url: string | null;
+  image_url: string | null;
   status: ProjectStatus;
   featured: boolean;
   display_order: number;
@@ -24,6 +25,7 @@ export interface ProjectInput {
   tech: string[];
   github_url: string | null;
   demo_url: string | null;
+  image_url: string | null;
   status: ProjectStatus;
   featured: boolean;
   display_order: number;
