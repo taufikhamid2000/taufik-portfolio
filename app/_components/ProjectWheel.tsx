@@ -9,6 +9,12 @@ const SPIN_MS = 1800;
 const SPIN_EASING = 'cubic-bezier(0.15,0.85,0.25,1)';
 const STEP_MS = 450;
 const SPIN_TURNS = 4;
+// prefers-reduced-motion should tone the spin down, not delete all feedback —
+// a snap-with-no-transition reads as "broken" rather than "instant". Both
+// still skip the multi-turn spin (the actual vestibular-trigger motion),
+// just with a quick, low-distance transition instead of `transition: none`.
+const REDUCED_STEP_MS = 150;
+const REDUCED_SHUFFLE_MS = 200;
 
 function prefersReducedMotion() {
   return (
@@ -42,6 +48,12 @@ export default function ProjectWheel({ projects }: { projects: Project[] }) {
   const [spinning, setSpinning] = useState(false);
   const [noTransition, setNoTransition] = useState(false);
   const [containerSize, setContainerSize] = useState(320);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReducedMotion(prefersReducedMotion());
+  }, []);
 
   const wheelWrapRef = useRef<HTMLDivElement>(null);
   const spinTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -91,9 +103,7 @@ export default function ProjectWheel({ projects }: { projects: Project[] }) {
     if (spinning || list.length === 0) return;
     const target = list[index];
     setSelectedId(target.id);
-    setNoTransition(prefersReducedMotion());
     setRotation((prev) => shortestRotationTo(prev, canonicalRotation(index)));
-    if (prefersReducedMotion()) requestAnimationFrame(() => setNoTransition(false));
   }
 
   function step(direction: 1 | -1) {
@@ -108,23 +118,21 @@ export default function ProjectWheel({ projects }: { projects: Project[] }) {
     const targetIndex = candidates[Math.floor(Math.random() * candidates.length)];
     const target = list[targetIndex];
 
-    if (prefersReducedMotion()) {
-      setSelectedId(target.id);
-      setNoTransition(true);
-      setRotation(canonicalRotation(targetIndex));
-      requestAnimationFrame(() => setNoTransition(false));
-      return;
-    }
+    // Reduced motion still gets a brief, single-direction transition instead
+    // of the full multi-turn spin — "reduced", not "removed", so the change
+    // reads as an intentional pick rather than a broken button.
+    const turns = reducedMotion ? 0 : SPIN_TURNS;
+    const durationMs = reducedMotion ? REDUCED_SHUFFLE_MS : SPIN_MS;
 
     setSpinning(true);
-    setRotation((prev) => spinRotationTo(prev, canonicalRotation(targetIndex), SPIN_TURNS));
+    setRotation((prev) => spinRotationTo(prev, canonicalRotation(targetIndex), turns));
     spinTimeoutRef.current = setTimeout(() => {
       setSelectedId(target.id);
       setNoTransition(true);
       setRotation(canonicalRotation(targetIndex));
       setSpinning(false);
       requestAnimationFrame(() => setNoTransition(false));
-    }, SPIN_MS);
+    }, durationMs);
   }
 
   const selectedProject = list.find((p) => p.id === selectedId) ?? list[0] ?? null;
@@ -139,8 +147,10 @@ export default function ProjectWheel({ projects }: { projects: Project[] }) {
   const transitionStyle = noTransition
     ? 'none'
     : spinning
-      ? `transform ${SPIN_MS}ms ${SPIN_EASING}`
-      : `transform ${STEP_MS}ms ease`;
+      ? reducedMotion
+        ? `transform ${REDUCED_SHUFFLE_MS}ms ease-out`
+        : `transform ${SPIN_MS}ms ${SPIN_EASING}`
+      : `transform ${reducedMotion ? REDUCED_STEP_MS : STEP_MS}ms ease`;
 
   return (
     <div>
@@ -174,16 +184,6 @@ export default function ProjectWheel({ projects }: { projects: Project[] }) {
             All projects ({projects.length})
           </button>
         </div>
-
-        <button
-          type="button"
-          onClick={shuffle}
-          aria-disabled={spinning || list.length < 2}
-          disabled={spinning || list.length < 2}
-          className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <span aria-hidden="true">🔀</span> Surprise me
-        </button>
       </div>
 
       {list.length === 0 || !selectedProject ? (
@@ -251,6 +251,9 @@ export default function ProjectWheel({ projects }: { projects: Project[] }) {
               </div>
             </div>
 
+            <span className="text-xs text-foreground/50 tabular-nums">
+              {selectedIndex + 1} / {list.length}
+            </span>
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -262,9 +265,15 @@ export default function ProjectWheel({ projects }: { projects: Project[] }) {
               >
                 &larr;
               </button>
-              <span className="text-xs text-foreground/50 tabular-nums">
-                {selectedIndex + 1} / {list.length}
-              </span>
+              <button
+                type="button"
+                onClick={shuffle}
+                aria-disabled={spinning || list.length < 2}
+                disabled={spinning || list.length < 2}
+                className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full border border-border hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span aria-hidden="true">🔀</span> Surprise me
+              </button>
               <button
                 type="button"
                 onClick={() => step(1)}
