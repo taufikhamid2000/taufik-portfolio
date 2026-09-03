@@ -66,14 +66,14 @@ export default async function Home({ searchParams }: HomeProps) {
         ) : (
           <>
             {highlights.length > 0 && (
-              <section className="mb-10">
+              <section className="mb-8 md:mb-10">
                 <Reveal>
-                  <h2 className="text-2xl font-semibold mb-1">Selected Work</h2>
-                  <p className="text-sm text-foreground/60 mb-6">
+                  <h2 className="text-xl md:text-2xl font-semibold mb-1">Selected Work</h2>
+                  <p className="text-sm text-foreground/60 mb-4 md:mb-6">
                     Three projects that best show how I work &mdash; full product, API, and mobile.
                   </p>
                 </Reveal>
-                <div className="project-grid grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="project-grid grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {highlights.map((project, i) => (
                     <Reveal key={project.id} delay={i * 80}>
                       <ProjectCardTilt project={project} />
@@ -85,7 +85,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
             {rest.length > 0 && (
               <ExpandProjects count={rest.length}>
-                <div className="project-grid grid gap-6 md:grid-cols-2">
+                <div className="project-grid grid gap-4 md:gap-6 md:grid-cols-2">
                   {rest.map((project, i) => (
                     <Reveal key={project.id} delay={i * 80}>
                       <ProjectCardTilt project={project} />
@@ -100,12 +100,12 @@ export default async function Home({ searchParams }: HomeProps) {
         <Reveal>
           <section
             aria-labelledby="contact-heading"
-            className="mt-4 mb-8 border-t border-border pt-10 dark:rounded-3xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-8 dark:backdrop-blur-xl"
+            className="mt-4 mb-8 border-t border-border pt-8 md:pt-10 dark:rounded-3xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-5 md:dark:p-8 dark:backdrop-blur-xl"
           >
-            <h2 id="contact-heading" className="text-2xl font-semibold mb-2">
+            <h2 id="contact-heading" className="text-xl md:text-2xl font-semibold mb-2">
               Get in touch
             </h2>
-            <p className="text-foreground/65 text-balance mb-5 max-w-xl">
+            <p className="text-sm md:text-base text-foreground/65 text-balance mb-5 max-w-xl">
               Hiring for a full-stack or backend role, or want to talk through one of these
               projects? Drop me a line.
             </p>

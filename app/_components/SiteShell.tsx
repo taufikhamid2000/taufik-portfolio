@@ -169,7 +169,7 @@ export function SiteShell({
           </>
         )}
 
-        <main id="main-content" className="relative z-10 mx-auto w-full max-w-5xl flex-1 px-6 py-12">
+        <main id="main-content" className="relative z-10 mx-auto w-full max-w-5xl flex-1 px-4 py-8 md:px-6 md:py-12">
           {children}
         </main>
       </div>

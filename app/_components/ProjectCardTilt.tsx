@@ -100,9 +100,9 @@ export default function ProjectCardTilt({ project }: { project: Project }) {
       ) : (
         <div className={`h-20 bg-gradient-to-br ${gradientForProject(project.id)} opacity-80 dark:opacity-70`} aria-hidden="true" />
       )}
-      <div className="relative z-0 p-6 flex flex-col flex-grow">
+      <div className="relative z-0 p-4 md:p-6 flex flex-col flex-grow">
         <div className="flex items-start justify-between gap-3 mb-2">
-          <h3 className="text-xl font-semibold">{project.name}</h3>
+          <h3 className="text-lg font-semibold">{project.name}</h3>
           <span
             className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${statusStyles[project.status]}`}
           >
