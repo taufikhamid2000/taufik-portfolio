@@ -1,4 +1,5 @@
 import { SITE } from '../../lib/site';
+import BioDisclosure from './BioDisclosure';
 import ContactLinks from './ContactLinks';
 import Hero3DLoader from './Hero3DLoader';
 import TextScramble from './TextScramble';
@@ -25,29 +26,31 @@ export default function HeroIntro() {
           />
         </h1>
 
-        <p className="text-base md:text-lg text-foreground/75 text-balance mb-3">
-          A full-stack developer based in {SITE.location}. I build products end to end &mdash;
-          Next.js/TypeScript front-ends, ASP.NET Core and Supabase back-ends, and native Android
-          in Kotlin.
-        </p>
-        <p className="text-sm md:text-base text-foreground/65 text-balance mb-3">
-          Most of my projects tackle specifically Malaysian problems: personal finance and LHDN
-          tax relief, government queueing, and student surveys.
-        </p>
-        <p className="text-sm md:text-base text-foreground/65 mb-5 md:mb-6">
-          Currently: <span className="text-foreground">{SITE.availability.toLowerCase()}</span>.
-        </p>
+        <BioDisclosure>
+          <p className="text-base md:text-lg text-foreground/75 text-balance mb-3">
+            A full-stack developer based in {SITE.location}. I build products end to end &mdash;
+            Next.js/TypeScript front-ends, ASP.NET Core and Supabase back-ends, and native Android
+            in Kotlin.
+          </p>
+          <p className="text-sm md:text-base text-foreground/65 text-balance mb-3">
+            Most of my projects tackle specifically Malaysian problems: personal finance and LHDN
+            tax relief, government queueing, and student surveys.
+          </p>
+          <p className="text-sm md:text-base text-foreground/65 mb-5 md:mb-6">
+            Currently: <span className="text-foreground">{SITE.availability.toLowerCase()}</span>.
+          </p>
 
-        <ul className="mb-5 md:mb-6 flex flex-wrap gap-1.5 md:gap-2" aria-label="At a glance">
-          {chips.map((chip) => (
-            <li
-              key={chip}
-              className="rounded-full border border-border bg-muted/60 px-2.5 py-0.5 md:px-3 md:py-1 text-xs font-medium text-foreground/70 dark:border-white/10 dark:bg-white/[0.04]"
-            >
-              {chip}
-            </li>
-          ))}
-        </ul>
+          <ul className="mb-5 md:mb-6 flex flex-wrap gap-1.5 md:gap-2" aria-label="At a glance">
+            {chips.map((chip) => (
+              <li
+                key={chip}
+                className="rounded-full border border-border bg-muted/60 px-2.5 py-0.5 md:px-3 md:py-1 text-xs font-medium text-foreground/70 dark:border-white/10 dark:bg-white/[0.04]"
+              >
+                {chip}
+              </li>
+            ))}
+          </ul>
+        </BioDisclosure>
 
         <ContactLinks />
       </div>
