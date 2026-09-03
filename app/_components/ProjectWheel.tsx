@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Project } from '../../lib/projects';
 import { statusDotColors, statusLabels } from '../../lib/project-status';
+import { projectIcon } from '../../lib/project-icon';
 import ProjectDetail from './ProjectDetail';
 
 const SPIN_MS = 1800;
@@ -243,7 +244,17 @@ export default function ProjectWheel({ projects }: { projects: Project[] }) {
                               : 'none',
                             color: statusDotColors[project.status],
                           }}
-                        />
+                        >
+                          {projectIcon(project.name) && (
+                            <span
+                              aria-hidden="true"
+                              className="text-white [&>svg]:block [&>svg]:w-full [&>svg]:h-full"
+                              style={{ width: dotSize * 0.6, height: dotSize * 0.6 }}
+                            >
+                              {projectIcon(project.name)}
+                            </span>
+                          )}
+                        </button>
                       </div>
                     </div>
                   );
