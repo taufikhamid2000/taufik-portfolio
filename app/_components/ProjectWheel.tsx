@@ -190,7 +190,15 @@ export default function ProjectWheel({ projects }: { projects: Project[] }) {
       {list.length === 0 || !selectedProject ? (
         <p className="text-sm text-foreground/60">No projects to show.</p>
       ) : (
-        <div className="grid gap-6 md:gap-10 md:grid-cols-[minmax(0,320px)_1fr] items-center">
+        <div className="grid gap-6 md:gap-10 md:grid-cols-[1fr_minmax(0,320px)] items-center">
+          <article className="relative overflow-hidden border border-border bg-muted/40 rounded-lg dark:rounded-2xl dark:backdrop-blur-xl flex flex-col">
+            <ProjectDetail
+              project={selectedProject}
+              headerClassName="aspect-[16/9] md:aspect-[21/9]"
+              liveRegion
+            />
+          </article>
+
           <div className="flex flex-col items-center gap-4">
             <div
               ref={wheelWrapRef}
@@ -201,6 +209,25 @@ export default function ProjectWheel({ projects }: { projects: Project[] }) {
                 aria-hidden="true"
                 className="absolute inset-3 rounded-full border border-border/60 bg-muted/20"
               />
+              <div
+                aria-hidden="true"
+                className="absolute inset-3 rounded-full flex flex-col items-center justify-center text-center px-4 pointer-events-none"
+              >
+                {projectIcon(selectedProject.name) && (
+                  <span
+                    className="text-foreground/70 mb-1.5 [&>svg]:block [&>svg]:w-full [&>svg]:h-full"
+                    style={{ width: 28, height: 28 }}
+                  >
+                    {projectIcon(selectedProject.name)}
+                  </span>
+                )}
+                <p className="text-sm font-semibold leading-snug line-clamp-2">
+                  {selectedProject.name}
+                </p>
+                <p className="text-xs text-foreground/60 leading-snug line-clamp-3 mt-1">
+                  {selectedProject.tagline}
+                </p>
+              </div>
               <div
                 className="absolute inset-0"
                 style={{
@@ -300,14 +327,6 @@ export default function ProjectWheel({ projects }: { projects: Project[] }) {
               {statusLabels[selectedProject.status]} &middot; dot color shows status
             </p>
           </div>
-
-          <article className="relative overflow-hidden border border-border bg-muted/40 rounded-lg dark:rounded-2xl dark:backdrop-blur-xl flex flex-col">
-            <ProjectDetail
-              project={selectedProject}
-              headerClassName="aspect-[16/9] md:aspect-[21/9]"
-              liveRegion
-            />
-          </article>
         </div>
       )}
     </div>
