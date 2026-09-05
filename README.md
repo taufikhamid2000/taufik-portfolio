@@ -30,7 +30,7 @@ Environment variables:
 | Variable | Required | Used by |
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | yes | all Supabase clients in `lib/supabase/` |
-| `NEXT_PUBLIC_SUPABASE_KEY` | yes | anon/publishable key, same clients |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | yes | anon/publishable key, same clients. Legacy name `NEXT_PUBLIC_SUPABASE_KEY` is still accepted as a fallback. |
 | `ANTHROPIC_API_KEY` | only for `/admin/translations` | `lib/translate.ts` (read implicitly by the Anthropic SDK; not in `.env.example`) |
 | `NEXT_PUBLIC_SITE_URL` | no | `lib/site-url.ts`; falls back to `VERCEL_URL`, then `http://localhost:3000` |
 
