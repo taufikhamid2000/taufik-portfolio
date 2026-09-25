@@ -1,20 +1,40 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { Suspense } from 'react';
-import { cookies } from 'next/headers';
+import { getIsOwner } from '../lib/auth';
+import { SITE } from '../lib/site';
 import { getProjects } from '../lib/projects';
-import { THEME_COOKIE, isTheme } from '../lib/theme';
-import { AuthNav } from './_components/auth-nav';
-import { SiteShell } from './_components/SiteShell';
-import HeroIntro from './_components/HeroIntro';
-import ContactLinks from './_components/ContactLinks';
-import Reveal from './_components/Reveal';
-import ProjectWheel from './_components/ProjectWheel';
-
-export const revalidate = 60; // re-fetch projects at most once per minute
+import { getSprints } from '../lib/sprints';
+import { getAllInitiatives, getMinistries } from '../lib/vision';
+import type { Locale } from '../lib/i18n';
+import PesApp, { type PesProject } from './pes/_components/PesApp';
+import type { PesLocale, PesSprint, PesVisionData } from './pes/types';
 
 interface HomeProps {
   searchParams: Promise<{ code?: string; error?: string; error_description?: string }>;
+}
+
+async function loadVision(locale: Locale): Promise<PesVisionData> {
+  const [ministries, initiatives] = await Promise.all([getMinistries(locale), getAllInitiatives(locale)]);
+  return {
+    ministries: ministries.map((m) => ({
+      id: m.id,
+      slug: m.slug,
+      name: m.name,
+      description: m.description,
+      initiative_count: m.initiative_count,
+    })),
+    initiatives: initiatives.map((i) => ({
+      id: i.id,
+      ministry_slug: i.ministry.slug,
+      ministry_name: i.ministry.name,
+      problem: i.problem,
+      idea: i.idea,
+      status: i.status,
+      project_name: i.project?.name ?? null,
+      demo_url: i.project?.demo_url ?? null,
+      github_url: i.project?.github_url ?? null,
+    })),
+  };
 }
 
 export default async function Home({ searchParams }: HomeProps) {
@@ -34,69 +54,72 @@ export default async function Home({ searchParams }: HomeProps) {
     );
   }
 
-  const allProjects = await getProjects();
-  const cookieStore = await cookies();
-  const themeCookie = cookieStore.get(THEME_COOKIE)?.value;
-  const initialTheme = isTheme(themeCookie) ? themeCookie : 'system';
+  const [all, isOwner, en, ms] = await Promise.all([
+    getProjects(),
+    getIsOwner(),
+    loadVision('en'),
+    loadVision('ms'),
+  ]);
 
-  // 'concept' rows are idea stubs — they dilute the portfolio, so they never
-  // appear publicly. 'archived' rows stay, but only in the collapsed list.
-  const projects = allProjects.filter((p) => p.status !== 'concept');
+  // Sprints are owner-only in the database (RLS); only fetch and ship them
+  // to the client when the visitor is the owner, so nothing leaks otherwise.
+  const sprints: PesSprint[] = isOwner
+    ? (await getSprints()).map((s) => ({
+        id: s.id,
+        name: s.name,
+        goal: s.goal,
+        start_date: s.start_date,
+        end_date: s.end_date,
+        status: s.status,
+        task_count: s.task_count,
+        done_count: s.done_count,
+      }))
+    : [];
+
+  // 'concept' rows are idea stubs — they never appear publicly.
+  const projects: PesProject[] = all
+    .filter((p) => p.status !== 'concept')
+    .map((p) => ({
+      id: p.id,
+      name: p.name,
+      tagline: p.tagline,
+      description: p.description,
+      tech: p.tech,
+      github_url: p.github_url,
+      demo_url: p.demo_url,
+      image_url: p.image_url,
+      featured: p.featured,
+      status: p.status,
+    }));
+
+  const vision: Record<PesLocale, PesVisionData> = { en, ms };
+  const listed = projects.filter((p) => p.status !== 'archived');
 
   return (
-    <SiteShell initialTheme={initialTheme} authSlot={<Suspense fallback={null}><AuthNav /></Suspense>}>
-      <div className="animate-page-in">
-        <HeroIntro />
+    <>
+      <PesApp projects={projects} vision={vision} sprints={sprints} isOwner={isOwner} site={SITE} />
 
-        {projects.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <section className="mb-8 md:mb-10">
-            <Reveal>
-              <h2 className="text-xl md:text-2xl font-semibold mb-1">Explore my work</h2>
-              <p className="text-sm text-foreground/60 mb-4 md:mb-6">
-                Spin the wheel, or hit &ldquo;Surprise me&rdquo; and let it pick for you.
-              </p>
-            </Reveal>
-            <Reveal delay={80}>
-              <ProjectWheel projects={projects} />
-            </Reveal>
-          </section>
-        )}
-
-        <Reveal>
-          <section
-            aria-labelledby="contact-heading"
-            className="mt-4 mb-8 border-t border-border pt-8 md:pt-10 dark:rounded-3xl dark:border dark:border-white/10 dark:bg-white/[0.03] dark:p-5 md:dark:p-8 dark:backdrop-blur-xl"
-          >
-            <h2 id="contact-heading" className="text-xl md:text-2xl font-semibold mb-2">
-              Get in touch
-            </h2>
-            <p className="text-sm md:text-base text-foreground/65 text-balance mb-5 max-w-xl">
-              Hiring for a full-stack or backend role, or want to talk through one of these
-              projects? Drop me a line.
-            </p>
-            <ContactLinks />
-          </section>
-        </Reveal>
+      {/* Real, crawlable text for search engines, screen readers and no-JS
+          visitors: the same content the menu presents, in plain HTML. */}
+      <div className="sr-only">
+        <h1>
+          {SITE.name} &mdash; {SITE.role}
+        </h1>
+        <p>
+          {SITE.role} based in {SITE.location}. {SITE.availability}. Contact: {SITE.email}.
+        </p>
+        <h2>Projects</h2>
+        <ul>
+          {listed.map((p) => (
+            <li key={p.id}>
+              {p.demo_url ? <a href={p.demo_url}>{p.name}</a> : p.name}: {p.tagline}
+            </li>
+          ))}
+        </ul>
+        <nav aria-label="More">
+          <Link href="/classic">Classic site</Link> <Link href="/vision">Improving Malaysia through software</Link>
+        </nav>
       </div>
-    </SiteShell>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="border border-dashed border-border rounded-2xl bg-muted/40 p-12 text-center">
-      <h2 className="text-xl font-semibold mb-2">No projects yet</h2>
-      <p className="text-foreground/60 mb-4">
-        Add your first project from the admin panel.
-      </p>
-      <Link
-        href="/admin"
-        className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors"
-      >
-        Go to Admin
-      </Link>
-    </div>
+    </>
   );
 }

@@ -5,6 +5,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { statusDotColors, statusLabels } from '../../../lib/project-status';
 import type { ProjectStatus } from '../../../lib/projects';
 import type { PesProject } from './PesApp';
+import { useAutoFocus } from './useAutoFocus';
 import { useDetailView } from './useDetailView';
 
 export type ProjectsMode = 'projects' | 'featured' | 'archive';
@@ -87,6 +88,7 @@ export default function ProjectsScreen({
   const [index, setIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const dv = useDetailView(onBack);
+  const focusRef = useAutoFocus<HTMLDivElement>();
 
   const visible = useMemo(
     () => (tab === 'all' ? base : base.filter((p) => p.status === tab)),
@@ -143,7 +145,7 @@ export default function ProjectsScreen({
   const status = selected ? asStatus(selected.status) : null;
 
   return (
-    <div className="pes-full pes-enter" role="dialog" aria-modal="true" aria-label={TITLES[mode]}>
+    <div className="pes-full pes-enter" role="dialog" aria-modal="true" aria-label={TITLES[mode]} tabIndex={-1} ref={focusRef}>
       <div className="pes-full-head">
         <h2 className="pes-full-title">{TITLES[mode]}</h2>
         <span className="pes-full-count">{visible.length}</span>

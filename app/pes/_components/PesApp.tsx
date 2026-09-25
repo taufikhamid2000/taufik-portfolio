@@ -11,6 +11,7 @@ import ProjectsScreen from './ProjectsScreen';
 import SprintsScreen from './SprintsScreen';
 import VisionScreen from './VisionScreen';
 import { useMediaQuery, usePref } from './usePref';
+import { useSound } from './useSound';
 
 export interface PesProject {
   id: string;
@@ -125,6 +126,11 @@ function Emblem({ className }: { className?: string }) {
   );
 }
 
+// Own component so the 15s clock tick re-renders only this <b>, not the whole menu.
+function Clock() {
+  return <b>{useClock()}</b>;
+}
+
 function useClock() {
   const [now, setNow] = useState<string>('--:--');
   useEffect(() => {
@@ -192,9 +198,17 @@ export default function PesApp({
   const [localePref, setLocalePref] = usePref(LOCALE_KEY);
   const [motionPref, setMotionPref] = usePref(MOTION_KEY);
   const [rotatePref, setRotatePref] = usePref('pes-rotate-dismissed');
+  const [soundPref, setSoundPref] = usePref('pes-sound');
   const osReduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
-  const clock = useClock();
-  const close = useCallback(() => setOpenId(null), []);
+  const sound = soundPref === '1';
+  const play = useSound(sound);
+  const setSound = useCallback((v: boolean) => setSoundPref(v ? '1' : '0'), [setSoundPref]);
+  const close = useCallback(() => {
+    setOpenId(null);
+    play('back');
+    // Return focus to the selected tile so keyboard users don't land on <body>.
+    requestAnimationFrame(() => document.querySelector<HTMLElement>('.pes-tile[aria-current="true"]')?.focus());
+  }, [play]);
 
   const locale: PesLocale = localePref === 'ms' ? 'ms' : 'en';
   // An explicit choice wins; otherwise follow the OS setting.
@@ -215,25 +229,48 @@ export default function PesApp({
     return () => window.clearInterval(id);
   }, [started, heroes.length, reduceMotion]);
 
-  const move = useCallback((delta: number) => {
-    setIndex((i) => (i + delta + MENU.length) % MENU.length);
-  }, []);
+  const move = useCallback(
+    (delta: number) => {
+      setIndex((i) => (i + delta + MENU.length) % MENU.length);
+      play('move');
+    },
+    [play],
+  );
 
-  const confirm = useCallback((i: number) => setOpenId(MENU[i].id), []);
+  const select = useCallback(
+    (i: number) => {
+      setIndex(i);
+      play('move');
+    },
+    [play],
+  );
+
+  const confirm = useCallback(
+    (i: number) => {
+      setOpenId(MENU[i].id);
+      play('confirm');
+    },
+    [play],
+  );
+
+  const start = useCallback(() => {
+    setStarted(true);
+    play('confirm');
+  }, [play]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (!started) {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          setStarted(true);
+          start();
         }
         return;
       }
       if (openId) {
         if (e.key === 'Escape' || e.key === 'Backspace') {
           e.preventDefault();
-          setOpenId(null);
+          close();
         }
         return;
       }
@@ -258,7 +295,7 @@ export default function PesApp({
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [started, openId, index, move, confirm]);
+  }, [started, openId, index, move, confirm, start, close]);
 
   // Center the selected tile in the (touch) tile row. Scrolls only that row:
   // scrollIntoView would also scroll the overflow:hidden root and shift the scene.
@@ -294,6 +331,7 @@ export default function PesApp({
 
   return (
     <div
+      id="main-content"
       className={`pes-root${reduceMotion ? ' pes-reduce' : ''}`}
       role="application"
       aria-label="Portfolio menu"
@@ -306,17 +344,22 @@ export default function PesApp({
       <div className="pes-slab pes-slab--bl" />
 
       {!started ? (
-        <button type="button" className="pes-title" onClick={() => setStarted(true)} aria-label="Press start">
-          <Emblem className="pes-title-logo pes-enter" />
-          <div className="pes-title-name pes-enter pes-enter--d1">TAUFIK</div>
-          <div className="pes-title-sub pes-enter pes-enter--d1">PORTFOLIO EDITION</div>
-          <div className="pes-start pes-enter pes-enter--d2">PRESS START</div>
-        </button>
+        <>
+          <button type="button" className="pes-title" onClick={start} aria-label="Press start">
+            <Emblem className="pes-title-logo pes-enter" />
+            <div className="pes-title-name pes-enter pes-enter--d1">TAUFIK</div>
+            <div className="pes-title-sub pes-enter pes-enter--d1">PORTFOLIO EDITION</div>
+            <div className="pes-start pes-enter pes-enter--d2">PRESS START</div>
+          </button>
+          <a className="pes-classic-link" href="/classic">
+            Classic site
+          </a>
+        </>
       ) : (
         <>
           <header className="pes-topbar pes-enter">
             <div className="pes-pill" aria-hidden="true">
-              <b>{clock}</b>
+              <Clock />
               <span>{projects.length} PROJECTS</span>
             </div>
             <div className="pes-brand">
@@ -331,18 +374,25 @@ export default function PesApp({
           <div className="pes-hero pes-enter pes-enter--d1" aria-hidden="true">
             <div className="pes-hero-frame" />
             <div className="pes-hero-inner">
-              {heroes.map((p, i) => (
-                <Image
-                  key={p.id}
-                  src={p.image_url as string}
-                  alt=""
-                  fill
-                  sizes="(max-width: 900px) 84vw, 620px"
-                  priority={i === 0}
-                  className="pes-hero-img"
-                  data-on={i === heroIndex}
-                />
-              ))}
+              {/* Only previous/current/next are mounted: enough for the cross-fade and
+                  a preloaded next image, without decoding all of them. */}
+              {heroes.map((p, i) => {
+                const n = heroes.length;
+                const near = i === heroIndex || i === (heroIndex + 1) % n || i === (heroIndex - 1 + n) % n;
+                if (!near) return null;
+                return (
+                  <Image
+                    key={p.id}
+                    src={p.image_url as string}
+                    alt=""
+                    fill
+                    sizes="(max-width: 900px) 84vw, 620px"
+                    priority={i === 0}
+                    className="pes-hero-img"
+                    data-on={i === heroIndex}
+                  />
+                );
+              })}
               <div className="pes-hero-shade" />
               {heroes[heroIndex] && (
                 <div className="pes-hero-caption">
@@ -366,7 +416,7 @@ export default function PesApp({
               </div>
               <div className="pes-tiles" role="list">
                 {MENU.map((item, i) => (
-                  <Tile key={item.id} item={item} index={i} selected={i === index} onSelect={setIndex} onConfirm={confirm} />
+                  <Tile key={item.id} item={item} index={i} selected={i === index} onSelect={select} onConfirm={confirm} />
                 ))}
               </div>
             </div>
@@ -418,6 +468,8 @@ export default function PesApp({
               reduceMotion={reduceMotion}
               onLocale={setLocale}
               onReduceMotion={setReduceMotion}
+              sound={sound}
+              onSound={setSound}
               onBack={close}
             />
           )}

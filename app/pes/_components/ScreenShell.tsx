@@ -1,5 +1,7 @@
 'use client';
 
+import { useAutoFocus } from './useAutoFocus';
+
 export interface Hint {
   keys: string;
   label: string;
@@ -20,8 +22,9 @@ export default function ScreenShell({
   hints: Hint[];
   children: React.ReactNode;
 }) {
+  const ref = useAutoFocus<HTMLDivElement>();
   return (
-    <div className="pes-full pes-enter" role="dialog" aria-modal="true" aria-label={title}>
+    <div className="pes-full pes-enter" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={ref}>
       <div className="pes-full-head">
         <h2 className="pes-full-title">{title}</h2>
         {count !== undefined && <span className="pes-full-count">{count}</span>}

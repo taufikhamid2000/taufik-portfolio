@@ -1,11 +1,12 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { PesLocale } from '../types';
 import ScreenShell from './ScreenShell';
 
 interface Option {
-  id: 'language' | 'motion';
+  id: 'language' | 'motion' | 'sound' | 'classic';
   label: string;
   value: string;
   hint: string;
@@ -14,17 +15,22 @@ interface Option {
 export default function OptionsScreen({
   locale,
   reduceMotion,
+  sound,
   onLocale,
   onReduceMotion,
+  onSound,
   onBack,
 }: {
   locale: PesLocale;
   reduceMotion: boolean;
+  sound: boolean;
   onLocale: (l: PesLocale) => void;
   onReduceMotion: (v: boolean) => void;
+  onSound: (v: boolean) => void;
   onBack: () => void;
 }) {
   const [index, setIndex] = useState(0);
+  const router = useRouter();
 
   const options: Option[] = [
     {
@@ -39,11 +45,25 @@ export default function OptionsScreen({
       value: reduceMotion ? 'ON' : 'OFF',
       hint: 'Turns off animations and transitions in this menu.',
     },
+    {
+      id: 'sound',
+      label: 'SOUND',
+      value: sound ? 'ON' : 'OFF',
+      hint: 'Short menu blips when moving and confirming.',
+    },
+    {
+      id: 'classic',
+      label: 'CLASSIC SITE',
+      value: 'OPEN',
+      hint: 'The original scrolling portfolio layout.',
+    },
   ];
 
   const toggle = (id: Option['id']) => {
     if (id === 'language') onLocale(locale === 'en' ? 'ms' : 'en');
-    else onReduceMotion(!reduceMotion);
+    else if (id === 'motion') onReduceMotion(!reduceMotion);
+    else if (id === 'sound') onSound(!sound);
+    else router.push('/classic');
   };
 
   useEffect(() => {
@@ -62,7 +82,7 @@ export default function OptionsScreen({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, locale, reduceMotion]);
+  }, [index, locale, reduceMotion, sound]);
 
   return (
     <ScreenShell

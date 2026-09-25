@@ -405,6 +405,27 @@
   color: var(--pes-blue-300);
   font-weight: 700;
 }
+.pes-classic-link {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(4 * var(--vh));
+  z-index: 9;
+  margin-inline: auto;
+  width: max-content;
+  padding: 0.6rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(244, 248, 255, 0.7);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.pes-classic-link:hover,
+.pes-classic-link:focus-visible {
+  color: #fff;
+}
 .pes-start {
   margin-top: 1.6rem;
   font-size: clamp(0.9rem, 2vw, 1.4rem);
@@ -455,6 +476,9 @@
   background:
     linear-gradient(180deg, rgba(4, 18, 46, 0.94), rgba(4, 18, 46, 0.98)),
     var(--pes-blue-900);
+}
+.pes-full:focus {
+  outline: none;
 }
 .pes-full-head {
   display: flex;
