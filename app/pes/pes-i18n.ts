@@ -46,6 +46,7 @@ export interface PesDict {
     end: string;
     taskCount: string;
     noItems: string;
+    carriedOver: string;
     other: string;
     items: string;
     taskStatus: Record<string, string>;
@@ -140,6 +141,7 @@ const en: PesDict = {
     end: 'END',
     taskCount: 'TASKS',
     noItems: 'No items in this sprint yet.',
+    carriedOver: 'CARRIED OVER',
     other: 'OTHER SPRINTS',
     items: 'ITEMS',
     taskStatus: { todo: 'TODO', 'in-progress': 'DOING', blocked: 'BLOCKED', done: 'DONE' },
@@ -235,6 +237,7 @@ const ms: PesDict = {
     end: 'TAMAT',
     taskCount: 'TUGASAN',
     noItems: 'Belum ada item dalam sprint ini.',
+    carriedOver: 'DIBAWA KE HADAPAN',
     other: 'SPRINT LAIN',
     items: 'ITEM',
     taskStatus: { todo: 'TERBUKA', 'in-progress': 'DIBUAT', blocked: 'TERHALANG', done: 'SIAP' },

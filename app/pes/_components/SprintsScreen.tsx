@@ -68,6 +68,7 @@ export default function SprintsScreen({
           <h3 className="pes-detail-name">{slot.label}</h3>
           {slot.sprints.length === 0 && <p className="pes-empty">{tr.sprints.noItems}</p>}
           {slot.sprints.map((sp) => {
+            const ended = !!sp.end_date && sp.end_date < new Date().toISOString().slice(0, 10);
             const pct = sp.task_count > 0 ? Math.round((sp.done_count / sp.task_count) * 100) : 0;
             return (
               <article key={sp.id} className="pes-detail">
@@ -88,7 +89,10 @@ export default function SprintsScreen({
                         {tr.sprints.taskStatus[t.status] ?? t.status}
                       </span>
                       <span className="pes-card-main">
-                        <span className="pes-card-name">{t.title}</span>
+                        <span className="pes-card-name">
+                          {t.title}
+                          {ended && t.status !== 'done' && <span className="pes-carried">{tr.sprints.carriedOver}</span>}
+                        </span>
                         <span className="pes-card-sub">
                           {t.priority}
                           {t.effort != null ? ` · ${t.effort}` : ''}

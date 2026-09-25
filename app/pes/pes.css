@@ -1226,3 +1226,4 @@
 .pes-items { display: grid; gap: 6px; margin-top: 10px; }
 .pes-year-nav { display: flex; align-items: center; justify-content: center; gap: 16px; }
 .pes-year-nav b { font-size: 18px; letter-spacing: .1em; }
+.pes-carried { display: inline-block; margin-left: 8px; padding: 1px 6px; font-size: 10px; letter-spacing: .06em; background: #f59e0b; color: #1c1200; vertical-align: middle; }
