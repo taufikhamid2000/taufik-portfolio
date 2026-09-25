@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { PesSprint } from '../types';
 import { useLocale, useT } from './PesLocale';
 
@@ -27,20 +27,18 @@ const utc = (d: string) => {
 // A database sprint lands in the slot its start_date falls in.
 export function buildYear(year: number, sprints: PesSprint[], bufferLabel: string) {
   const start = Date.UTC(year, 0, 1);
-  const placed = new Set<string>();
   const iterations = Array.from({ length: ITERATIONS }, (_, i) => {
     const iterStart = start + i * 13 * 7 * DAY;
     const mk = (n: number, from: number, weeks: number, buffer: boolean): Slot => {
       const to = from + weeks * 7 * DAY - DAY;
       const inSlot = sprints.filter((s) => s.start_date && utc(s.start_date) >= from && utc(s.start_date) <= to);
-      inSlot.forEach((s) => placed.add(s.id));
       return { key: `${i}-${n}`, label: buffer ? bufferLabel : `S${i * SPRINTS + n + 1}`, from, to, buffer, sprints: inSlot };
     };
     const slots = Array.from({ length: SPRINTS }, (_, n) => mk(n, iterStart + n * SPRINT_WEEKS * 7 * DAY, SPRINT_WEEKS, false));
     slots.push(mk(SPRINTS, iterStart + SPRINTS * SPRINT_WEEKS * 7 * DAY, 1, true));
     return slots;
   });
-  return { iterations, other: sprints.filter((s) => !placed.has(s.id)) };
+  return { iterations, other: sprints.filter((s) => !s.start_date) };
 }
 
 export default function YearCalendar({
@@ -53,14 +51,25 @@ export default function YearCalendar({
   const tr = useT();
   const locale = useLocale();
   const now = new Date();
-  const year = now.getFullYear();
-  const today = Date.UTC(year, now.getMonth(), now.getDate());
+  const thisYear = now.getFullYear();
+  const [year, setYear] = useState(thisYear);
+  const firstYear = Math.min(thisYear, ...sprints.filter((s) => s.start_date).map((s) => Number(s.start_date!.slice(0, 4))));
+  const today = Date.UTC(thisYear, now.getMonth(), now.getDate());
   const { iterations, other } = useMemo(() => buildYear(year, sprints, tr.sprints.buffer), [year, sprints, tr]);
   const fmt = new Intl.DateTimeFormat(locale === 'ms' ? 'ms-MY' : 'en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
   const range = (r: { from: number; to: number }) => `${fmt.format(r.from)} – ${fmt.format(r.to)}`;
 
   return (
     <div className="pes-year">
+      <div className="pes-year-nav">
+        <button type="button" className="pes-btn pes-btn--ghost" disabled={year <= firstYear} onClick={() => setYear(year - 1)} aria-label={String(year - 1)}>
+          &larr;
+        </button>
+        <b>{year}</b>
+        <button type="button" className="pes-btn pes-btn--ghost" disabled={year >= thisYear} onClick={() => setYear(year + 1)} aria-label={String(year + 1)}>
+          &rarr;
+        </button>
+      </div>
       <p className="pes-detail-tag pes-contact-intro">{tr.sprints.yearIntro(year)}</p>
       {iterations.map((slots, i) => (
         <section key={i} className="pes-iter" aria-label={`${tr.sprints.iteration} ${i + 1}`}>

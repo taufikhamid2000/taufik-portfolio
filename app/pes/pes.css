@@ -1224,3 +1224,5 @@
 .pes-sprint-cell em { font-style: normal; opacity: .7; }
 .pes-slot { display: grid; gap: 14px; overflow-y: auto; }
 .pes-items { display: grid; gap: 6px; margin-top: 10px; }
+.pes-year-nav { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.pes-year-nav b { font-size: 18px; letter-spacing: .1em; }
