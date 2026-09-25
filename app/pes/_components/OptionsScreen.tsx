@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { PesLocale } from '../types';
+import { useT } from './PesLocale';
 import ScreenShell from './ScreenShell';
 
 interface Option {
@@ -31,31 +32,33 @@ export default function OptionsScreen({
 }) {
   const [index, setIndex] = useState(0);
   const router = useRouter();
+  const tr = useT();
+  const o = tr.options;
 
   const options: Option[] = [
     {
       id: 'language',
-      label: 'LANGUAGE',
+      label: o.language,
       value: locale === 'en' ? 'ENGLISH' : 'BAHASA MELAYU',
-      hint: 'Language for the Vision section.',
+      hint: o.languageHint,
     },
     {
       id: 'motion',
-      label: 'REDUCE MOTION',
-      value: reduceMotion ? 'ON' : 'OFF',
-      hint: 'Turns off animations and transitions in this menu.',
+      label: o.motion,
+      value: reduceMotion ? o.on : o.off,
+      hint: o.motionHint,
     },
     {
       id: 'sound',
-      label: 'SOUND',
-      value: sound ? 'ON' : 'OFF',
-      hint: 'Short menu blips when moving and confirming.',
+      label: o.sound,
+      value: sound ? o.on : o.off,
+      hint: o.soundHint,
     },
     {
       id: 'classic',
-      label: 'CLASSIC SITE',
-      value: 'OPEN',
-      hint: 'The original scrolling portfolio layout.',
+      label: o.classic,
+      value: o.open,
+      hint: o.classicHint,
     },
   ];
 
@@ -86,14 +89,14 @@ export default function OptionsScreen({
 
   return (
     <ScreenShell
-      title="OPTIONS"
+      title={tr.menu.settings.title}
       onBack={onBack}
       hints={[
-        { keys: '↑↓', label: 'Option', kind: 'arrows' },
-        { keys: '←→', label: 'Change', kind: 'arrows' },
+        { keys: '↑↓', label: tr.hints.option, kind: 'arrows' },
+        { keys: '←→', label: tr.hints.change, kind: 'arrows' },
       ]}
     >
-      <div className="pes-list pes-options" role="listbox" aria-label="Options">
+      <div className="pes-list pes-options" role="listbox" aria-label={tr.menu.settings.label}>
         {options.map((o, i) => (
           <button
             key={o.id}

@@ -3,9 +3,11 @@
 import Image from 'next/image';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import '../pes.css';
-import type { PesLocale, PesSite, PesSprint, PesVisionData } from '../types';
+import { PES_DICT } from '../pes-i18n';
+import type { MenuId, PesLocale, PesSite, PesSprint, PesVisionData } from '../types';
 import AboutScreen from './AboutScreen';
 import ContactScreen from './ContactScreen';
+import { PesLocaleProvider } from './PesLocale';
 import OptionsScreen from './OptionsScreen';
 import ProjectsScreen from './ProjectsScreen';
 import SprintsScreen from './SprintsScreen';
@@ -26,33 +28,9 @@ export interface PesProject {
   status: string;
 }
 
-type IconId =
-  | 'projects'
-  | 'featured'
-  | 'vision'
-  | 'sprints'
-  | 'about'
-  | 'contact'
-  | 'archive'
-  | 'settings';
+type IconId = MenuId;
 
-interface MenuItem {
-  id: IconId;
-  label: string;
-  title: string;
-  description: string;
-}
-
-const MENU: MenuItem[] = [
-  { id: 'projects', label: 'Projects', title: 'PROJECTS', description: 'Browse every project as a player card, filtered by status.' },
-  { id: 'featured', label: 'Featured', title: 'FEATURED', description: 'The star players: my strongest, most complete work.' },
-  { id: 'vision', label: 'Vision', title: 'VISION', description: 'Ministries and initiatives: where this portfolio is heading.' },
-  { id: 'sprints', label: 'Sprints', title: 'SPRINTS', description: 'What is being built right now, and how far along it is.' },
-  { id: 'about', label: 'About', title: 'ABOUT', description: 'Background, skills and the story so far.' },
-  { id: 'contact', label: 'Contact', title: 'CONTACT', description: 'Get in touch for a full-stack or backend role.' },
-  { id: 'archive', label: 'Archive', title: 'ARCHIVE', description: 'Retired and archived projects from the gallery.' },
-  { id: 'settings', label: 'Options', title: 'OPTIONS', description: 'Theme, language and motion preferences.' },
-];
+const MENU: IconId[] = ['projects', 'featured', 'vision', 'sprints', 'about', 'contact', 'archive', 'settings'];
 
 const ICON_PATHS: Record<IconId, React.ReactNode> = {
   projects: (
@@ -146,13 +124,15 @@ function useClock() {
 }
 
 const Tile = memo(function Tile({
-  item,
+  id,
+  label,
   selected,
   index,
   onSelect,
   onConfirm,
 }: {
-  item: MenuItem;
+  id: IconId;
+  label: string;
   selected: boolean;
   index: number;
   onSelect: (i: number) => void;
@@ -163,15 +143,15 @@ const Tile = memo(function Tile({
       type="button"
       className="pes-tile"
       aria-current={selected}
-      aria-label={item.label}
+      aria-label={label}
       data-index={index}
       onPointerEnter={(e) => {
         if (e.pointerType === 'mouse') onSelect(index);
       }}
       onClick={() => (selected ? onConfirm(index) : onSelect(index))}
     >
-      <Icon id={item.id} />
-      <span>{item.label}</span>
+      <Icon id={id} />
+      <span>{label}</span>
     </button>
   );
 });
@@ -247,7 +227,7 @@ export default function PesApp({
 
   const confirm = useCallback(
     (i: number) => {
-      setOpenId(MENU[i].id);
+      setOpenId(MENU[i]);
       play('confirm');
     },
     [play],
@@ -326,10 +306,12 @@ export default function PesApp({
     if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) move(dx < 0 ? 1 : -1);
   };
 
-  const current = MENU[index];
-  const opened = openId ? MENU.find((m) => m.id === openId) : null;
+  const t = PES_DICT[locale];
+  const current = t.menu[MENU[index]];
+  const opened = openId ? { id: openId } : null;
 
   return (
+    <PesLocaleProvider value={locale}>
     <div
       id="main-content"
       className={`pes-root${reduceMotion ? ' pes-reduce' : ''}`}
@@ -348,11 +330,11 @@ export default function PesApp({
           <button type="button" className="pes-title" onClick={start} aria-label="Press start">
             <Emblem className="pes-title-logo pes-enter" />
             <div className="pes-title-name pes-enter pes-enter--d1">TAUFIK</div>
-            <div className="pes-title-sub pes-enter pes-enter--d1">PORTFOLIO EDITION</div>
-            <div className="pes-start pes-enter pes-enter--d2">PRESS START</div>
+            <div className="pes-title-sub pes-enter pes-enter--d1">{t.title.edition}</div>
+            <div className="pes-start pes-enter pes-enter--d2">{t.title.start}</div>
           </button>
           <a className="pes-classic-link" href="/classic">
-            Classic site
+            {t.title.classic}
           </a>
         </>
       ) : (
@@ -360,7 +342,7 @@ export default function PesApp({
           <header className="pes-topbar pes-enter">
             <div className="pes-pill" aria-hidden="true">
               <Clock />
-              <span>{projects.length} PROJECTS</span>
+              <span>{t.pill(projects.length)}</span>
             </div>
             <div className="pes-brand">
               <div className="pes-brand-name">
@@ -415,8 +397,8 @@ export default function PesApp({
                 {current.title}
               </div>
               <div className="pes-tiles" role="list">
-                {MENU.map((item, i) => (
-                  <Tile key={item.id} item={item} index={i} selected={i === index} onSelect={select} onConfirm={confirm} />
+                {MENU.map((id, i) => (
+                  <Tile key={id} id={id} label={t.menu[id].label} index={i} selected={i === index} onSelect={select} onConfirm={confirm} />
                 ))}
               </div>
             </div>
@@ -426,17 +408,17 @@ export default function PesApp({
 
           <div className="pes-dots" aria-hidden="true">
             {MENU.map((m, i) => (
-              <i key={m.id} data-on={i === index} />
+              <i key={m} data-on={i === index} />
             ))}
           </div>
           <button type="button" className="pes-btn pes-open" onClick={() => confirm(index)}>
-            OPEN {current.label.toUpperCase()}
+            {t.openBtn(current.label.toUpperCase())}
           </button>
 
           {rotatePref !== '1' && (
             <div className="pes-rotate" role="note">
-              <span>Rotate your phone for the full view</span>
-              <button type="button" aria-label="Dismiss" onClick={() => setRotatePref('1')}>
+              <span>{t.rotate}</span>
+              <button type="button" aria-label={t.dismiss} onClick={() => setRotatePref('1')}>
                 &times;
               </button>
             </div>
@@ -444,13 +426,13 @@ export default function PesApp({
 
           <div className="pes-hints" aria-hidden="true">
             <span className="pes-hint">
-              <span className="pes-key pes-key--arrows">&larr;&rarr;</span> Select
+              <span className="pes-key pes-key--arrows">&larr;&rarr;</span> {t.hints.select}
             </span>
             <span className="pes-hint">
-              <span className="pes-key">&#8629;</span> Confirm
+              <span className="pes-key">&#8629;</span> {t.hints.confirm}
             </span>
             <span className="pes-hint">
-              <span className="pes-key pes-key--back">Esc</span> Back
+              <span className="pes-key pes-key--back">Esc</span> {t.hints.back}
             </span>
           </div>
 
@@ -476,5 +458,6 @@ export default function PesApp({
         </>
       )}
     </div>
+    </PesLocaleProvider>
   );
 }

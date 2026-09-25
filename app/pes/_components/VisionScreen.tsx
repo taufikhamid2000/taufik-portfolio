@@ -3,6 +3,7 @@
 import { dict } from '../../../lib/i18n';
 import type { PesLocale, PesVisionData } from '../types';
 import ScreenShell from './ScreenShell';
+import { useT } from './PesLocale';
 import { useDetailView } from './useDetailView';
 import { useListNav } from './useListNav';
 
@@ -21,6 +22,7 @@ export default function VisionScreen({
   const { ministries, initiatives } = data;
   const { index, setIndex, listRef } = useListNav(ministries.length);
   const dv = useDetailView(onBack);
+  const tr = useT();
   const selected = ministries[index];
   const items = selected ? initiatives.filter((i) => i.ministry_slug === selected.slug) : [];
   const statusLabel = { active: t.statusActive, planned: t.statusPlanned, concept: t.statusConcept };
@@ -31,7 +33,7 @@ export default function VisionScreen({
       title={t.ministries.toUpperCase()}
       count={ministries.length}
       onBack={dv.back}
-      hints={[{ keys: '↑↓', label: 'Ministry', kind: 'arrows' }]}
+      hints={[{ keys: '↑↓', label: tr.hints.ministry, kind: 'arrows' }]}
     >
       {ministries.length === 0 ? (
         <p className="pes-empty">{t.noInitiativesGlobal}</p>

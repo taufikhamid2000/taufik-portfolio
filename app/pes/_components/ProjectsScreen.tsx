@@ -5,16 +5,11 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { statusDotColors, statusLabels } from '../../../lib/project-status';
 import type { ProjectStatus } from '../../../lib/projects';
 import type { PesProject } from './PesApp';
+import { useT } from './PesLocale';
 import { useAutoFocus } from './useAutoFocus';
 import { useDetailView } from './useDetailView';
 
 export type ProjectsMode = 'projects' | 'featured' | 'archive';
-
-const TITLES: Record<ProjectsMode, string> = {
-  projects: 'PROJECTS',
-  featured: 'FEATURED',
-  archive: 'ARCHIVE',
-};
 
 const STATUS_ORDER: ProjectStatus[] = ['active', 'in-progress', 'in-portfolio'];
 
@@ -88,6 +83,7 @@ export default function ProjectsScreen({
   const [index, setIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const dv = useDetailView(onBack);
+  const tr = useT();
   const focusRef = useAutoFocus<HTMLDivElement>();
 
   const visible = useMemo(
@@ -145,9 +141,9 @@ export default function ProjectsScreen({
   const status = selected ? asStatus(selected.status) : null;
 
   return (
-    <div className="pes-full pes-enter" role="dialog" aria-modal="true" aria-label={TITLES[mode]} tabIndex={-1} ref={focusRef}>
+    <div className="pes-full pes-enter" role="dialog" aria-modal="true" aria-label={tr.menu[mode].title} tabIndex={-1} ref={focusRef}>
       <div className="pes-full-head">
-        <h2 className="pes-full-title">{TITLES[mode]}</h2>
+        <h2 className="pes-full-title">{tr.menu[mode].title}</h2>
         <span className="pes-full-count">{visible.length}</span>
         {tabs.length > 0 && (
           <div className="pes-tabs" role="tablist">
@@ -163,18 +159,18 @@ export default function ProjectsScreen({
                   setIndex(0);
                 }}
               >
-                {t === 'all' ? 'All' : statusLabels[asStatus(t)]}
+                {t === 'all' ? tr.projects.all : (tr.projects.statuses[t] ?? statusLabels[asStatus(t)])}
               </button>
             ))}
           </div>
         )}
         <button type="button" className="pes-btn pes-btn--ghost pes-full-back" onClick={dv.back}>
-          BACK
+          {tr.backBtn}
         </button>
       </div>
 
       {visible.length === 0 ? (
-        <p className="pes-empty">Nothing here yet.</p>
+        <p className="pes-empty">{tr.projects.empty}</p>
       ) : (
         <div className="pes-full-body" data-view={dv.view}>
           <div className="pes-list" role="listbox" aria-label="Projects" ref={listRef}>
@@ -195,7 +191,7 @@ export default function ProjectsScreen({
           {selected && status && (
             <article className="pes-detail" key={selected.id}>
               <button type="button" className="pes-btn pes-btn--ghost pes-detail-back" onClick={dv.closeDetail}>
-                &larr; LIST
+                &larr; {tr.projects.list}
               </button>
               <div className="pes-detail-shot">
                 {!selected.image_url && (
@@ -219,7 +215,7 @@ export default function ProjectsScreen({
                 )}
                 <div className="pes-detail-shade" />
                 <span className="pes-detail-status" style={{ background: statusDotColors[status] }}>
-                  {statusLabels[status]}
+                  {tr.projects.statuses[status] ?? statusLabels[status]}
                 </span>
               </div>
               <h3 className="pes-detail-name">{selected.name}</h3>
@@ -235,12 +231,12 @@ export default function ProjectsScreen({
               <div className="pes-screen-actions">
                 {selected.demo_url && (
                   <a className="pes-btn" href={selected.demo_url} target="_blank" rel="noopener noreferrer">
-                    LIVE DEMO
+                    {tr.projects.demo}
                   </a>
                 )}
                 {selected.github_url && (
                   <a className="pes-btn pes-btn--ghost" href={selected.github_url} target="_blank" rel="noopener noreferrer">
-                    GITHUB
+                    {tr.projects.github}
                   </a>
                 )}
               </div>
@@ -251,18 +247,18 @@ export default function ProjectsScreen({
 
       <div className="pes-hints pes-hints--screen" aria-hidden="true">
         <span className="pes-hint">
-          <span className="pes-key pes-key--arrows">&uarr;&darr;</span> Player
+          <span className="pes-key pes-key--arrows">&uarr;&darr;</span> {tr.hints.player}
         </span>
         {tabs.length > 0 && (
           <span className="pes-hint">
-            <span className="pes-key pes-key--arrows">&larr;&rarr;</span> Filter
+            <span className="pes-key pes-key--arrows">&larr;&rarr;</span> {tr.hints.filter}
           </span>
         )}
         <span className="pes-hint">
-          <span className="pes-key">&#8629;</span> Open
+          <span className="pes-key">&#8629;</span> {tr.hints.open}
         </span>
         <span className="pes-hint">
-          <span className="pes-key pes-key--back">Esc</span> Back
+          <span className="pes-key pes-key--back">Esc</span> {tr.hints.back}
         </span>
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import type { PesLocale, PesSite } from '../types';
+import { useT } from './PesLocale';
 import ScreenShell from './ScreenShell';
 import { useListNav } from './useListNav';
 
@@ -21,21 +22,24 @@ export default function ContactScreen({
   locale: PesLocale;
   onBack: () => void;
 }) {
+  const tr = useT();
+
   const rows = useMemo<Row[]>(() => {
+    const c = tr.contact;
     const list: Row[] = [
-      { label: 'EMAIL', value: site.email, href: `mailto:${site.email}`, external: false },
-      { label: 'GITHUB', value: site.github.replace('https://', ''), href: site.github, external: true },
+      { label: c.email, value: site.email, href: `mailto:${site.email}`, external: false },
+      { label: c.github, value: site.github.replace('https://', ''), href: site.github, external: true },
     ];
-    if (site.linkedin) list.push({ label: 'LINKEDIN', value: site.linkedin.replace('https://', ''), href: site.linkedin, external: true });
-    if (site.resumeUrl) list.push({ label: 'RESUME', value: 'View PDF', href: site.resumeUrl, external: true });
+    if (site.linkedin) list.push({ label: c.linkedin, value: site.linkedin.replace('https://', ''), href: site.linkedin, external: true });
+    if (site.resumeUrl) list.push({ label: c.resume, value: c.viewPdf, href: site.resumeUrl, external: true });
     list.push({
-      label: 'IDEAS',
-      value: 'Suggest a software idea for a ministry',
+      label: c.ideas,
+      value: c.ideasText,
       href: `${locale === 'ms' ? '/ms' : ''}/vision`,
       external: false,
     });
     return list;
-  }, [site, locale]);
+  }, [site, locale, tr]);
 
   const open = (i: number) => {
     const r = rows[i];
@@ -48,17 +52,15 @@ export default function ContactScreen({
 
   return (
     <ScreenShell
-      title="CONTACT"
+      title={tr.menu.contact.title}
       onBack={onBack}
       hints={[
-        { keys: '↑↓', label: 'Select', kind: 'arrows' },
-        { keys: '↵', label: 'Open', kind: 'confirm' },
+        { keys: '↑↓', label: tr.hints.select, kind: 'arrows' },
+        { keys: '↵', label: tr.hints.open, kind: 'confirm' },
       ]}
     >
-      <p className="pes-detail-tag pes-contact-intro">
-        Hiring for a full-stack or backend role, or want to talk through one of these projects? Drop me a line.
-      </p>
-      <div className="pes-list pes-contact-list" role="listbox" aria-label="Contact" ref={listRef}>
+      <p className="pes-detail-tag pes-contact-intro">{tr.contact.intro}</p>
+      <div className="pes-list pes-contact-list" role="listbox" aria-label={tr.menu.contact.label} ref={listRef}>
         {rows.map((r, i) => (
           <a
             key={r.label}

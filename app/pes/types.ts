@@ -1,5 +1,15 @@
 export type PesLocale = 'en' | 'ms';
 
+export type MenuId =
+  | 'projects'
+  | 'featured'
+  | 'vision'
+  | 'sprints'
+  | 'about'
+  | 'contact'
+  | 'archive'
+  | 'settings';
+
 export interface PesMinistry {
   id: string;
   slug: string;

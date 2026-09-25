@@ -2,6 +2,7 @@
 
 import type { PesSprint } from '../types';
 import ScreenShell from './ScreenShell';
+import { useT } from './PesLocale';
 import { useDetailView } from './useDetailView';
 import { useListNav } from './useListNav';
 
@@ -34,11 +35,12 @@ export default function SprintsScreen({
 }) {
   const { index, setIndex, listRef } = useListNav(sprints.length);
   const dv = useDetailView(onBack);
+  const tr = useT();
   const selected = sprints[index];
 
   if (!isOwner) {
     return (
-      <ScreenShell title="SPRINTS" onBack={onBack} hints={[]}>
+      <ScreenShell title={tr.menu.sprints.title} onBack={onBack} hints={[]}>
         <div className="pes-locked">
           <div className="pes-locked-icon" aria-hidden="true">
             <svg viewBox="0 0 56 56" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
@@ -46,11 +48,11 @@ export default function SprintsScreen({
               <path d="M18 24v-6a10 10 0 0120 0v6" />
             </svg>
           </div>
-          <h3>Owner only</h3>
-          <p>Sprint planning is private. Sign in as the site owner to see what is being built right now.</p>
+          <h3>{tr.sprints.lockedTitle}</h3>
+          <p>{tr.sprints.lockedText}</p>
           <div className="pes-screen-actions">
             <a className="pes-btn" href="/login">
-              SIGN IN
+              {tr.sprints.signIn}
             </a>
           </div>
         </div>
@@ -62,13 +64,13 @@ export default function SprintsScreen({
 
   return (
     <ScreenShell
-      title="SPRINTS"
+      title={tr.menu.sprints.title}
       count={sprints.length}
       onBack={dv.back}
-      hints={[{ keys: '↑↓', label: 'Sprint', kind: 'arrows' }]}
+      hints={[{ keys: '↑↓', label: tr.hints.sprint, kind: 'arrows' }]}
     >
       {sprints.length === 0 ? (
-        <p className="pes-empty">No sprints yet.</p>
+        <p className="pes-empty">{tr.sprints.empty}</p>
       ) : (
         <div className="pes-full-body" data-view={dv.view}>
           <div className="pes-list" role="listbox" aria-label="Sprints" ref={listRef}>
@@ -91,7 +93,7 @@ export default function SprintsScreen({
                 <span className="pes-card-main">
                   <span className="pes-card-name">{s.name}</span>
                   <span className="pes-card-sub">
-                    {s.done_count}/{s.task_count} tasks
+                    {s.done_count}/{s.task_count} {tr.sprints.tasks}
                   </span>
                 </span>
               </button>
@@ -101,12 +103,12 @@ export default function SprintsScreen({
           {selected && (
             <article className="pes-detail" key={selected.id}>
               <button type="button" className="pes-btn pes-btn--ghost pes-detail-back" onClick={dv.closeDetail}>
-                &larr; SPRINTS
+                &larr; {tr.menu.sprints.title}
               </button>
               <h3 className="pes-detail-name">{selected.name}</h3>
               {selected.goal && <p className="pes-detail-tag">{selected.goal}</p>}
               <div className="pes-stat">
-                <span>PROGRESS</span>
+                <span>{tr.sprints.progress}</span>
                 <div className="pes-bar-track" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
                   <div className="pes-bar-fill" style={{ width: `${pct}%` }} />
                 </div>
@@ -114,19 +116,19 @@ export default function SprintsScreen({
               </div>
               <dl className="pes-facts">
                 <div>
-                  <dt>STATUS</dt>
+                  <dt>{tr.sprints.status}</dt>
                   <dd>{selected.status}</dd>
                 </div>
                 <div>
-                  <dt>START</dt>
+                  <dt>{tr.sprints.start}</dt>
                   <dd>{fmt(selected.start_date)}</dd>
                 </div>
                 <div>
-                  <dt>END</dt>
+                  <dt>{tr.sprints.end}</dt>
                   <dd>{fmt(selected.end_date)}</dd>
                 </div>
                 <div>
-                  <dt>TASKS</dt>
+                  <dt>{tr.sprints.taskCount}</dt>
                   <dd>
                     {selected.done_count}/{selected.task_count}
                   </dd>

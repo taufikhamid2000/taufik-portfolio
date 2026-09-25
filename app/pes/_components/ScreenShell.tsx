@@ -1,5 +1,6 @@
 'use client';
 
+import { useT } from './PesLocale';
 import { useAutoFocus } from './useAutoFocus';
 
 export interface Hint {
@@ -23,13 +24,14 @@ export default function ScreenShell({
   children: React.ReactNode;
 }) {
   const ref = useAutoFocus<HTMLDivElement>();
+  const tr = useT();
   return (
     <div className="pes-full pes-enter" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={ref}>
       <div className="pes-full-head">
         <h2 className="pes-full-title">{title}</h2>
         {count !== undefined && <span className="pes-full-count">{count}</span>}
         <button type="button" className="pes-btn pes-btn--ghost pes-full-back" onClick={onBack}>
-          BACK
+          {tr.backBtn}
         </button>
       </div>
       {children}
@@ -45,7 +47,7 @@ export default function ScreenShell({
           </span>
         ))}
         <span className="pes-hint">
-          <span className="pes-key pes-key--back">Esc</span> Back
+          <span className="pes-key pes-key--back">Esc</span> {tr.hints.back}
         </span>
       </div>
     </div>
