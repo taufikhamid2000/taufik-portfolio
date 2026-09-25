@@ -45,6 +45,11 @@ export interface PesDict {
     start: string;
     end: string;
     taskCount: string;
+    tabList: string;
+    tabYear: string;
+    iteration: string;
+    buffer: string;
+    yearIntro: (year: number) => string;
   };
   about: {
     role: string;
@@ -132,6 +137,11 @@ const en: PesDict = {
     start: 'START',
     end: 'END',
     taskCount: 'TASKS',
+    tabList: 'SPRINTS',
+    tabYear: 'YEAR',
+    iteration: 'Iteration',
+    buffer: 'Buffer',
+    yearIntro: (y) => `${y}: 4 iterations, each with 4 three-week sprints and a buffer week. Starts every 1 January.`,
   },
   about: {
     role: 'Full-stack Developer',
@@ -220,6 +230,11 @@ const ms: PesDict = {
     start: 'MULA',
     end: 'TAMAT',
     taskCount: 'TUGASAN',
+    tabList: 'SPRINT',
+    tabYear: 'TAHUN',
+    iteration: 'Iterasi',
+    buffer: 'Penampan',
+    yearIntro: (y) => `${y}: 4 iterasi, setiap satu 4 sprint tiga minggu dan seminggu penampan. Bermula setiap 1 Januari.`,
   },
   about: {
     role: 'Pembangun Full-stack',

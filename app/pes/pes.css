@@ -1211,3 +1211,13 @@
     padding-bottom: calc(3 * var(--vh));
   }
 }
+
+.pes-year { display: grid; gap: 14px; overflow-y: auto; padding-bottom: 8px; }
+.pes-iter-title { display: flex; justify-content: space-between; gap: 8px; margin: 0 0 6px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+.pes-iter-title span { opacity: .7; font-weight: 400; }
+.pes-iter-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.pes-sprint-cell { display: grid; gap: 2px; padding: 8px; background: rgba(255, 255, 255, .06); clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%); font-size: 11px; }
+.pes-sprint-cell b { font-size: 13px; }
+.pes-sprint-cell--buffer { background: rgba(255, 255, 255, .02); opacity: .75; }
+.pes-sprint-cell[aria-current='date'] { background: #22c55e; color: #052e12; opacity: 1; }
+@media (max-aspect-ratio: 1/1) { .pes-iter-grid { grid-template-columns: repeat(2, 1fr); } }

@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import type { PesSprint } from '../types';
+import YearCalendar from './YearCalendar';
 import ScreenShell from './ScreenShell';
 import { useT } from './PesLocale';
 import { useDetailView } from './useDetailView';
@@ -36,6 +38,7 @@ export default function SprintsScreen({
   const { index, setIndex, listRef } = useListNav(sprints.length);
   const dv = useDetailView(onBack);
   const tr = useT();
+  const [tab, setTab] = useState<'list' | 'year'>('list');
   const selected = sprints[index];
 
   if (!isOwner) {
@@ -69,7 +72,16 @@ export default function SprintsScreen({
       onBack={dv.back}
       hints={[{ keys: '↑↓', label: tr.hints.sprint, kind: 'arrows' }]}
     >
-      {sprints.length === 0 ? (
+      <div className="pes-tabs" role="tablist">
+        {(['list', 'year'] as const).map((t) => (
+          <button key={t} type="button" role="tab" aria-selected={tab === t} className="pes-tab" onClick={() => setTab(t)}>
+            {t === 'list' ? tr.sprints.tabList : tr.sprints.tabYear}
+          </button>
+        ))}
+      </div>
+      {tab === 'year' ? (
+        <YearCalendar />
+      ) : sprints.length === 0 ? (
         <p className="pes-empty">{tr.sprints.empty}</p>
       ) : (
         <div className="pes-full-body" data-view={dv.view}>
