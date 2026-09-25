@@ -411,39 +411,7 @@
   animation: pes-blink 1.3s steps(2, jump-none) infinite;
 }
 
-/* ---------- placeholder screen (phase 1) ---------- */
-.pes-screen {
-  position: absolute;
-  inset: 0;
-  z-index: 7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6vh 6vw;
-  background: rgba(3, 10, 28, 0.78);
-}
-.pes-screen-card {
-  position: relative;
-  width: min(760px, 100%);
-  padding: 2.2rem 2.4rem;
-  background: linear-gradient(160deg, var(--pes-blue-700), var(--pes-blue-800));
-  box-shadow: inset 0 0 0 2px rgba(108, 176, 255, 0.7);
-  clip-path: polygon(3% 0, 100% 0, 100% 90%, 97% 100%, 0 100%, 0 10%);
-}
-.pes-screen-card:focus {
-  outline: none;
-}
-.pes-screen-card h2 {
-  font-size: clamp(1.4rem, 3.4vw, 2.2rem);
-  font-weight: 900;
-  margin-bottom: 0.5rem;
-}
-.pes-screen-card p {
-  color: #d5e4ff;
-  line-height: 1.5;
-  margin-bottom: 1.4rem;
-  font-size: clamp(0.85rem, 1.6vw, 1.05rem);
-}
+/* ---------- buttons ---------- */
 .pes-screen-actions {
   display: flex;
   gap: 1rem;
@@ -704,6 +672,202 @@
   bottom: 2.6vh;
 }
 
+/* ---------- vision ---------- */
+.pes-initiatives {
+  list-style: none;
+  margin: 0.4rem 0 1rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.pes-initiative {
+  position: relative;
+  padding: 0.7rem 0.9rem 0.7rem 1rem;
+  background: linear-gradient(90deg, rgba(10, 58, 138, 0.5), rgba(6, 33, 79, 0.3));
+  box-shadow: inset 3px 0 0 var(--pes-blue-500);
+  font-size: clamp(0.8rem, 1.35vw, 0.98rem);
+  line-height: 1.5;
+  color: #d5e4ff;
+}
+.pes-initiative p + p {
+  margin-top: 0.3rem;
+}
+.pes-initiative b {
+  color: #fff;
+}
+.pes-initiative-status {
+  display: inline-block;
+  margin-bottom: 0.4rem;
+  padding: 0.15em 0.7em;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #06120a;
+  border-radius: 3px;
+}
+.pes-initiative-project {
+  color: var(--pes-blue-300);
+  font-size: 0.78rem;
+}
+
+/* ---------- sprints ---------- */
+.pes-locked {
+  margin: auto;
+  max-width: 460px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+}
+.pes-locked h3 {
+  font-size: clamp(1.2rem, 2.6vw, 1.7rem);
+  font-weight: 900;
+}
+.pes-locked p {
+  color: #d5e4ff;
+  line-height: 1.5;
+}
+.pes-locked-icon {
+  width: 72px;
+  color: var(--pes-blue-300);
+}
+.pes-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0.4rem 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+.pes-bar-track {
+  flex: 1;
+  height: 0.7rem;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(108, 176, 255, 0.4);
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+}
+.pes-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--pes-blue-500), var(--pes-blue-300));
+  transition: width 400ms ease-out;
+}
+.pes-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.6rem;
+  margin: 0;
+}
+.pes-facts div {
+  padding: 0.6rem 0.8rem;
+  background: rgba(10, 58, 138, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(108, 176, 255, 0.35);
+}
+.pes-facts dt {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--pes-blue-300);
+}
+.pes-facts dd {
+  margin: 0.15rem 0 0;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+/* ---------- about ---------- */
+.pes-about {
+  grid-template-columns: minmax(200px, 30%) 1fr;
+}
+.pes-profile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-start;
+}
+.pes-profile-badge {
+  display: grid;
+  place-items: center;
+  width: clamp(72px, 12vw, 130px);
+  aspect-ratio: 1;
+  margin-bottom: 0.6rem;
+  font-size: clamp(1.6rem, 4vw, 3rem);
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  background: linear-gradient(160deg, var(--pes-blue-500), var(--pes-blue-800));
+  clip-path: polygon(50% 0, 100% 18%, 100% 72%, 50% 100%, 0 72%, 0 18%);
+}
+.pes-profile-line {
+  color: #d5e4ff;
+  font-size: clamp(0.78rem, 1.3vw, 0.95rem);
+}
+.pes-statgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 0.6rem;
+  margin: 0.4rem 0 1rem;
+}
+.pes-statbox {
+  padding: 0.6rem 0.8rem;
+  text-align: center;
+  background: rgba(10, 58, 138, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(108, 176, 255, 0.35);
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+.pes-statbox b {
+  display: block;
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+  font-weight: 900;
+}
+.pes-statbox span {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--pes-blue-300);
+}
+
+/* ---------- contact + options ---------- */
+.pes-contact-intro {
+  margin: 0.2rem 0 0.6rem;
+}
+.pes-contact-list,
+.pes-options {
+  flex: 1;
+  min-height: 0;
+  max-width: 760px;
+  width: 100%;
+}
+.pes-contact-row {
+  text-decoration: none;
+}
+.pes-contact-row .pes-card-tag {
+  min-width: 5.6em;
+}
+.pes-option {
+  justify-content: space-between;
+}
+.pes-option-value {
+  flex: 0 0 auto;
+  padding: 0.25em 0.9em;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(180, 215, 255, 0.5);
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+
+/* ---------- reduce-motion option ---------- */
+.pes-reduce *,
+.pes-reduce *::before,
+.pes-reduce *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
 /* ---------- animation ---------- */
 @keyframes pes-blink {
   0%,
@@ -776,6 +940,10 @@
   }
   .pes-detail-shot {
     max-height: 22vh;
+  }
+  .pes-about {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
   }
   .pes-bar {
     bottom: 17vh;

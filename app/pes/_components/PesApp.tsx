@@ -1,10 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import '../pes.css';
+import type { PesLocale, PesSite, PesSprint, PesVisionData } from '../types';
+import AboutScreen from './AboutScreen';
+import ContactScreen from './ContactScreen';
+import OptionsScreen from './OptionsScreen';
 import ProjectsScreen from './ProjectsScreen';
+import SprintsScreen from './SprintsScreen';
+import VisionScreen from './VisionScreen';
+import { useMediaQuery, usePref } from './usePref';
 
 export interface PesProject {
   id: string;
@@ -164,16 +170,36 @@ const Tile = memo(function Tile({
   );
 });
 
-export default function PesApp({ projects }: { projects: PesProject[] }) {
+const MOTION_KEY = 'pes-reduce-motion';
+const LOCALE_KEY = 'pes-locale';
+
+export default function PesApp({
+  projects,
+  vision,
+  sprints,
+  isOwner,
+  site,
+}: {
+  projects: PesProject[];
+  vision: Record<PesLocale, PesVisionData>;
+  sprints: PesSprint[];
+  isOwner: boolean;
+  site: PesSite;
+}) {
   const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [openId, setOpenId] = useState<IconId | null>(null);
+  const [localePref, setLocalePref] = usePref(LOCALE_KEY);
+  const [motionPref, setMotionPref] = usePref(MOTION_KEY);
+  const osReduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   const clock = useClock();
-  const cardRef = useRef<HTMLDivElement>(null);
+  const close = useCallback(() => setOpenId(null), []);
 
-  useEffect(() => {
-    if (openId) cardRef.current?.focus();
-  }, [openId]);
+  const locale: PesLocale = localePref === 'ms' ? 'ms' : 'en';
+  // An explicit choice wins; otherwise follow the OS setting.
+  const reduceMotion = motionPref === '1' || (motionPref === '' && osReduceMotion);
+  const setLocale = useCallback((l: PesLocale) => setLocalePref(l), [setLocalePref]);
+  const setReduceMotion = useCallback((v: boolean) => setMotionPref(v ? '1' : '0'), [setMotionPref]);
 
   const heroes = useMemo(
     () => projects.filter((p) => p.image_url && p.status !== 'concept' && p.status !== 'archived'),
@@ -183,11 +209,10 @@ export default function PesApp({ projects }: { projects: PesProject[] }) {
 
   // Slowly cycle the hero through featured projects so the backdrop isn't static.
   useEffect(() => {
-    if (!started || heroes.length < 2) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!started || heroes.length < 2 || reduceMotion) return;
     const id = window.setInterval(() => setHeroIndex((h) => (h + 1) % heroes.length), 5500);
     return () => window.clearInterval(id);
-  }, [started, heroes.length]);
+  }, [started, heroes.length, reduceMotion]);
 
   const move = useCallback((delta: number) => {
     setIndex((i) => (i + delta + MENU.length) % MENU.length);
@@ -251,7 +276,7 @@ export default function PesApp({ projects }: { projects: PesProject[] }) {
   const opened = openId ? MENU.find((m) => m.id === openId) : null;
 
   return (
-    <div className="pes-root" role="application" aria-label="Portfolio menu">
+    <div className={`pes-root${reduceMotion ? ' pes-reduce' : ''}`} role="application" aria-label="Portfolio menu">
       <div className="pes-bg" />
       <div className="pes-slab pes-slab--tl" />
       <div className="pes-slab pes-slab--tr" />
@@ -339,27 +364,21 @@ export default function PesApp({ projects }: { projects: PesProject[] }) {
           </div>
 
           {opened && (opened.id === 'projects' || opened.id === 'featured' || opened.id === 'archive') && (
-            <ProjectsScreen mode={opened.id} projects={projects} onBack={() => setOpenId(null)} />
+            <ProjectsScreen mode={opened.id} projects={projects} onBack={close} />
           )}
 
-          {opened && opened.id !== 'projects' && opened.id !== 'featured' && opened.id !== 'archive' && (
-            <div className="pes-screen" role="dialog" aria-modal="true" aria-label={opened.title}>
-              <div className="pes-screen-card pes-enter" tabIndex={-1} ref={cardRef}>
-                <h2>{opened.title}</h2>
-                <p>
-                  {opened.description} This screen is built in a later phase; for now the classic site has the full
-                  content.
-                </p>
-                <div className="pes-screen-actions">
-                  <Link href="/" className="pes-btn">
-                    OPEN CLASSIC SITE
-                  </Link>
-                  <button type="button" className="pes-btn pes-btn--ghost" onClick={() => setOpenId(null)}>
-                    BACK
-                  </button>
-                </div>
-              </div>
-            </div>
+          {opened?.id === 'vision' && <VisionScreen data={vision[locale]} locale={locale} onBack={close} />}
+          {opened?.id === 'sprints' && <SprintsScreen sprints={sprints} isOwner={isOwner} onBack={close} />}
+          {opened?.id === 'about' && <AboutScreen site={site} projects={projects} onBack={close} />}
+          {opened?.id === 'contact' && <ContactScreen site={site} locale={locale} onBack={close} />}
+          {opened?.id === 'settings' && (
+            <OptionsScreen
+              locale={locale}
+              reduceMotion={reduceMotion}
+              onLocale={setLocale}
+              onReduceMotion={setReduceMotion}
+              onBack={close}
+            />
           )}
         </>
       )}
