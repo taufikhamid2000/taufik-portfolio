@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState, useTransition } from 'react';
+import { syncCommitsAction } from '../sync-action';
 import type { PesSprint } from '../types';
 import YearCalendar, { type Slot } from './YearCalendar';
 import ScreenShell from './ScreenShell';
@@ -20,6 +22,9 @@ export default function SprintsScreen({
 }) {
   const tr = useT();
   const [slot, setSlot] = useState<Slot | null>(null);
+  const router = useRouter();
+  const [pending, startSync] = useTransition();
+  const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
     if (!slot) return;
@@ -106,7 +111,26 @@ export default function SprintsScreen({
           })}
         </div>
       ) : (
-        <YearCalendar sprints={sprints} onOpen={setSlot} />
+        <>
+          <div className="pes-sync">
+            <button
+              type="button"
+              className="pes-btn pes-btn--ghost"
+              disabled={pending}
+              onClick={() =>
+                startSync(async () => {
+                  const r = await syncCommitsAction();
+                  setNote(r.error ?? tr.sprints.synced(r.added));
+                  if (r.added > 0) router.refresh();
+                })
+              }
+            >
+              {pending ? tr.sprints.syncing : tr.sprints.sync}
+            </button>
+            {note && <span role="status">{note}</span>}
+          </div>
+          <YearCalendar sprints={sprints} onOpen={setSlot} />
+        </>
       )}
     </ScreenShell>
   );

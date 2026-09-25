@@ -1230,3 +1230,4 @@
 .pes-detail-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
 .pes-detail-pager span { opacity: .7; font-size: 12px; letter-spacing: .08em; }
 .pes-detail-pager button:disabled { opacity: .35; }
+.pes-sync { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; font-size: 12px; }

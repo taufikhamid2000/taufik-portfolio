@@ -37,6 +37,9 @@ async function loadVision(locale: Locale): Promise<PesVisionData> {
   };
 }
 
+// The owner-only commit sync (server action) runs under this route.
+export const maxDuration = 60;
+
 export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams;
 

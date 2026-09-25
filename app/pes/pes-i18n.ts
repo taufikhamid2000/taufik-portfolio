@@ -49,6 +49,9 @@ export interface PesDict {
     taskCount: string;
     noItems: string;
     carriedOver: string;
+    sync: string;
+    syncing: string;
+    synced: (n: number) => string;
     other: string;
     items: string;
     taskStatus: Record<string, string>;
@@ -146,6 +149,9 @@ const en: PesDict = {
     taskCount: 'TASKS',
     noItems: 'No items in this sprint yet.',
     carriedOver: 'CARRIED OVER',
+    sync: 'SYNC COMMITS',
+    syncing: 'SYNCING…',
+    synced: (n) => (n === 0 ? 'Already up to date.' : `${n} new commits added.`),
     other: 'OTHER SPRINTS',
     items: 'ITEMS',
     taskStatus: { todo: 'TODO', 'in-progress': 'DOING', blocked: 'BLOCKED', done: 'DONE' },
@@ -244,6 +250,9 @@ const ms: PesDict = {
     taskCount: 'TUGASAN',
     noItems: 'Belum ada item dalam sprint ini.',
     carriedOver: 'DIBAWA KE HADAPAN',
+    sync: 'SEGERAK COMMIT',
+    syncing: 'MENYEGERAK…',
+    synced: (n) => (n === 0 ? 'Sudah terkini.' : `${n} commit baharu ditambah.`),
     other: 'SPRINT LAIN',
     items: 'ITEM',
     taskStatus: { todo: 'TERBUKA', 'in-progress': 'DIBUAT', blocked: 'TERHALANG', done: 'SIAP' },
