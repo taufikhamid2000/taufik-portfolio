@@ -4,11 +4,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import '../pes.css';
+import ProjectsScreen from './ProjectsScreen';
 
 export interface PesProject {
   id: string;
   name: string;
   tagline: string;
+  description: string;
+  tech: string[];
+  github_url: string | null;
+  demo_url: string | null;
   image_url: string | null;
   featured: boolean;
   status: string;
@@ -333,7 +338,11 @@ export default function PesApp({ projects }: { projects: PesProject[] }) {
             </span>
           </div>
 
-          {opened && (
+          {opened && (opened.id === 'projects' || opened.id === 'featured' || opened.id === 'archive') && (
+            <ProjectsScreen mode={opened.id} projects={projects} onBack={() => setOpenId(null)} />
+          )}
+
+          {opened && opened.id !== 'projects' && opened.id !== 'featured' && opened.id !== 'archive' && (
             <div className="pes-screen" role="dialog" aria-modal="true" aria-label={opened.title}>
               <div className="pes-screen-card pes-enter" tabIndex={-1} ref={cardRef}>
                 <h2>{opened.title}</h2>
