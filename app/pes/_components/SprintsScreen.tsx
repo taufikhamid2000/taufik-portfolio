@@ -2,6 +2,7 @@
 
 import type { PesSprint } from '../types';
 import ScreenShell from './ScreenShell';
+import { useDetailView } from './useDetailView';
 import { useListNav } from './useListNav';
 
 const STATUS_COLOR: Record<PesSprint['status'], string> = {
@@ -32,6 +33,7 @@ export default function SprintsScreen({
   onBack: () => void;
 }) {
   const { index, setIndex, listRef } = useListNav(sprints.length);
+  const dv = useDetailView(onBack);
   const selected = sprints[index];
 
   if (!isOwner) {
@@ -62,13 +64,13 @@ export default function SprintsScreen({
     <ScreenShell
       title="SPRINTS"
       count={sprints.length}
-      onBack={onBack}
+      onBack={dv.back}
       hints={[{ keys: '↑↓', label: 'Sprint', kind: 'arrows' }]}
     >
       {sprints.length === 0 ? (
         <p className="pes-empty">No sprints yet.</p>
       ) : (
-        <div className="pes-full-body">
+        <div className="pes-full-body" data-view={dv.view}>
           <div className="pes-list" role="listbox" aria-label="Sprints" ref={listRef}>
             {sprints.map((s, i) => (
               <button
@@ -78,7 +80,10 @@ export default function SprintsScreen({
                 aria-selected={i === index}
                 data-index={i}
                 className="pes-card"
-                onClick={() => setIndex(i)}
+                onClick={() => {
+                  setIndex(i);
+                  dv.openDetail();
+                }}
               >
                 <span className="pes-card-tag" style={{ background: STATUS_COLOR[s.status] }}>
                   {STATUS_TAG[s.status]}
@@ -95,6 +100,9 @@ export default function SprintsScreen({
 
           {selected && (
             <article className="pes-detail" key={selected.id}>
+              <button type="button" className="pes-btn pes-btn--ghost pes-detail-back" onClick={dv.closeDetail}>
+                &larr; SPRINTS
+              </button>
               <h3 className="pes-detail-name">{selected.name}</h3>
               {selected.goal && <p className="pes-detail-tag">{selected.goal}</p>}
               <div className="pes-stat">

@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import '../pes.css';
 import type { PesLocale, PesSite, PesSprint, PesVisionData } from '../types';
 import AboutScreen from './AboutScreen';
@@ -191,6 +191,7 @@ export default function PesApp({
   const [openId, setOpenId] = useState<IconId | null>(null);
   const [localePref, setLocalePref] = usePref(LOCALE_KEY);
   const [motionPref, setMotionPref] = usePref(MOTION_KEY);
+  const [rotatePref, setRotatePref] = usePref('pes-rotate-dismissed');
   const osReduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
   const clock = useClock();
   const close = useCallback(() => setOpenId(null), []);
@@ -272,11 +273,33 @@ export default function PesApp({
     if (Math.abs(delta) > 1) row.scrollBy({ left: delta, behavior: 'smooth' });
   }, [index, started]);
 
+  // Horizontal swipe on the menu changes the selected tile (the tile row itself doesn't scroll on touch).
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    swipeStart.current = { x: t.clientX, y: t.clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const s = swipeStart.current;
+    swipeStart.current = null;
+    if (!s || !started || openId) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - s.x;
+    const dy = t.clientY - s.y;
+    if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) move(dx < 0 ? 1 : -1);
+  };
+
   const current = MENU[index];
   const opened = openId ? MENU.find((m) => m.id === openId) : null;
 
   return (
-    <div className={`pes-root${reduceMotion ? ' pes-reduce' : ''}`} role="application" aria-label="Portfolio menu">
+    <div
+      className={`pes-root${reduceMotion ? ' pes-reduce' : ''}`}
+      role="application"
+      aria-label="Portfolio menu"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
       <div className="pes-bg" />
       <div className="pes-slab pes-slab--tl" />
       <div className="pes-slab pes-slab--tr" />
@@ -350,6 +373,24 @@ export default function PesApp({
           </nav>
 
           <p className="pes-desc pes-enter pes-enter--d2">{current.description}</p>
+
+          <div className="pes-dots" aria-hidden="true">
+            {MENU.map((m, i) => (
+              <i key={m.id} data-on={i === index} />
+            ))}
+          </div>
+          <button type="button" className="pes-btn pes-open" onClick={() => confirm(index)}>
+            OPEN {current.label.toUpperCase()}
+          </button>
+
+          {rotatePref !== '1' && (
+            <div className="pes-rotate" role="note">
+              <span>Rotate your phone for the full view</span>
+              <button type="button" aria-label="Dismiss" onClick={() => setRotatePref('1')}>
+                &times;
+              </button>
+            </div>
+          )}
 
           <div className="pes-hints" aria-hidden="true">
             <span className="pes-hint">

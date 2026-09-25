@@ -5,6 +5,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { statusDotColors, statusLabels } from '../../../lib/project-status';
 import type { ProjectStatus } from '../../../lib/projects';
 import type { PesProject } from './PesApp';
+import { useDetailView } from './useDetailView';
 
 export type ProjectsMode = 'projects' | 'featured' | 'archive';
 
@@ -85,6 +86,7 @@ export default function ProjectsScreen({
   const [tab, setTab] = useState<string>('all');
   const [index, setIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const dv = useDetailView(onBack);
 
   const visible = useMemo(
     () => (tab === 'all' ? base : base.filter((p) => p.status === tab)),
@@ -164,7 +166,7 @@ export default function ProjectsScreen({
             ))}
           </div>
         )}
-        <button type="button" className="pes-btn pes-btn--ghost pes-full-back" onClick={onBack}>
+        <button type="button" className="pes-btn pes-btn--ghost pes-full-back" onClick={dv.back}>
           BACK
         </button>
       </div>
@@ -172,15 +174,27 @@ export default function ProjectsScreen({
       {visible.length === 0 ? (
         <p className="pes-empty">Nothing here yet.</p>
       ) : (
-        <div className="pes-full-body">
+        <div className="pes-full-body" data-view={dv.view}>
           <div className="pes-list" role="listbox" aria-label="Projects" ref={listRef}>
             {visible.map((p, i) => (
-              <Card key={p.id} project={p} index={i} selected={i === Math.min(index, visible.length - 1)} onSelect={setIndex} />
+              <Card
+                key={p.id}
+                project={p}
+                index={i}
+                selected={i === Math.min(index, visible.length - 1)}
+                onSelect={(n) => {
+                  setIndex(n);
+                  dv.openDetail();
+                }}
+              />
             ))}
           </div>
 
           {selected && status && (
             <article className="pes-detail" key={selected.id}>
+              <button type="button" className="pes-btn pes-btn--ghost pes-detail-back" onClick={dv.closeDetail}>
+                &larr; LIST
+              </button>
               <div className="pes-detail-shot">
                 {!selected.image_url && (
                   <div className="pes-detail-fallback" aria-hidden="true">

@@ -3,6 +3,7 @@
 import { dict } from '../../../lib/i18n';
 import type { PesLocale, PesVisionData } from '../types';
 import ScreenShell from './ScreenShell';
+import { useDetailView } from './useDetailView';
 import { useListNav } from './useListNav';
 
 const STATUS_COLOR = { active: '#22c55e', planned: '#eab308', concept: '#9ca3af' } as const;
@@ -19,6 +20,7 @@ export default function VisionScreen({
   const t = dict[locale];
   const { ministries, initiatives } = data;
   const { index, setIndex, listRef } = useListNav(ministries.length);
+  const dv = useDetailView(onBack);
   const selected = ministries[index];
   const items = selected ? initiatives.filter((i) => i.ministry_slug === selected.slug) : [];
   const statusLabel = { active: t.statusActive, planned: t.statusPlanned, concept: t.statusConcept };
@@ -28,13 +30,13 @@ export default function VisionScreen({
     <ScreenShell
       title={t.ministries.toUpperCase()}
       count={ministries.length}
-      onBack={onBack}
+      onBack={dv.back}
       hints={[{ keys: '↑↓', label: 'Ministry', kind: 'arrows' }]}
     >
       {ministries.length === 0 ? (
         <p className="pes-empty">{t.noInitiativesGlobal}</p>
       ) : (
-        <div className="pes-full-body">
+        <div className="pes-full-body" data-view={dv.view}>
           <div className="pes-list" role="listbox" aria-label={t.ministries} ref={listRef}>
             {ministries.map((m, i) => (
               <button
@@ -44,7 +46,10 @@ export default function VisionScreen({
                 aria-selected={i === index}
                 data-index={i}
                 className="pes-card"
-                onClick={() => setIndex(i)}
+                onClick={() => {
+                  setIndex(i);
+                  dv.openDetail();
+                }}
               >
                 <span className="pes-card-tag" style={{ background: '#6cb0ff' }}>
                   {m.initiative_count}
@@ -58,6 +63,9 @@ export default function VisionScreen({
 
           {selected && (
             <article className="pes-detail" key={selected.id}>
+              <button type="button" className="pes-btn pes-btn--ghost pes-detail-back" onClick={dv.closeDetail}>
+                &larr; {t.ministries.toUpperCase()}
+              </button>
               <h3 className="pes-detail-name">{selected.name}</h3>
               {selected.description && <p className="pes-detail-tag">{selected.description}</p>}
 
