@@ -1,0 +1,543 @@
+/* PES-style menu prototype. Everything is namespaced .pes-* so it can't leak
+   into the rest of the site. Only transform/opacity are animated. */
+
+.pes-root {
+  --pes-blue-900: #04122e;
+  --pes-blue-800: #06214f;
+  --pes-blue-700: #0a3a8a;
+  --pes-blue-500: #1f6fe0;
+  --pes-blue-300: #6cb0ff;
+  --pes-gold: #f2b632;
+  --pes-text: #f4f8ff;
+  --pes-bevel: 22px;
+
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  color: var(--pes-text);
+  background: var(--pes-blue-900);
+  font-family: var(--font-geist-sans), 'Segoe UI', Arial, sans-serif;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---------- backdrop ---------- */
+.pes-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(80, 150, 255, 0.35), transparent 60%),
+    radial-gradient(90% 70% at 50% 100%, rgba(20, 90, 40, 0.55), transparent 65%),
+    linear-gradient(180deg, #0a1b3d 0%, #061431 55%, #06200f 100%);
+}
+.pes-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='24' viewBox='0 0 14 24'><path d='M7 0L14 4V12L7 16L0 12V4Z M7 16V24' fill='none' stroke='white' stroke-opacity='0.09' stroke-width='0.6'/></svg>");
+  background-size: 56px 96px;
+  opacity: 0.9;
+}
+
+/* Angled corner slabs, cut with clip-path (single elements, no nesting). */
+.pes-slab {
+  position: absolute;
+  background: linear-gradient(135deg, var(--pes-blue-700), var(--pes-blue-800));
+  box-shadow: inset 0 0 0 2px rgba(108, 176, 255, 0.55);
+}
+.pes-slab--tl {
+  top: -6%;
+  left: -8%;
+  width: 46%;
+  height: 34%;
+  clip-path: polygon(0 0, 100% 0, 78% 100%, 0 100%);
+  opacity: 0.85;
+}
+.pes-slab--tr {
+  top: -8%;
+  right: -6%;
+  width: 40%;
+  height: 46%;
+  clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 78%);
+  opacity: 0.9;
+}
+.pes-slab--bl {
+  bottom: -10%;
+  left: -8%;
+  width: 34%;
+  height: 40%;
+  clip-path: polygon(0 20%, 100% 0, 80% 100%, 0 100%);
+  opacity: 0.6;
+}
+
+/* ---------- top bar ---------- */
+.pes-topbar {
+  position: absolute;
+  top: 3.2vh;
+  left: 3vw;
+  right: 3vw;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  z-index: 5;
+}
+.pes-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.45rem 1.2rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #2a2f3a, #14171e);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55), 0 4px 14px rgba(0, 0, 0, 0.5);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(0.7rem, 1.4vw, 0.95rem);
+  letter-spacing: 0.12em;
+  color: #d8dde8;
+}
+.pes-pill b {
+  color: var(--pes-gold);
+  font-weight: 700;
+}
+.pes-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  text-align: right;
+}
+.pes-brand-name {
+  font-weight: 800;
+  letter-spacing: 0.32em;
+  font-size: clamp(0.7rem, 1.7vw, 1.15rem);
+  line-height: 1.25;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+.pes-brand-name span {
+  display: block;
+  font-weight: 600;
+  letter-spacing: 0.4em;
+  font-size: 0.62em;
+  color: var(--pes-blue-300);
+}
+.pes-emblem {
+  width: clamp(44px, 7vw, 92px);
+  height: auto;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+}
+
+/* ---------- hero (featured project, in an angled frame) ---------- */
+.pes-hero {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  top: 9%;
+  width: min(46vw, 620px);
+  height: 46vh;
+  z-index: 2;
+}
+.pes-hero-frame {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, var(--pes-blue-500), var(--pes-blue-800));
+  clip-path: polygon(8% 0, 100% 0, 100% 86%, 92% 100%, 0 100%, 0 14%);
+}
+.pes-hero-inner {
+  position: absolute;
+  inset: 3px;
+  background: #050d20;
+  clip-path: polygon(8% 0, 100% 0, 100% 86%, 92% 100%, 0 100%, 0 14%);
+  overflow: hidden;
+}
+.pes-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 260ms ease-out, transform 600ms ease-out;
+}
+.pes-hero-img[data-on='true'] {
+  opacity: 0.95;
+  transform: scale(1);
+}
+.pes-hero-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(4, 18, 46, 0.85));
+}
+.pes-hero-caption {
+  position: absolute;
+  left: 8%;
+  right: 6%;
+  bottom: 6%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.pes-hero-name {
+  font-size: clamp(1.1rem, 2.6vw, 1.9rem);
+  font-weight: 800;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+.pes-hero-tag {
+  font-size: clamp(0.7rem, 1.3vw, 0.95rem);
+  color: var(--pes-blue-300);
+}
+
+/* ---------- bottom mode bar ---------- */
+.pes-bar {
+  position: absolute;
+  left: 2.5vw;
+  right: 2.5vw;
+  bottom: 15vh;
+  height: clamp(120px, 24vh, 190px);
+  z-index: 4;
+}
+.pes-bar-outer,
+.pes-bar-inner {
+  position: absolute;
+  clip-path: polygon(
+    var(--pes-bevel) 0,
+    calc(100% - var(--pes-bevel)) 0,
+    100% var(--pes-bevel),
+    100% calc(100% - var(--pes-bevel)),
+    calc(100% - var(--pes-bevel)) 100%,
+    var(--pes-bevel) 100%,
+    0 calc(100% - var(--pes-bevel)),
+    0 var(--pes-bevel)
+  );
+}
+.pes-bar-outer {
+  inset: 0;
+  background: linear-gradient(180deg, var(--pes-blue-300), var(--pes-blue-500));
+}
+.pes-bar-inner {
+  inset: 3px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 30%),
+    linear-gradient(90deg, #0a3f9a, #082d70 60%, #0a3f9a);
+}
+.pes-bar-inner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='24' viewBox='0 0 14 24'><path d='M7 0L14 4V12L7 16L0 12V4Z M7 16V24' fill='none' stroke='white' stroke-opacity='0.08' stroke-width='0.6'/></svg>");
+  background-size: 28px 48px;
+}
+.pes-bar-content {
+  position: absolute;
+  inset: 3px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0 calc(var(--pes-bevel) + 0.6rem);
+}
+.pes-mode-title {
+  font-size: clamp(1.4rem, 3.6vw, 2.6rem);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.55);
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.28);
+  margin-left: clamp(70px, 11vw, 150px);
+}
+.pes-mode-mark {
+  position: absolute;
+  left: calc(var(--pes-bevel) + 0.6rem);
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(56px, 9vw, 120px);
+  text-align: center;
+  font-weight: 900;
+  font-size: clamp(0.7rem, 1.6vw, 1.1rem);
+  letter-spacing: 0.2em;
+  line-height: 1.1;
+}
+.pes-mode-mark svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.pes-tiles {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(0.4rem, 1.4vw, 1.2rem);
+  margin-left: clamp(70px, 11vw, 150px);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  padding: 0.5rem 0.2rem 0.2rem;
+}
+.pes-tiles::-webkit-scrollbar {
+  display: none;
+}
+.pes-tile {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  appearance: none;
+  background: none;
+  border: 0;
+  color: rgba(244, 248, 255, 0.55);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  width: clamp(50px, 7.4vw, 92px);
+  padding: 0.2rem 0;
+  transition: transform 160ms ease-out, color 160ms ease-out, opacity 160ms;
+  font: inherit;
+}
+.pes-tile svg {
+  width: clamp(28px, 4.6vw, 56px);
+  height: auto;
+}
+.pes-tile span {
+  font-size: clamp(0.5rem, 0.9vw, 0.68rem);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.1;
+}
+.pes-tile[aria-current='true'] {
+  color: #fff;
+  transform: translateY(-4px) scale(1.14);
+}
+.pes-tile[aria-current='true'] svg {
+  filter: drop-shadow(0 0 8px rgba(140, 200, 255, 0.95));
+}
+.pes-tile:focus-visible {
+  outline: 2px solid var(--pes-gold);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.pes-desc {
+  position: absolute;
+  left: 4vw;
+  right: 4vw;
+  bottom: 9.5vh;
+  font-size: clamp(0.78rem, 1.5vw, 1.05rem);
+  color: #e6eefc;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.85);
+  z-index: 4;
+}
+
+/* ---------- button hints ---------- */
+.pes-hints {
+  position: absolute;
+  left: 4vw;
+  bottom: 3.5vh;
+  display: flex;
+  gap: 1.6rem;
+  z-index: 4;
+  font-size: clamp(0.72rem, 1.4vw, 1rem);
+  font-weight: 600;
+}
+.pes-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.pes-key {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.6em;
+  height: 1.6em;
+  padding: 0 0.35em;
+  border-radius: 999px;
+  font-size: 0.85em;
+  font-weight: 800;
+  color: #06120a;
+  background: radial-gradient(circle at 35% 30%, #b6ff9c, #37b53a);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+}
+.pes-key--back {
+  background: radial-gradient(circle at 35% 30%, #ffb0a8, #d13a2c);
+  color: #1a0503;
+}
+.pes-key--arrows {
+  background: radial-gradient(circle at 35% 30%, #e8eefc, #8a97b3);
+  color: #0a1226;
+}
+
+/* ---------- title screen ---------- */
+.pes-title {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  text-align: center;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  width: 100%;
+  color: inherit;
+  font: inherit;
+}
+.pes-title-logo {
+  width: clamp(120px, 20vw, 240px);
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.7));
+}
+.pes-title-name {
+  font-size: clamp(1.6rem, 5vw, 3.4rem);
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.6);
+}
+.pes-title-sub {
+  font-size: clamp(0.7rem, 1.6vw, 1.1rem);
+  letter-spacing: 0.6em;
+  color: var(--pes-blue-300);
+  font-weight: 700;
+}
+.pes-start {
+  margin-top: 1.6rem;
+  font-size: clamp(0.9rem, 2vw, 1.4rem);
+  font-weight: 800;
+  letter-spacing: 0.35em;
+  animation: pes-blink 1.3s steps(2, jump-none) infinite;
+}
+
+/* ---------- placeholder screen (phase 1) ---------- */
+.pes-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6vh 6vw;
+  background: rgba(3, 10, 28, 0.78);
+}
+.pes-screen-card {
+  position: relative;
+  width: min(760px, 100%);
+  padding: 2.2rem 2.4rem;
+  background: linear-gradient(160deg, var(--pes-blue-700), var(--pes-blue-800));
+  box-shadow: inset 0 0 0 2px rgba(108, 176, 255, 0.7);
+  clip-path: polygon(3% 0, 100% 0, 100% 90%, 97% 100%, 0 100%, 0 10%);
+}
+.pes-screen-card:focus {
+  outline: none;
+}
+.pes-screen-card h2 {
+  font-size: clamp(1.4rem, 3.4vw, 2.2rem);
+  font-weight: 900;
+  margin-bottom: 0.5rem;
+}
+.pes-screen-card p {
+  color: #d5e4ff;
+  line-height: 1.5;
+  margin-bottom: 1.4rem;
+  font-size: clamp(0.85rem, 1.6vw, 1.05rem);
+}
+.pes-screen-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.pes-btn {
+  appearance: none;
+  cursor: pointer;
+  border: 0;
+  padding: 0.6rem 1.3rem;
+  font: inherit;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(180deg, var(--pes-blue-500), var(--pes-blue-700));
+  box-shadow: inset 0 0 0 2px rgba(180, 215, 255, 0.7);
+  clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+  transition: transform 140ms ease-out;
+}
+.pes-btn:hover,
+.pes-btn:focus-visible {
+  transform: translateY(-2px);
+  outline: none;
+}
+.pes-btn--ghost {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- animation ---------- */
+@keyframes pes-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+@keyframes pes-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.pes-enter {
+  animation: pes-fade-up 380ms ease-out both;
+}
+.pes-enter--d1 {
+  animation-delay: 60ms;
+}
+.pes-enter--d2 {
+  animation-delay: 140ms;
+}
+
+@media (pointer: coarse) {
+  .pes-hints {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pes-start,
+  .pes-enter {
+    animation: none;
+  }
+  .pes-tile,
+  .pes-hero-img,
+  .pes-btn {
+    transition: none;
+  }
+}
+
+/* Portrait phones: phase 4 designs a proper layout; until then, keep the
+   bar usable by letting the hero shrink and the tile row scroll. */
+@media (max-aspect-ratio: 1/1) {
+  .pes-hero {
+    width: 84vw;
+    height: 32vh;
+    top: 12%;
+  }
+  .pes-slab--tl {
+    width: 60%;
+  }
+  .pes-bar {
+    bottom: 17vh;
+    height: 26vh;
+  }
+  .pes-slab--tr,
+  .pes-slab--bl {
+    opacity: 0.45;
+  }
+}
