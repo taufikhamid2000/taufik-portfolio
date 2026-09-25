@@ -35,7 +35,16 @@ export interface PesVisionData {
   initiatives: PesInitiative[];
 }
 
+export interface PesTask {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  effort: number | null;
+}
+
 export interface PesSprint {
+  tasks: PesTask[];
   id: string;
   name: string;
   goal: string | null;

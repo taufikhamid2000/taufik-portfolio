@@ -45,8 +45,10 @@ export interface PesDict {
     start: string;
     end: string;
     taskCount: string;
-    tabList: string;
-    tabYear: string;
+    noItems: string;
+    other: string;
+    items: string;
+    taskStatus: Record<string, string>;
     iteration: string;
     buffer: string;
     yearIntro: (year: number) => string;
@@ -137,8 +139,10 @@ const en: PesDict = {
     start: 'START',
     end: 'END',
     taskCount: 'TASKS',
-    tabList: 'SPRINTS',
-    tabYear: 'YEAR',
+    noItems: 'No items in this sprint yet.',
+    other: 'OTHER SPRINTS',
+    items: 'ITEMS',
+    taskStatus: { todo: 'TODO', 'in-progress': 'DOING', blocked: 'BLOCKED', done: 'DONE' },
     iteration: 'Iteration',
     buffer: 'Buffer',
     yearIntro: (y) => `${y}: 4 iterations, each with 4 three-week sprints and a buffer week. Starts every 1 January.`,
@@ -230,8 +234,10 @@ const ms: PesDict = {
     start: 'MULA',
     end: 'TAMAT',
     taskCount: 'TUGASAN',
-    tabList: 'SPRINT',
-    tabYear: 'TAHUN',
+    noItems: 'Belum ada item dalam sprint ini.',
+    other: 'SPRINT LAIN',
+    items: 'ITEM',
+    taskStatus: { todo: 'TERBUKA', 'in-progress': 'DIBUAT', blocked: 'TERHALANG', done: 'SIAP' },
     iteration: 'Iterasi',
     buffer: 'Penampan',
     yearIntro: (y) => `${y}: 4 iterasi, setiap satu 4 sprint tiga minggu dan seminggu penampan. Bermula setiap 1 Januari.`,

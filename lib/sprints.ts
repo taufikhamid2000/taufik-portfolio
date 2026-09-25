@@ -21,7 +21,17 @@ export interface SprintInput {
   status: SprintStatus;
 }
 
+export interface SprintTask {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  effort: number | null;
+  display_order: number;
+}
+
 export interface SprintWithCounts extends Sprint {
+  tasks: SprintTask[];
   task_count: number;
   done_count: number;
 }
@@ -30,7 +40,7 @@ export async function getSprints(): Promise<SprintWithCounts[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('sprints')
-    .select('*, tasks(status)')
+    .select('*, tasks(id, title, status, priority, effort, display_order)')
     .order('start_date', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false });
 
@@ -40,12 +50,14 @@ export async function getSprints(): Promise<SprintWithCounts[]> {
   }
 
   // Flatten the task counts
-  type Row = Sprint & { tasks: { status: string }[] };
+  type Row = Sprint & { tasks: SprintTask[] };
   return (data as Row[] | null ?? []).map((row) => {
     const tasks = row.tasks ?? [];
     const { tasks: _t, ...rest } = row; // eslint-disable-line @typescript-eslint/no-unused-vars
+    const sorted = [...tasks].sort((a, b) => a.display_order - b.display_order);
     return {
       ...rest,
+      tasks: sorted,
       task_count: tasks.length,
       done_count: tasks.filter((t) => t.status === 'done').length,
     };

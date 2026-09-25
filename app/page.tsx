@@ -71,6 +71,7 @@ export default async function Home({ searchParams }: HomeProps) {
         start_date: s.start_date,
         end_date: s.end_date,
         status: s.status,
+        tasks: s.tasks.map((t) => ({ id: t.id, title: t.title, status: t.status, priority: t.priority, effort: t.effort })),
         task_count: s.task_count,
         done_count: s.done_count,
       }))

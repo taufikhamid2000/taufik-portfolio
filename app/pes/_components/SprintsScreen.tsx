@@ -1,30 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { PesSprint } from '../types';
-import YearCalendar from './YearCalendar';
+import YearCalendar, { type Slot } from './YearCalendar';
 import ScreenShell from './ScreenShell';
 import { useT } from './PesLocale';
-import { useDetailView } from './useDetailView';
-import { useListNav } from './useListNav';
 
-const STATUS_COLOR: Record<PesSprint['status'], string> = {
-  active: '#22c55e',
-  planned: '#3b82f6',
-  completed: '#9ca3af',
-  cancelled: '#6b7280',
-};
-const STATUS_TAG: Record<PesSprint['status'], string> = {
-  active: 'LIVE',
-  planned: 'NEXT',
-  completed: 'DONE',
-  cancelled: 'VOID',
-};
 
-function fmt(d: string | null) {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-}
+const TASK_COLOR: Record<string, string> = { todo: '#6b7280', 'in-progress': '#3b82f6', blocked: '#ef4444', done: '#22c55e' };
 
 export default function SprintsScreen({
   sprints,
@@ -35,11 +18,22 @@ export default function SprintsScreen({
   isOwner: boolean;
   onBack: () => void;
 }) {
-  const { index, setIndex, listRef } = useListNav(sprints.length);
-  const dv = useDetailView(onBack);
   const tr = useT();
-  const [tab, setTab] = useState<'list' | 'year'>('list');
-  const selected = sprints[index];
+  const [slot, setSlot] = useState<Slot | null>(null);
+
+  useEffect(() => {
+    if (!slot) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape' || e.key === 'Backspace') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        setSlot(null);
+      }
+    }
+    // Capture phase so this runs before PesApp's window listener closes the screen.
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [slot]);
 
   if (!isOwner) {
     return (
@@ -63,92 +57,52 @@ export default function SprintsScreen({
     );
   }
 
-  const pct = selected && selected.task_count > 0 ? Math.round((selected.done_count / selected.task_count) * 100) : 0;
-
   return (
     <ScreenShell
       title={tr.menu.sprints.title}
-      count={sprints.length}
-      onBack={dv.back}
-      hints={[{ keys: '↑↓', label: tr.hints.sprint, kind: 'arrows' }]}
+      onBack={slot ? () => setSlot(null) : onBack}
+      hints={[]}
     >
-      <div className="pes-tabs" role="tablist">
-        {(['list', 'year'] as const).map((t) => (
-          <button key={t} type="button" role="tab" aria-selected={tab === t} className="pes-tab" onClick={() => setTab(t)}>
-            {t === 'list' ? tr.sprints.tabList : tr.sprints.tabYear}
-          </button>
-        ))}
-      </div>
-      {tab === 'year' ? (
-        <YearCalendar />
-      ) : sprints.length === 0 ? (
-        <p className="pes-empty">{tr.sprints.empty}</p>
-      ) : (
-        <div className="pes-full-body" data-view={dv.view}>
-          <div className="pes-list" role="listbox" aria-label="Sprints" ref={listRef}>
-            {sprints.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                role="option"
-                aria-selected={i === index}
-                data-index={i}
-                className="pes-card"
-                onClick={() => {
-                  setIndex(i);
-                  dv.openDetail();
-                }}
-              >
-                <span className="pes-card-tag" style={{ background: STATUS_COLOR[s.status] }}>
-                  {STATUS_TAG[s.status]}
-                </span>
-                <span className="pes-card-main">
-                  <span className="pes-card-name">{s.name}</span>
-                  <span className="pes-card-sub">
-                    {s.done_count}/{s.task_count} {tr.sprints.tasks}
-                  </span>
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {selected && (
-            <article className="pes-detail" key={selected.id}>
-              <button type="button" className="pes-btn pes-btn--ghost pes-detail-back" onClick={dv.closeDetail}>
-                &larr; {tr.menu.sprints.title}
-              </button>
-              <h3 className="pes-detail-name">{selected.name}</h3>
-              {selected.goal && <p className="pes-detail-tag">{selected.goal}</p>}
-              <div className="pes-stat">
-                <span>{tr.sprints.progress}</span>
-                <div className="pes-bar-track" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-                  <div className="pes-bar-fill" style={{ width: `${pct}%` }} />
+      {slot ? (
+        <div className="pes-slot">
+          <h3 className="pes-detail-name">{slot.label}</h3>
+          {slot.sprints.length === 0 && <p className="pes-empty">{tr.sprints.noItems}</p>}
+          {slot.sprints.map((sp) => {
+            const pct = sp.task_count > 0 ? Math.round((sp.done_count / sp.task_count) * 100) : 0;
+            return (
+              <article key={sp.id} className="pes-detail">
+                <h4 className="pes-detail-name">{sp.name}</h4>
+                {sp.goal && <p className="pes-detail-tag">{sp.goal}</p>}
+                <div className="pes-stat">
+                  <span>{tr.sprints.progress}</span>
+                  <div className="pes-bar-track" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+                    <div className="pes-bar-fill" style={{ width: `${pct}%` }} />
+                  </div>
+                  <b>{pct}%</b>
                 </div>
-                <b>{pct}%</b>
-              </div>
-              <dl className="pes-facts">
-                <div>
-                  <dt>{tr.sprints.status}</dt>
-                  <dd>{selected.status}</dd>
+                <div className="pes-list pes-items" aria-label={tr.sprints.items}>
+                  {sp.tasks.length === 0 && <p className="pes-empty">{tr.sprints.noItems}</p>}
+                  {sp.tasks.map((t) => (
+                    <div key={t.id} className="pes-card">
+                      <span className="pes-card-tag" style={{ background: TASK_COLOR[t.status] ?? '#6b7280' }}>
+                        {tr.sprints.taskStatus[t.status] ?? t.status}
+                      </span>
+                      <span className="pes-card-main">
+                        <span className="pes-card-name">{t.title}</span>
+                        <span className="pes-card-sub">
+                          {t.priority}
+                          {t.effort != null ? ` · ${t.effort}` : ''}
+                        </span>
+                      </span>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <dt>{tr.sprints.start}</dt>
-                  <dd>{fmt(selected.start_date)}</dd>
-                </div>
-                <div>
-                  <dt>{tr.sprints.end}</dt>
-                  <dd>{fmt(selected.end_date)}</dd>
-                </div>
-                <div>
-                  <dt>{tr.sprints.taskCount}</dt>
-                  <dd>
-                    {selected.done_count}/{selected.task_count}
-                  </dd>
-                </div>
-              </dl>
-            </article>
-          )}
+              </article>
+            );
+          })}
         </div>
+      ) : (
+        <YearCalendar sprints={sprints} onOpen={setSlot} />
       )}
     </ScreenShell>
   );
