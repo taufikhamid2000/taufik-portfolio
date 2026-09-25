@@ -103,9 +103,19 @@ export default function ProjectsScreen({
     [tabs, tab],
   );
 
+  const inDetail = dv.view === 'detail';
+  const step = useCallback(
+    (d: number) => setIndex((i) => Math.min(Math.max(Math.min(i, visible.length - 1) + d, 0), visible.length - 1)),
+    [visible.length],
+  );
+  const touch = useRef<{ x: number; y: number } | null>(null);
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'ArrowDown') {
+      if (inDetail && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
+        e.preventDefault();
+        step(e.key === 'ArrowRight' ? 1 : -1);
+      } else if (e.key === 'ArrowDown') {
         e.preventDefault();
         setIndex((i) => Math.min(i + 1, visible.length - 1));
       } else if (e.key === 'ArrowUp') {
@@ -125,7 +135,7 @@ export default function ProjectsScreen({
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [visible.length, changeTab, selected]);
+  }, [visible.length, changeTab, selected, inDetail, step]);
 
   // Keep the selected card visible by scrolling only the list container.
   useEffect(() => {
@@ -138,6 +148,7 @@ export default function ProjectsScreen({
     else if (c.bottom > l.bottom) list.scrollBy({ top: c.bottom - l.bottom + 8, behavior: 'smooth' });
   }, [index]);
 
+  const pos = Math.min(index, Math.max(visible.length - 1, 0));
   const status = selected ? asStatus(selected.status) : null;
 
   return (
@@ -189,7 +200,21 @@ export default function ProjectsScreen({
           </div>
 
           {selected && status && (
-            <article className="pes-detail" key={selected.id}>
+            <article
+              className="pes-detail"
+              key={selected.id}
+              onTouchStart={(e) => {
+                touch.current = inDetail ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
+              }}
+              onTouchEnd={(e) => {
+                const t = touch.current;
+                touch.current = null;
+                if (!t) return;
+                const dx = e.changedTouches[0].clientX - t.x;
+                const dy = e.changedTouches[0].clientY - t.y;
+                if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+              }}
+            >
               <button type="button" className="pes-btn pes-btn--ghost pes-detail-back" onClick={dv.closeDetail}>
                 &larr; {tr.projects.list}
               </button>
@@ -239,6 +264,17 @@ export default function ProjectsScreen({
                     {tr.projects.github}
                   </a>
                 )}
+              </div>
+              <div className="pes-detail-pager">
+                <button type="button" className="pes-btn pes-btn--ghost" disabled={pos <= 0} onClick={() => step(-1)}>
+                  &larr; {tr.projects.prev}
+                </button>
+                <span>
+                  {pos + 1}/{visible.length}
+                </span>
+                <button type="button" className="pes-btn pes-btn--ghost" disabled={pos >= visible.length - 1} onClick={() => step(1)}>
+                  {tr.projects.next} &rarr;
+                </button>
               </div>
             </article>
           )}

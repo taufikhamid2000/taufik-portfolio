@@ -32,6 +32,8 @@ export interface PesDict {
     github: string;
     list: string;
     empty: string;
+    prev: string;
+    next: string;
     statuses: Record<string, string>;
   };
   sprints: {
@@ -121,6 +123,8 @@ const en: PesDict = {
     github: 'GITHUB',
     list: 'LIST',
     empty: 'Nothing here yet.',
+    prev: 'PREV',
+    next: 'NEXT',
     statuses: {
       active: 'Active',
       'in-progress': 'In Progress',
@@ -217,6 +221,8 @@ const ms: PesDict = {
     github: 'GITHUB',
     list: 'SENARAI',
     empty: 'Belum ada apa-apa di sini.',
+    prev: 'SEBELUM',
+    next: 'SETERUSNYA',
     statuses: {
       active: 'Aktif',
       'in-progress': 'Sedang Dibina',
