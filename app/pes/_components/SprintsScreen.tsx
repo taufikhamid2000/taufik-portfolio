@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { syncCommitsAction } from '../sync-action';
 import type { PesCommit, PesSprint } from '../types';
 import YearCalendar, { type Slot } from './YearCalendar';
@@ -23,24 +23,32 @@ export default function SprintsScreen({
   onBack: () => void;
 }) {
   const tr = useT();
-  const [slot, setSlot] = useState<Slot | null>(null);
+  const [nav, setNav] = useState<{ cells: Slot[]; pos: number } | null>(null);
+  const slot = nav ? nav.cells[nav.pos] : null;
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const step = (d: number) => setNav((n) => (n ? { ...n, pos: Math.min(Math.max(n.pos + d, 0), n.cells.length - 1) } : n));
   const router = useRouter();
   const [pending, startSync] = useTransition();
   const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!slot) return;
+    if (!nav) return;
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape' || e.key === 'Backspace') {
         e.preventDefault();
         e.stopImmediatePropagation();
-        setSlot(null);
+        setNav(null);
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const d = e.key === 'ArrowRight' ? 1 : -1;
+        setNav((n) => (n ? { ...n, pos: Math.min(Math.max(n.pos + d, 0), n.cells.length - 1) } : n));
       }
     }
     // Capture phase so this runs before PesApp's window listener closes the screen.
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [slot]);
+  }, [nav]);
 
   if (!isOwner) {
     return (
@@ -86,10 +94,10 @@ export default function SprintsScreen({
   return (
     <ScreenShell
       title={tr.menu.sprints.title}
-      onBack={slot ? () => setSlot(null) : onBack}
+      onBack={slot ? () => setNav(null) : onBack}
       hints={
         slot
-          ? []
+          ? [{ keys: '←→', label: tr.hints.sprint, kind: 'arrows' }]
           : [
               { keys: '↑↓←→', label: tr.hints.select, kind: 'arrows' },
               { keys: '↵', label: tr.hints.open, kind: 'confirm' },
@@ -98,7 +106,31 @@ export default function SprintsScreen({
       }
     >
       {slot ? (
-        <div className="pes-slot">
+        <div
+          className="pes-slot"
+          onTouchStart={(e) => {
+            touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          }}
+          onTouchEnd={(e) => {
+            const t = touch.current;
+            touch.current = null;
+            if (!t) return;
+            const dx = e.changedTouches[0].clientX - t.x;
+            const dy = e.changedTouches[0].clientY - t.y;
+            if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) step(dx < 0 ? 1 : -1);
+          }}
+        >
+          <div className="pes-detail-pager">
+            <button type="button" className="pes-btn pes-btn--ghost" disabled={nav!.pos <= 0} onClick={() => step(-1)}>
+              &larr; {tr.projects.prev}
+            </button>
+            <span>
+              {nav!.pos + 1}/{nav!.cells.length}
+            </span>
+            <button type="button" className="pes-btn pes-btn--ghost" disabled={nav!.pos >= nav!.cells.length - 1} onClick={() => step(1)}>
+              {tr.projects.next} &rarr;
+            </button>
+          </div>
           <h3 className="pes-detail-name">{slot.label}</h3>
           {slot.sprints.length === 0 && <p className="pes-empty">{tr.sprints.noItems}</p>}
           {slot.sprints.map((sp) => {
@@ -181,7 +213,7 @@ export default function SprintsScreen({
             </button>
             {note && <span role="status">{note}</span>}
           </div>
-          <YearCalendar sprints={sprints} commits={commits} onOpen={setSlot} />
+          <YearCalendar sprints={sprints} commits={commits} onOpen={(s, all) => setNav({ cells: all, pos: all.indexOf(s) })} />
         </>
       )}
     </ScreenShell>

@@ -53,7 +53,7 @@ export default function YearCalendar({
 }: {
   sprints: PesSprint[];
   commits: PesCommit[];
-  onOpen: (slot: Slot) => void;
+  onOpen: (slot: Slot, all: Slot[]) => void;
 }) {
   const tr = useT();
   const locale = useLocale();
@@ -91,7 +91,7 @@ export default function YearCalendar({
         setYear(year - 1);
       } else if (e.key === 'Enter' && cells[cur]) {
         e.preventDefault();
-        onOpen(cells[cur]);
+        onOpen(cells[cur], cells);
       }
     }
     window.addEventListener('keydown', onKey);
@@ -142,7 +142,7 @@ export default function YearCalendar({
                   className={`pes-sprint-cell${s.buffer ? ' pes-sprint-cell--buffer' : ''}`}
                   aria-current={today >= s.from && today <= s.to ? 'date' : undefined}
                   data-selected={idx === cur}
-                  onClick={() => onOpen(s)}
+                  onClick={() => onOpen(s, cells)}
                 >
                   <b>{s.label}</b>
                   <span>{range(s)}</span>
@@ -168,7 +168,7 @@ export default function YearCalendar({
                 type="button"
                 className="pes-sprint-cell"
                 data-selected={iterations.flat().length + k === cur}
-                onClick={() => onOpen(otherSlots[k])}
+                onClick={() => onOpen(otherSlots[k], cells)}
               >
                 <b>{s.name}</b>
                 <em>
