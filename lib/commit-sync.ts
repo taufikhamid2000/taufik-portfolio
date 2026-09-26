@@ -31,10 +31,99 @@ async function paged<T>(path: string): Promise<T[]> {
   return all;
 }
 
+const iso = (t: number) => new Date(t).toISOString().slice(0, 10);
+
+// Year calendar: 4 iterations x (4 three-week sprints + 1 buffer week), starting 1 January.
+function slotFor(date: string) {
+  const d = new Date(date);
+  const y = d.getUTCFullYear();
+  const j1 = Date.UTC(y, 0, 1);
+  const week = Math.min(Math.floor((d.getTime() - j1) / DAY / 7), 51);
+  const it = Math.floor(week / 13);
+  const w = week % 13;
+  const buffer = w === 12;
+  const n = it * 4 + Math.floor(w / 3) + 1;
+  const start = j1 + it * 91 * DAY + (buffer ? 84 : Math.floor(w / 3) * 21) * DAY;
+  const tag = y === new Date().getUTCFullYear() ? '' : ` (${y})`;
+  return {
+    start: iso(start),
+    end: iso(start + (buffer ? 6 : 20) * DAY),
+    name: buffer ? `Buffer ${it + 1}${tag}` : `Sprint ${n}${tag}`,
+  };
+}
+
+interface Stored {
+  id: string;
+  repo: string;
+  message: string;
+  committed_at: string;
+  task_id: string | null;
+}
+
+/** Give every untagged commit an item: one per repo per sprint, created on demand. */
+async function autoItems(supabase: Awaited<ReturnType<typeof createClient>>, fresh: Stored[]) {
+  const groups = new Map<string, { repo: string; slot: ReturnType<typeof slotFor>; commits: Stored[] }>();
+  for (const c of fresh) {
+    if (c.task_id) continue;
+    const slot = slotFor(c.committed_at);
+    const key = slot.start + '|' + c.repo;
+    const g = groups.get(key) ?? { repo: c.repo, slot, commits: [] };
+    g.commits.push(c);
+    groups.set(key, g);
+  }
+
+  const today = iso(Date.now());
+  for (const g of groups.values()) {
+    const ordered = [...g.commits].sort((a, b) => a.committed_at.localeCompare(b.committed_at));
+    const latest = ordered[ordered.length - 1];
+
+    let { data: sprint } = await supabase.from('sprints').select('id').eq('start_date', g.slot.start).maybeSingle();
+    if (!sprint) {
+      const { data } = await supabase
+        .from('sprints')
+        .insert({ name: g.slot.name, start_date: g.slot.start, end_date: g.slot.end, status: g.slot.end < today ? 'completed' : 'planned' })
+        .select('id')
+        .single();
+      sprint = data;
+    }
+    if (!sprint) continue;
+
+    const prefix = `${g.repo}: `;
+    const { data: existing } = await supabase
+      .from('tasks')
+      .select('id, completed_at')
+      .eq('sprint_id', sprint.id)
+      .like('title', `${prefix}%`)
+      .limit(1);
+    let taskId: string | undefined = existing?.[0]?.id;
+    if (taskId) {
+      if (!existing?.[0]?.completed_at || existing[0].completed_at < latest.committed_at) {
+        await supabase.from('tasks').update({ completed_at: latest.committed_at }).eq('id', taskId);
+      }
+    } else {
+      const { data } = await supabase
+        .from('tasks')
+        .insert({
+          sprint_id: sprint.id,
+          title: `${prefix}${latest.message}`.slice(0, 200),
+          description: `Auto-created from ${ordered.length} commit${ordered.length > 1 ? 's' : ''} in ${g.repo}.`,
+          status: 'done',
+          priority: 'medium',
+          completed_at: latest.committed_at,
+          display_order: 500,
+        })
+        .select('id')
+        .single();
+      taskId = data?.id;
+    }
+    if (taskId) await supabase.from('commits').update({ task_id: taskId }).in('id', ordered.map((c) => c.id));
+  }
+}
+
 /**
  * Pull new commits from GitHub into portfolio.commits. A `[T-<n>]` tag in the
  * commit message links the commit to the item with that ticket number.
- * Untagged commits stay unlinked and are grouped by repo and day in the UI.
+ * Untagged commits get an item automatically: one per repo per sprint window.
  */
 export async function syncCommits(): Promise<{ added: number; error?: string }> {
   if (!process.env.GITHUB_TOKEN) return { added: 0, error: 'GITHUB_TOKEN is not set.' };
@@ -80,16 +169,17 @@ export async function syncCommits(): Promise<{ added: number; error?: string }> 
     }
 
     const payload = rows.map(({ ticket, ...r }) => ({ ...r, task_id: ticket != null ? (taskIds.get(ticket) ?? null) : null }));
-    let added = 0;
+    const inserted: Stored[] = [];
     for (let i = 0; i < payload.length; i += 500) {
       const { data, error } = await supabase
         .from('commits')
         .upsert(payload.slice(i, i + 500), { onConflict: 'repo,sha', ignoreDuplicates: true })
-        .select('sha');
-      if (error) return { added, error: error.message };
-      added += data?.length ?? 0;
+        .select('id, repo, message, committed_at, task_id');
+      if (error) return { added: inserted.length, error: error.message };
+      inserted.push(...((data ?? []) as Stored[]));
     }
-    return { added };
+    await autoItems(supabase, inserted);
+    return { added: inserted.length };
   } catch (e) {
     return { added: 0, error: e instanceof Error ? e.message : 'Sync failed.' };
   }
