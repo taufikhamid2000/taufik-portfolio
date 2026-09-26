@@ -8,12 +8,8 @@ import type { Theme } from '../../lib/theme';
 
 type NavLink = { href: string; label: string };
 
-const ADMIN_LINKS: NavLink[] = [
-  { href: '/admin', label: 'Projects' },
-  { href: '/admin/sprints', label: 'Sprints' },
-  { href: '/admin/submissions', label: 'Submissions' },
-  { href: '/admin/translations', label: 'Translations' },
-];
+// Owner tools now live inside the PES view.
+const ADMIN_LINKS: NavLink[] = [{ href: '/#login', label: 'Owner tools' }];
 
 const VISION_LINKS_EN: NavLink[] = [
   { href: '/vision', label: 'Overview' },

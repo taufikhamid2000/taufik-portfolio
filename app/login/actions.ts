@@ -7,7 +7,7 @@ import { createClient } from '../../lib/supabase/server';
 export async function signIn(formData: FormData) {
   const email = (formData.get('email') as string)?.trim();
   const password = formData.get('password') as string;
-  const redirectTo = (formData.get('redirect') as string) || '/admin';
+  const redirectTo = (formData.get('redirect') as string) || '/#login';
 
   if (!email || !password) {
     redirect('/login?error=' + encodeURIComponent('Email and password are required.'));

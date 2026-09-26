@@ -72,10 +72,10 @@ export async function updateSession(request: NextRequest) {
   // /admin is public-read now (see lib/auth.ts) — no blanket redirect here.
   // Owner-only writes are gated per-page/per-action instead, backed by RLS.
 
-  // If already logged in and hitting /login, send to /admin
+  // If already logged in and hitting /login, send to the home page
   if (user && request.nextUrl.pathname === '/login') {
     const url = request.nextUrl.clone();
-    url.pathname = '/admin';
+    url.pathname = '/';
     return NextResponse.redirect(url);
   }
 

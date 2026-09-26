@@ -269,3 +269,94 @@ export async function translateMissingAction(): Promise<Result & { done?: number
   revalidatePath('/');
   return { done };
 }
+
+// ----- Vision: initiatives (ministries are fixed) -----
+
+export interface VisionAdminData {
+  error?: string;
+  ministries: { id: string; name: string }[];
+  projects: { id: string; name: string }[];
+  initiatives: InitiativeRow[];
+}
+export interface InitiativeRow {
+  id: string;
+  ministry_id: string;
+  ministry_name: string;
+  project_id: string | null;
+  problem: string;
+  idea: string;
+  problem_ms: string | null;
+  idea_ms: string | null;
+  status: string;
+}
+export interface InitiativeFields {
+  ministry_id: string;
+  project_id: string;
+  problem: string;
+  idea: string;
+  problem_ms: string;
+  idea_ms: string;
+  status: string;
+}
+
+export async function loadVisionAdminAction(): Promise<VisionAdminData> {
+  if (!(await getIsOwner())) return { error: 'Sign in as the site owner first.', ministries: [], projects: [], initiatives: [] };
+  const supabase = await createClient();
+  const [m, p, i] = await Promise.all([
+    supabase.from('ministries').select('id, name').order('display_order'),
+    supabase.from('projects').select('id, name').order('name'),
+    supabase
+      .from('initiatives')
+      .select('id, ministry_id, project_id, problem, idea, problem_ms, idea_ms, status, ministry:ministries(name)')
+      .order('display_order')
+      .order('created_at'),
+  ]);
+  return {
+    ministries: m.data ?? [],
+    projects: p.data ?? [],
+    initiatives: (i.data ?? []).map((r: Record<string, unknown>) => {
+      const min = r.ministry as unknown as { name: string } | { name: string }[] | null;
+      return { ...r, ministry: undefined, ministry_name: (Array.isArray(min) ? min[0]?.name : min?.name) ?? '' } as unknown as InitiativeRow;
+    }),
+  };
+}
+
+function initiativeInput(f: InitiativeFields) {
+  if (!f.ministry_id) throw new Error('Choose a ministry.');
+  const problem = f.problem.trim();
+  const idea = f.idea.trim();
+  if (!problem || !idea) throw new Error('Problem and idea are required.');
+  if (!['active', 'planned', 'concept'].includes(f.status)) throw new Error('Invalid status.');
+  return {
+    ministry_id: f.ministry_id,
+    project_id: f.project_id || null,
+    problem,
+    idea,
+    problem_ms: f.problem_ms.trim() || null,
+    idea_ms: f.idea_ms.trim() || null,
+    status: f.status,
+  };
+}
+
+export async function saveInitiativeAction(id: string | null, f: InitiativeFields): Promise<Result> {
+  return guard(async () => {
+    const input = initiativeInput(f);
+    const supabase = await createClient();
+    const { error } = id
+      ? await supabase.from('initiatives').update(input).eq('id', id)
+      : await supabase.from('initiatives').insert({ ...input, display_order: 500 });
+    if (error) throw new Error(error.message);
+    revalidatePath('/vision', 'layout');
+    revalidatePath('/ms/vision', 'layout');
+  });
+}
+
+export async function deleteInitiativeAction(id: string): Promise<Result> {
+  return guard(async () => {
+    const supabase = await createClient();
+    const { error } = await supabase.from('initiatives').delete().eq('id', id);
+    if (error) throw new Error(error.message);
+    revalidatePath('/vision', 'layout');
+    revalidatePath('/ms/vision', 'layout');
+  });
+}

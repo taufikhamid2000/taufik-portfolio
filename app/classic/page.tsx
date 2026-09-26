@@ -89,10 +89,10 @@ function EmptyState() {
     <div className="border border-dashed border-border rounded-2xl bg-muted/40 p-12 text-center">
       <h2 className="text-xl font-semibold mb-2">No projects yet</h2>
       <p className="text-foreground/60 mb-4">
-        Add your first project from the admin panel.
+        Add your first project from the owner tools.
       </p>
       <Link
-        href="/admin"
+        href="/#login"
         className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-full hover:bg-primary/90 transition-colors"
       >
         Go to Admin

@@ -29,6 +29,9 @@ export default function LoginScreen({ isOwner, onBack }: { isOwner: boolean; onB
           <button type="button" className="pes-btn pes-btn--ghost" onClick={() => go('#inbox', 'push')}>
             INBOX
           </button>
+          <button type="button" className="pes-btn pes-btn--ghost" onClick={() => go('#vision-admin', 'push')}>
+            VISION EDITOR
+          </button>
           <button type="button" className="pes-btn" disabled={pending} onClick={() => run(signOutAction)}>
             SIGN OUT
           </button>

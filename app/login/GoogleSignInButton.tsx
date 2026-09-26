@@ -8,7 +8,7 @@ export function GoogleSignInButton() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/confirm?next=/admin`,
+        redirectTo: `${window.location.origin}/auth/confirm?next=/`,
       },
     });
   }

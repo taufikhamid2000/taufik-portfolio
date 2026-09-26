@@ -10,6 +10,7 @@ import ContactScreen from './ContactScreen';
 import { PesLocaleProvider } from './PesLocale';
 import { go, subscribeHash } from './nav';
 import InboxScreen from './InboxScreen';
+import VisionAdminScreen from './VisionAdminScreen';
 import LoginScreen from './LoginScreen';
 import OptionsScreen from './OptionsScreen';
 import ProjectsScreen from './ProjectsScreen';
@@ -186,7 +187,7 @@ export default function PesApp({
   const hashId = hash.slice(1).split('/')[0];
   const openId: IconId | null = (MENU as string[]).includes(hashId) ? (hashId as IconId) : null;
   const loginOpen = hashId === 'login';
-  const inboxOpen = hashId === 'inbox';
+  const inboxOpen = hashId === 'inbox' || hashId === 'vision-admin';
   const started = hashId === 'menu' || openId !== null || loginOpen || inboxOpen;
   const [index, setIndex] = useState(0);
   // A deep link (#sprints) should leave the matching tile selected once the screen closes.
@@ -469,7 +470,8 @@ export default function PesApp({
           {opened?.id === 'vision' && <VisionScreen data={vision[locale]} locale={locale} onBack={close} />}
           {opened?.id === 'sprints' && <SprintsScreen sprints={sprints} commits={commits} isOwner={isOwner} onBack={close} />}
           {(loginOpen || (inboxOpen && !isOwner)) && <LoginScreen isOwner={isOwner} onBack={close} />}
-          {inboxOpen && isOwner && <InboxScreen onBack={close} />}
+          {hashId === 'inbox' && isOwner && <InboxScreen onBack={close} />}
+          {hashId === 'vision-admin' && isOwner && <VisionAdminScreen onBack={close} />}
           {opened?.id === 'about' && <AboutScreen site={site} projects={projects} onBack={close} />}
           {opened?.id === 'contact' && <ContactScreen site={site} locale={locale} onBack={close} />}
           {opened?.id === 'settings' && (

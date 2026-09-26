@@ -34,5 +34,5 @@ export async function updatePassword(formData: FormData) {
   }
 
   revalidatePath('/', 'layout');
-  redirect('/admin');
+  redirect('/');
 }
