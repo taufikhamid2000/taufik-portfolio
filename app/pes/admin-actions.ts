@@ -5,6 +5,8 @@ import { getIsOwner } from '../../lib/auth';
 import { createSprint, deleteSprint, updateSprint, type SprintStatus } from '../../lib/sprints';
 import { createTask, deleteTask, updateTask, type TaskPriority, type TaskStatus } from '../../lib/tasks';
 import { createProject, deleteProject, updateProject, type ProjectStatus } from '../../lib/projects';
+import { translateToMalay } from '../../lib/translate';
+import { getAllSubmissions } from '../../lib/vision';
 import { createClient } from '../../lib/supabase/server';
 
 // Owner tools for the PES view. Every action re-checks the owner (RLS backs it up) and
@@ -162,4 +164,108 @@ export async function updateProjectAction(id: string, f: ProjectFields): Promise
 
 export async function deleteProjectAction(id: string): Promise<Result> {
   return guard(() => deleteProject(id));
+}
+
+// ----- Inbox: idea submissions and missing translations -----
+
+export interface InboxSubmission {
+  id: string;
+  ministry: string | null;
+  problem: string;
+  idea: string;
+  name: string | null;
+  contact: string | null;
+  status: string;
+  at: string;
+}
+export interface Inbox {
+  error?: string;
+  submissions: InboxSubmission[];
+  untranslated: number;
+}
+
+async function countUntranslated(): Promise<number> {
+  const supabase = await createClient();
+  const [m, i] = await Promise.all([
+    supabase.from('ministries').select('id', { count: 'exact', head: true }).or('name_ms.is.null,description_ms.is.null'),
+    supabase.from('initiatives').select('id', { count: 'exact', head: true }).or('problem_ms.is.null,idea_ms.is.null'),
+  ]);
+  return (m.count ?? 0) + (i.count ?? 0);
+}
+
+export async function loadInboxAction(): Promise<Inbox> {
+  if (!(await getIsOwner())) return { error: 'Sign in as the site owner first.', submissions: [], untranslated: 0 };
+  const [subs, untranslated] = await Promise.all([getAllSubmissions(), countUntranslated()]);
+  return {
+    untranslated,
+    submissions: subs.map((s) => ({
+      id: s.id,
+      ministry: s.ministry?.name ?? null,
+      problem: s.problem,
+      idea: s.idea,
+      name: s.submitter_name,
+      contact: s.submitter_contact,
+      status: s.status,
+      at: s.created_at,
+    })),
+  };
+}
+
+export async function setSubmissionStatusAction(id: string, status: string): Promise<Result> {
+  return guard(async () => {
+    if (status !== 'approved' && status !== 'rejected') throw new Error('Invalid status.');
+    const supabase = await createClient();
+    const { error } = await supabase.from('submissions').update({ status }).eq('id', id);
+    if (error) throw new Error(error.message);
+    revalidatePath('/vision', 'layout');
+  });
+}
+
+export async function deleteSubmissionAction(id: string): Promise<Result> {
+  return guard(async () => {
+    const supabase = await createClient();
+    const { error } = await supabase.from('submissions').delete().eq('id', id);
+    if (error) throw new Error(error.message);
+  });
+}
+
+/** Fill missing Malay translations. Calls the paid Anthropic API, so the owner check comes first. */
+export async function translateMissingAction(): Promise<Result & { done?: number }> {
+  if (!(await getIsOwner())) return { error: 'Sign in as the site owner first.' };
+  const supabase = await createClient();
+  let done = 0;
+  try {
+    const { data: ministries } = await supabase
+      .from('ministries')
+      .select('id, name, description, name_ms, description_ms')
+      .or('name_ms.is.null,description_ms.is.null');
+    for (const m of ministries ?? []) {
+      const patch: Record<string, string> = {};
+      if (!m.name_ms && m.name) patch.name_ms = await translateToMalay(m.name);
+      if (!m.description_ms && m.description) patch.description_ms = await translateToMalay(m.description);
+      if (Object.keys(patch).length) {
+        await supabase.from('ministries').update(patch).eq('id', m.id);
+        done++;
+      }
+    }
+    const { data: initiatives } = await supabase
+      .from('initiatives')
+      .select('id, problem, idea, problem_ms, idea_ms')
+      .or('problem_ms.is.null,idea_ms.is.null');
+    for (const i of initiatives ?? []) {
+      const patch: Record<string, string> = {};
+      if (!i.problem_ms && i.problem) patch.problem_ms = await translateToMalay(i.problem);
+      if (!i.idea_ms && i.idea) patch.idea_ms = await translateToMalay(i.idea);
+      if (Object.keys(patch).length) {
+        await supabase.from('initiatives').update(patch).eq('id', i.id);
+        done++;
+      }
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Translation failed.';
+    return { error: /api key|401|ANTHROPIC/i.test(msg) ? 'ANTHROPIC_API_KEY is not set on this deployment.' : msg, done };
+  }
+  revalidatePath('/ms/vision', 'layout');
+  revalidatePath('/');
+  return { done };
 }

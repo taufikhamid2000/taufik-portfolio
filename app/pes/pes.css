@@ -1252,3 +1252,7 @@
 .pes-form textarea { resize: vertical; }
 .pes-form .pes-form-check { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 .pes-form .pes-form-check input { width: 1.1rem; height: 1.1rem; }
+.pes-inbox-card { align-items: flex-start; cursor: default; }
+.pes-inbox-main { gap: 6px; font-size: 13px; white-space: normal; overflow-wrap: anywhere; }
+.pes-inbox-main .pes-card-sub { white-space: normal; }
+.pes-inbox .pes-list { display: grid; gap: 8px; margin-bottom: 14px; }
