@@ -1,10 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { syncCommitsAction } from '../sync-action';
 import type { PesCommit, PesSprint } from '../types';
 import { go, readSub } from './nav';
+import { ItemForm, SprintForm, StatusCycler } from './SprintAdmin';
 import YearCalendar, { buildYear, type Slot } from './YearCalendar';
 import ScreenShell from './ScreenShell';
 import { useT } from './PesLocale';
@@ -25,45 +26,54 @@ export default function SprintsScreen({
 }) {
   const tr = useT();
   // Restore the open sprint slot from the URL hash: '#sprints/<year>/<slot key>'.
-  const [nav, setNav] = useState<{ cells: Slot[]; pos: number; year: number } | null>(() => {
+  const [nav, setNav] = useState<{ year: number; key: string } | null>(() => {
     const [y, key] = readSub('sprints').split('/');
     const year = Number(y);
-    if (!year || !key) return null;
-    const { iterations, other } = buildYear(year, sprints, commits, tr.sprints.buffer);
-    const cells = [...iterations.flat(), ...other.map((s) => ({ key: s.id, label: s.name, from: 0, to: 0, buffer: false, sprints: [s], commits: [] }))];
-    const pos = cells.findIndex((c) => c.key === key);
-    return pos < 0 ? null : { cells, pos, year };
+    return year && key ? { year, key } : null;
   });
   const [initialYear] = useState(nav?.year);
-  const slot = nav ? nav.cells[nav.pos] : null;
-  const navKey = nav ? `${nav.year}/${nav.cells[nav.pos].key}` : '';
+  // Cells are derived from live props so edits show up right after a refresh.
+  const navYear = nav?.year;
+  const cells = useMemo<Slot[]>(() => {
+    if (!navYear) return [];
+    const { iterations, other } = buildYear(navYear, sprints, commits, tr.sprints.buffer);
+    return [...iterations.flat(), ...other.map((sp) => ({ key: sp.id, label: sp.name, from: 0, to: 0, buffer: false, sprints: [sp], commits: [] }))];
+  }, [navYear, sprints, commits, tr]);
+  const pos = nav ? cells.findIndex((c) => c.key === nav.key) : -1;
+  const slot = pos >= 0 ? cells[pos] : null;
+  const navKey = nav && slot ? `${nav.year}/${slot.key}` : '';
   useEffect(() => {
     go(navKey ? `#sprints/${navKey}` : '#sprints', 'replace');
   }, [navKey]);
   const touch = useRef<{ x: number; y: number } | null>(null);
-  const step = (d: number) => setNav((n) => (n ? { ...n, pos: Math.min(Math.max(n.pos + d, 0), n.cells.length - 1) } : n));
+  const step = (d: number) => {
+    if (!nav || pos < 0) return;
+    setNav({ year: nav.year, key: cells[Math.min(Math.max(pos + d, 0), cells.length - 1)].key });
+  };
+  const [editing, setEditing] = useState<string | null>(null);
   const router = useRouter();
   const [pending, startSync] = useTransition();
   const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!nav) return;
+    if (!slot) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape' || e.key === 'Backspace') {
+      const typing = (e.target as HTMLElement | null)?.closest('input, textarea, select');
+      if (e.key === 'Escape' || (e.key === 'Backspace' && !typing)) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        setNav(null);
-      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        if (editing) setEditing(null);
+        else setNav(null);
+      } else if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !typing && !editing) {
         e.preventDefault();
         e.stopImmediatePropagation();
-        const d = e.key === 'ArrowRight' ? 1 : -1;
-        setNav((n) => (n ? { ...n, pos: Math.min(Math.max(n.pos + d, 0), n.cells.length - 1) } : n));
+        step(e.key === 'ArrowRight' ? 1 : -1);
       }
     }
     // Capture phase so this runs before PesApp's window listener closes the screen.
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [nav]);
+  });
 
   const commitsByTask = new Map<string, PesCommit[]>();
   for (const c of commits) {
@@ -87,7 +97,7 @@ export default function SprintsScreen({
   return (
     <ScreenShell
       title={tr.menu.sprints.title}
-      onBack={slot ? () => setNav(null) : onBack}
+      onBack={slot ? () => (editing ? setEditing(null) : setNav(null)) : onBack}
       hints={
         slot
           ? [{ keys: '←→', label: tr.hints.sprint, kind: 'arrows' }]
@@ -114,18 +124,31 @@ export default function SprintsScreen({
           }}
         >
           <div className="pes-detail-pager">
-            <button type="button" className="pes-btn pes-btn--ghost" disabled={nav!.pos <= 0} onClick={() => step(-1)}>
+            <button type="button" className="pes-btn pes-btn--ghost" disabled={pos <= 0} onClick={() => step(-1)}>
               &larr; {tr.projects.prev}
             </button>
             <span>
-              {nav!.pos + 1}/{nav!.cells.length}
+              {pos + 1}/{cells.length}
             </span>
-            <button type="button" className="pes-btn pes-btn--ghost" disabled={nav!.pos >= nav!.cells.length - 1} onClick={() => step(1)}>
+            <button type="button" className="pes-btn pes-btn--ghost" disabled={pos >= cells.length - 1} onClick={() => step(1)}>
               {tr.projects.next} &rarr;
             </button>
           </div>
           <h3 className="pes-detail-name">{slot.label}</h3>
           {slot.sprints.length === 0 && <p className="pes-empty">{tr.sprints.noItems}</p>}
+          {isOwner &&
+            slot.sprints.length === 0 &&
+            slot.from > 0 &&
+            (editing === 'new' ? (
+              <SprintForm
+                defaults={{ name: slot.label, start_date: new Date(slot.from).toISOString().slice(0, 10), end_date: new Date(slot.to).toISOString().slice(0, 10) }}
+                onDone={() => setEditing(null)}
+              />
+            ) : (
+              <button type="button" className="pes-btn pes-btn--ghost" onClick={() => setEditing('new')}>
+                + NEW SPRINT
+              </button>
+            ))}
           {slot.sprints.map((sp) => {
             const ended = !!sp.end_date && sp.end_date < new Date().toISOString().slice(0, 10);
             const pct = sp.task_count > 0 ? Math.round((sp.done_count / sp.task_count) * 100) : 0;
@@ -133,6 +156,14 @@ export default function SprintsScreen({
               <article key={sp.id} className="pes-detail">
                 <h4 className="pes-detail-name">{sp.name}</h4>
                 {sp.goal && <p className="pes-detail-tag">{sp.goal}</p>}
+                {isOwner &&
+                  (editing === 'sprint:' + sp.id ? (
+                    <SprintForm sprint={sp} onDone={() => setEditing(null)} />
+                  ) : (
+                    <button type="button" className="pes-btn pes-btn--ghost pes-mini" onClick={() => setEditing('sprint:' + sp.id)}>
+                      EDIT SPRINT
+                    </button>
+                  ))}
                 <div className="pes-stat">
                   <span>{tr.sprints.progress}</span>
                   <div className="pes-bar-track" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
@@ -142,11 +173,18 @@ export default function SprintsScreen({
                 </div>
                 <div className="pes-list pes-items" aria-label={tr.sprints.items}>
                   {sp.tasks.length === 0 && <p className="pes-empty">{tr.sprints.noItems}</p>}
-                  {sp.tasks.map((t) => (
+                  {sp.tasks.map((t) =>
+                    editing === 'item:' + t.id ? (
+                      <ItemForm key={t.id} sprintId={sp.id} item={t} onDone={() => setEditing(null)} />
+                    ) : (
                     <div key={t.id} className="pes-card">
-                      <span className="pes-card-tag" style={{ background: TASK_COLOR[t.status] ?? '#6b7280' }}>
-                        {tr.sprints.taskStatus[t.status] ?? t.status}
-                      </span>
+                      {isOwner ? (
+                        <StatusCycler item={t} label={tr.sprints.taskStatus[t.status] ?? t.status} color={TASK_COLOR[t.status] ?? '#6b7280'} />
+                      ) : (
+                        <span className="pes-card-tag" style={{ background: TASK_COLOR[t.status] ?? '#6b7280' }}>
+                          {tr.sprints.taskStatus[t.status] ?? t.status}
+                        </span>
+                      )}
                       <span className="pes-card-main">
                         <span className="pes-card-name">
                           {t.title}
@@ -162,9 +200,23 @@ export default function SprintsScreen({
                           </span>
                         ))}
                       </span>
+                      {isOwner && (
+                        <button type="button" className="pes-btn pes-btn--ghost pes-mini" onClick={() => setEditing('item:' + t.id)}>
+                          EDIT
+                        </button>
+                      )}
                     </div>
-                  ))}
+                    ),
+                  )}
                 </div>
+                {isOwner &&
+                  (editing === 'add:' + sp.id ? (
+                    <ItemForm sprintId={sp.id} onDone={() => setEditing(null)} />
+                  ) : (
+                    <button type="button" className="pes-btn pes-btn--ghost pes-mini" onClick={() => setEditing('add:' + sp.id)}>
+                      + ADD ITEM
+                    </button>
+                  ))}
               </article>
             );
           })}
@@ -209,7 +261,7 @@ export default function SprintsScreen({
           </div>
           )}
           <YearCalendar sprints={sprints} commits={commits} initialYear={initialYear}
-            onOpen={(s, all, year) => setNav({ cells: all, pos: all.indexOf(s), year })} />
+            onOpen={(sl, _all, year) => setNav({ year, key: sl.key })} />
         </>
       )}
     </ScreenShell>
