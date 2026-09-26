@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { signInAction, signOutAction } from '../admin-actions';
-import { go } from './nav';
 import ScreenShell from './ScreenShell';
 
 // Owner sign-in. English only: it is an admin tool, not part of the public showcase.
@@ -25,13 +24,7 @@ export default function LoginScreen({ isOwner, onBack }: { isOwner: boolean; onB
     <ScreenShell title={isOwner ? 'ADMIN' : 'SIGN IN'} onBack={onBack} hints={[{ keys: '↵', label: isOwner ? 'Sign out' : 'Sign in', kind: 'confirm' }]}>
       {isOwner ? (
         <div className="pes-form">
-          <p>You are signed in as the owner. Edit projects, sprints and items from their screens; review idea submissions and translations in the inbox.</p>
-          <button type="button" className="pes-btn pes-btn--ghost" onClick={() => go('#inbox', 'push')}>
-            INBOX
-          </button>
-          <button type="button" className="pes-btn pes-btn--ghost" onClick={() => go('#vision-admin', 'push')}>
-            VISION EDITOR
-          </button>
+          <p>You are signed in as the owner. Use the Admin tile on the menu for the inbox and vision editor.</p>
           <button type="button" className="pes-btn" disabled={pending} onClick={() => run(signOutAction)}>
             SIGN OUT
           </button>

@@ -9,7 +9,6 @@ import {
   type InitiativeRow,
   type VisionAdminData,
 } from '../admin-actions';
-import ScreenShell from './ScreenShell';
 import { useAdminRun } from './SprintAdmin';
 
 const STATUS_COLOR: Record<string, string> = { active: '#22c55e', planned: '#3b82f6', concept: '#eab308' };
@@ -113,7 +112,7 @@ function InitiativeForm({ data, item, onDone }: { data: VisionAdminData; item?: 
 }
 
 // Owner editor for vision initiatives. English only (admin tool).
-export default function VisionAdminScreen({ onBack }: { onBack: () => void }) {
+export default function VisionAdminScreen() {
   const [data, setData] = useState<VisionAdminData | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -132,7 +131,6 @@ export default function VisionAdminScreen({ onBack }: { onBack: () => void }) {
   };
 
   return (
-    <ScreenShell title="VISION EDITOR" count={data?.initiatives.length} onBack={onBack} hints={[]}>
       <div className="pes-detail pes-inbox">
         {!data && <p className="pes-empty">Loading…</p>}
         {data?.error && (
@@ -178,6 +176,5 @@ export default function VisionAdminScreen({ onBack }: { onBack: () => void }) {
           </>
         )}
       </div>
-    </ScreenShell>
   );
 }

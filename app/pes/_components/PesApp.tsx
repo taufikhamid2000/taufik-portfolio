@@ -9,8 +9,7 @@ import AboutScreen from './AboutScreen';
 import ContactScreen from './ContactScreen';
 import { PesLocaleProvider } from './PesLocale';
 import { go, subscribeHash } from './nav';
-import InboxScreen from './InboxScreen';
-import VisionAdminScreen from './VisionAdminScreen';
+import AdminScreen from './AdminScreen';
 import LoginScreen from './LoginScreen';
 import OptionsScreen from './OptionsScreen';
 import ProjectsScreen from './ProjectsScreen';
@@ -195,8 +194,7 @@ export default function PesApp({
   const menu = useMemo<IconId[]>(() => (isOwner ? [...PUBLIC_MENU, 'admin'] : PUBLIC_MENU), [isOwner]);
   const openId: IconId | null = (menu as string[]).includes(hashId) ? (hashId as IconId) : null;
   const loginOpen = hashId === 'login';
-  const inboxOpen = hashId === 'inbox' || hashId === 'vision-admin';
-  const started = hashId === 'menu' || openId !== null || loginOpen || inboxOpen;
+  const started = hashId === 'menu' || openId !== null || loginOpen;
   const [index, setIndex] = useState(0);
   // A deep link (#sprints) should leave the matching tile selected once the screen closes.
   const [seenOpen, setSeenOpen] = useState<IconId | null>(null);
@@ -277,7 +275,7 @@ export default function PesApp({
         }
         return;
       }
-      if (openId || loginOpen || inboxOpen) {
+      if (openId || loginOpen) {
         const typing = (e.target as HTMLElement | null)?.closest('input, textarea, select');
         if (e.key === 'Escape' || (e.key === 'Backspace' && !typing)) {
           e.preventDefault();
@@ -306,7 +304,7 @@ export default function PesApp({
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [started, openId, loginOpen, inboxOpen, index, menu, move, confirm, start, close]);
+  }, [started, openId, loginOpen, index, menu, move, confirm, start, close]);
 
   // Center the selected tile in the (touch) tile row. Scrolls only that row:
   // scrollIntoView would also scroll the overflow:hidden root and shift the scene.
@@ -330,7 +328,7 @@ export default function PesApp({
   const onTouchEnd = (e: React.TouchEvent) => {
     const s = swipeStart.current;
     swipeStart.current = null;
-    if (!s || !started || openId || loginOpen || inboxOpen) return;
+    if (!s || !started || openId || loginOpen) return;
     const t = e.changedTouches[0];
     const dx = t.clientX - s.x;
     const dy = t.clientY - s.y;
@@ -479,10 +477,8 @@ export default function PesApp({
 
           {opened?.id === 'vision' && <VisionScreen data={vision[locale]} locale={locale} onBack={close} />}
           {opened?.id === 'sprints' && <SprintsScreen sprints={sprints} commits={commits} isOwner={isOwner} onBack={close} />}
-          {opened?.id === 'admin' && <LoginScreen isOwner={isOwner} onBack={close} />}
-          {(loginOpen || (inboxOpen && !isOwner)) && <LoginScreen isOwner={isOwner} onBack={close} />}
-          {hashId === 'inbox' && isOwner && <InboxScreen onBack={close} />}
-          {hashId === 'vision-admin' && isOwner && <VisionAdminScreen onBack={close} />}
+          {opened?.id === 'admin' && <AdminScreen onBack={close} />}
+          {loginOpen && <LoginScreen isOwner={isOwner} onBack={close} />}
           {opened?.id === 'about' && <AboutScreen site={site} projects={projects} onBack={close} />}
           {opened?.id === 'contact' && <ContactScreen site={site} locale={locale} onBack={close} />}
           {opened?.id === 'settings' && (

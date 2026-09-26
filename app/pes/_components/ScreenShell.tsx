@@ -13,12 +13,14 @@ export interface Hint {
 export default function ScreenShell({
   title,
   count,
+  extra,
   onBack,
   hints,
   children,
 }: {
   title: string;
   count?: number;
+  extra?: React.ReactNode;
   onBack: () => void;
   hints: Hint[];
   children: React.ReactNode;
@@ -30,6 +32,7 @@ export default function ScreenShell({
       <div className="pes-full-head">
         <h2 className="pes-full-title">{title}</h2>
         {count !== undefined && <span className="pes-full-count">{count}</span>}
+        {extra}
         <button type="button" className="pes-btn pes-btn--ghost pes-full-back" onClick={onBack}>
           {tr.backBtn}
         </button>

@@ -9,12 +9,11 @@ import {
   type Inbox,
   type Result,
 } from '../admin-actions';
-import ScreenShell from './ScreenShell';
 
 const STATUS_COLOR: Record<string, string> = { pending: '#eab308', approved: '#22c55e', rejected: '#6b7280' };
 
 // Owner inbox: public idea submissions and missing Malay translations. English only (admin tool).
-export default function InboxScreen({ onBack }: { onBack: () => void }) {
+export default function InboxScreen() {
   const [data, setData] = useState<Inbox | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -82,7 +81,6 @@ export default function InboxScreen({ onBack }: { onBack: () => void }) {
   );
 
   return (
-    <ScreenShell title="INBOX" count={pendingSubs.length} onBack={onBack} hints={[]}>
       <div className="pes-detail pes-inbox">
         {!data && <p className="pes-empty">Loading…</p>}
         {data?.error && <p role="alert" className="pes-form-error">{data.error}</p>}
@@ -120,6 +118,5 @@ export default function InboxScreen({ onBack }: { onBack: () => void }) {
           </>
         )}
       </div>
-    </ScreenShell>
   );
 }
