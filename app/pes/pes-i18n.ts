@@ -17,6 +17,7 @@ export interface PesDict {
     open: string;
     ministry: string;
     sprint: string;
+    year: string;
     option: string;
     change: string;
   };
@@ -111,6 +112,7 @@ const en: PesDict = {
     open: 'Open',
     ministry: 'Ministry',
     sprint: 'Sprint',
+    year: 'Year',
     option: 'Option',
     change: 'Change',
   },
@@ -212,6 +214,7 @@ const ms: PesDict = {
     open: 'Buka',
     ministry: 'Kementerian',
     sprint: 'Sprint',
+    year: 'Tahun',
     option: 'Pilihan',
     change: 'Tukar',
   },

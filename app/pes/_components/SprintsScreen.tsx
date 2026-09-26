@@ -66,7 +66,15 @@ export default function SprintsScreen({
     <ScreenShell
       title={tr.menu.sprints.title}
       onBack={slot ? () => setSlot(null) : onBack}
-      hints={[]}
+      hints={
+        slot
+          ? []
+          : [
+              { keys: '↑↓←→', label: tr.hints.select, kind: 'arrows' },
+              { keys: '↵', label: tr.hints.open, kind: 'confirm' },
+              { keys: 'PgUp/Dn', label: tr.hints.year, kind: 'arrows' },
+            ]
+      }
     >
       {slot ? (
         <div className="pes-slot">
