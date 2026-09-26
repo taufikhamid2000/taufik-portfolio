@@ -11,12 +11,6 @@ interface GhCommit {
   sha: string;
   commit: { author: { date: string }; message: string };
 }
-interface Item {
-  slot: string;
-  title: string;
-  ref: string;
-  at: string;
-}
 
 async function gh<T>(path: string): Promise<T> {
   const res = await fetch(`https://api.github.com${path}`, {
@@ -37,41 +31,24 @@ async function paged<T>(path: string): Promise<T[]> {
   return all;
 }
 
-const iso = (t: number) => new Date(t).toISOString().slice(0, 10);
-
-// Year calendar: 4 iterations x (4 three-week sprints + 1 buffer week), starting 1 January.
-function slotFor(date: string) {
-  const d = new Date(date);
-  const y = d.getUTCFullYear();
-  const j1 = Date.UTC(y, 0, 1);
-  const week = Math.min(Math.floor((d.getTime() - j1) / DAY / 7), 51);
-  const it = Math.floor(week / 13);
-  const w = week % 13;
-  const buffer = w === 12;
-  const n = it * 4 + Math.floor(w / 3) + 1;
-  const start = j1 + it * 91 * DAY + (buffer ? 84 : Math.floor(w / 3) * 21) * DAY;
-  const tag = y === new Date().getUTCFullYear() ? '' : ` (${y})`;
-  return {
-    start: iso(start),
-    end: iso(start + (buffer ? 6 : 20) * DAY),
-    name: buffer ? `Buffer ${it + 1}${tag} — Activity` : `Sprint ${n}${tag} — Activity`,
-  };
-}
-
+/**
+ * Pull new commits from GitHub into portfolio.commits. A `[T-<n>]` tag in the
+ * commit message links the commit to the item with that ticket number.
+ * Untagged commits stay unlinked and are grouped by repo and day in the UI.
+ */
 export async function syncCommits(): Promise<{ added: number; error?: string }> {
   if (!process.env.GITHUB_TOKEN) return { added: 0, error: 'GITHUB_TOKEN is not set.' };
   const supabase = await createClient();
 
   try {
-    // Only look back to the newest imported commit (minus a margin; refs dedupe).
+    // Only look back to the newest stored commit (minus a margin; unique(repo, sha) dedupes).
     const { data: last } = await supabase
-      .from('tasks')
-      .select('completed_at')
-      .like('description', 'github:%')
-      .order('completed_at', { ascending: false })
+      .from('commits')
+      .select('committed_at')
+      .order('committed_at', { ascending: false })
       .limit(1);
-    const since = last?.[0]?.completed_at
-      ? `&since=${new Date(new Date(last[0].completed_at).getTime() - 2 * DAY).toISOString()}`
+    const since = last?.[0]?.committed_at
+      ? `&since=${new Date(new Date(last[0].committed_at).getTime() - 2 * DAY).toISOString()}`
       : '';
 
     const repos = (await paged<GhRepo>('/user/repos?affiliation=owner')).filter((r) => !r.fork);
@@ -82,64 +59,37 @@ export async function syncCommits(): Promise<{ added: number; error?: string }> 
       }),
     );
 
-    const slots = new Map<string, ReturnType<typeof slotFor>>();
-    const items: Item[] = perRepo.flat().map(({ repo, c }) => {
-      const at = c.commit.author.date;
-      const slot = slotFor(at);
-      slots.set(slot.start, slot);
+    const rows = perRepo.flat().map(({ repo, c }) => {
+      const message = c.commit.message.split('\n')[0].slice(0, 300);
+      const tag = message.match(/\[T-(\d+)\]/i);
       return {
-        slot: slot.start,
-        title: `[${repo}] ${c.commit.message.split('\n')[0]}`.slice(0, 300),
-        ref: `github:${repo}@${c.sha.slice(0, 7)}`,
-        at,
+        repo,
+        sha: c.sha.slice(0, 7),
+        message,
+        committed_at: c.commit.author.date,
+        ticket: tag ? Number(tag[1]) : null,
       };
     });
-    if (items.length === 0) return { added: 0 };
+    if (rows.length === 0) return { added: 0 };
 
-    const refs = items.map((i) => i.ref);
-    const known = new Set<string>();
-    for (let i = 0; i < refs.length; i += 200) {
-      const { data } = await supabase.from('tasks').select('description').in('description', refs.slice(i, i + 200));
-      data?.forEach((t: { description: string }) => known.add(t.description as string));
+    const tickets = [...new Set(rows.map((r) => r.ticket).filter((n): n is number => n != null))];
+    const taskIds = new Map<number, string>();
+    if (tickets.length > 0) {
+      const { data } = await supabase.from('tasks').select('id, ticket_no').in('ticket_no', tickets);
+      data?.forEach((t: { id: string; ticket_no: number }) => taskIds.set(t.ticket_no, t.id));
     }
-    const fresh = items.filter((i) => !known.has(i.ref));
-    if (fresh.length === 0) return { added: 0 };
 
-    const starts = [...new Set(fresh.map((i) => i.slot))];
-    const { data: existing } = await supabase.from('sprints').select('id, start_date').in('start_date', starts);
-    const ids = new Map<string, string>((existing ?? []).map((s: { id: string; start_date: string }) => [s.start_date as string, s.id as string]));
-    const missing = starts.filter((s) => !ids.has(s)).map((s) => slots.get(s)!);
-    if (missing.length > 0) {
-      const today = iso(Date.now());
+    const payload = rows.map(({ ticket, ...r }) => ({ ...r, task_id: ticket != null ? (taskIds.get(ticket) ?? null) : null }));
+    let added = 0;
+    for (let i = 0; i < payload.length; i += 500) {
       const { data, error } = await supabase
-        .from('sprints')
-        .insert(
-          missing.map((s) => ({
-            name: s.name,
-            goal: 'Commits made during this window.',
-            start_date: s.start,
-            end_date: s.end,
-            status: s.end < today ? 'completed' : 'planned',
-          })),
-        )
-        .select('id, start_date');
-      if (error) return { added: 0, error: error.message };
-      data?.forEach((s: { id: string; start_date: string }) => ids.set(s.start_date as string, s.id as string));
+        .from('commits')
+        .upsert(payload.slice(i, i + 500), { onConflict: 'repo,sha', ignoreDuplicates: true })
+        .select('sha');
+      if (error) return { added, error: error.message };
+      added += data?.length ?? 0;
     }
-
-    const { error } = await supabase.from('tasks').insert(
-      fresh.map((i) => ({
-        sprint_id: ids.get(i.slot),
-        title: i.title,
-        description: i.ref,
-        status: 'done',
-        priority: 'medium',
-        completed_at: i.at,
-        display_order: 1000,
-      })),
-    );
-    if (error) return { added: 0, error: error.message };
-    return { added: fresh.length };
+    return { added };
   } catch (e) {
     return { added: 0, error: e instanceof Error ? e.message : 'Sync failed.' };
   }

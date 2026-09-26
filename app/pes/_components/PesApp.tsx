@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import '../pes.css';
 import { PES_DICT } from '../pes-i18n';
-import type { MenuId, PesLocale, PesSite, PesSprint, PesVisionData } from '../types';
+import type { MenuId, PesCommit, PesLocale, PesSite, PesSprint, PesVisionData } from '../types';
 import AboutScreen from './AboutScreen';
 import ContactScreen from './ContactScreen';
 import { PesLocaleProvider } from './PesLocale';
@@ -163,12 +163,14 @@ export default function PesApp({
   projects,
   vision,
   sprints,
+  commits,
   isOwner,
   site,
 }: {
   projects: PesProject[];
   vision: Record<PesLocale, PesVisionData>;
   sprints: PesSprint[];
+  commits: PesCommit[];
   isOwner: boolean;
   site: PesSite;
 }) {
@@ -441,7 +443,7 @@ export default function PesApp({
           )}
 
           {opened?.id === 'vision' && <VisionScreen data={vision[locale]} locale={locale} onBack={close} />}
-          {opened?.id === 'sprints' && <SprintsScreen sprints={sprints} isOwner={isOwner} onBack={close} />}
+          {opened?.id === 'sprints' && <SprintsScreen sprints={sprints} commits={commits} isOwner={isOwner} onBack={close} />}
           {opened?.id === 'about' && <AboutScreen site={site} projects={projects} onBack={close} />}
           {opened?.id === 'contact' && <ContactScreen site={site} locale={locale} onBack={close} />}
           {opened?.id === 'settings' && (

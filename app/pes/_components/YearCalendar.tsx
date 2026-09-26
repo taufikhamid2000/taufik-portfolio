@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { PesSprint } from '../types';
+import type { PesCommit, PesSprint } from '../types';
 import { useLocale, useT } from './PesLocale';
 
 const DAY = 86_400_000;
@@ -16,6 +16,7 @@ export interface Slot {
   to: number;
   buffer: boolean;
   sprints: PesSprint[];
+  commits: PesCommit[];
 }
 
 const utc = (d: string) => {
@@ -25,14 +26,18 @@ const utc = (d: string) => {
 
 // Each iteration = 4 sprints x 3 weeks + 1 buffer week = 13 weeks; 4 x 13 = 52.
 // A database sprint lands in the slot its start_date falls in.
-export function buildYear(year: number, sprints: PesSprint[], bufferLabel: string) {
+export function buildYear(year: number, sprints: PesSprint[], commits: PesCommit[], bufferLabel: string) {
   const start = Date.UTC(year, 0, 1);
   const iterations = Array.from({ length: ITERATIONS }, (_, i) => {
     const iterStart = start + i * 13 * 7 * DAY;
     const mk = (n: number, from: number, weeks: number, buffer: boolean): Slot => {
       const to = from + weeks * 7 * DAY - DAY;
       const inSlot = sprints.filter((s) => s.start_date && utc(s.start_date) >= from && utc(s.start_date) <= to);
-      return { key: `${i}-${n}`, label: buffer ? bufferLabel : `S${i * SPRINTS + n + 1}`, from, to, buffer, sprints: inSlot };
+      const inRange = commits.filter((c) => {
+        const t = new Date(c.at).getTime();
+        return t >= from && t < to + DAY;
+      });
+      return { key: `${i}-${n}`, label: buffer ? bufferLabel : `S${i * SPRINTS + n + 1}`, from, to, buffer, sprints: inSlot, commits: inRange };
     };
     const slots = Array.from({ length: SPRINTS }, (_, n) => mk(n, iterStart + n * SPRINT_WEEKS * 7 * DAY, SPRINT_WEEKS, false));
     slots.push(mk(SPRINTS, iterStart + SPRINTS * SPRINT_WEEKS * 7 * DAY, 1, true));
@@ -43,9 +48,11 @@ export function buildYear(year: number, sprints: PesSprint[], bufferLabel: strin
 
 export default function YearCalendar({
   sprints,
+  commits,
   onOpen,
 }: {
   sprints: PesSprint[];
+  commits: PesCommit[];
   onOpen: (slot: Slot) => void;
 }) {
   const tr = useT();
@@ -55,9 +62,9 @@ export default function YearCalendar({
   const [year, setYear] = useState(thisYear);
   const firstYear = Math.min(thisYear, ...sprints.filter((s) => s.start_date).map((s) => Number(s.start_date!.slice(0, 4))));
   const today = Date.UTC(thisYear, now.getMonth(), now.getDate());
-  const { iterations, other } = useMemo(() => buildYear(year, sprints, tr.sprints.buffer), [year, sprints, tr]);
+  const { iterations, other } = useMemo(() => buildYear(year, sprints, commits, tr.sprints.buffer), [year, sprints, commits, tr]);
   const otherSlots = useMemo<Slot[]>(
-    () => other.map((s) => ({ key: s.id, label: s.name, from: 0, to: 0, buffer: false, sprints: [s] })),
+    () => other.map((s) => ({ key: s.id, label: s.name, from: 0, to: 0, buffer: false, sprints: [s], commits: [] })),
     [other],
   );
   const cells = useMemo(() => [...iterations.flat(), ...otherSlots], [iterations, otherSlots]);
@@ -140,6 +147,11 @@ export default function YearCalendar({
                   <b>{s.label}</b>
                   <span>{range(s)}</span>
                   <em>{count > 0 ? `${count} ${tr.sprints.tasks}` : '—'}</em>
+                  {s.commits.length > 0 && (
+                    <em>
+                      {s.commits.length} {tr.sprints.commits}
+                    </em>
+                  )}
                 </button>
               );
             })}

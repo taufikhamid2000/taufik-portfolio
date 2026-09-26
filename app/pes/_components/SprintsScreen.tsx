@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { syncCommitsAction } from '../sync-action';
-import type { PesSprint } from '../types';
+import type { PesCommit, PesSprint } from '../types';
 import YearCalendar, { type Slot } from './YearCalendar';
 import ScreenShell from './ScreenShell';
 import { useT } from './PesLocale';
@@ -13,10 +13,12 @@ const TASK_COLOR: Record<string, string> = { todo: '#6b7280', 'in-progress': '#3
 
 export default function SprintsScreen({
   sprints,
+  commits,
   isOwner,
   onBack,
 }: {
   sprints: PesSprint[];
+  commits: PesCommit[];
   isOwner: boolean;
   onBack: () => void;
 }) {
@@ -61,6 +63,25 @@ export default function SprintsScreen({
       </ScreenShell>
     );
   }
+
+  const commitsByTask = new Map<string, PesCommit[]>();
+  for (const c of commits) {
+    if (!c.task_id) continue;
+    const list = commitsByTask.get(c.task_id) ?? [];
+    list.push(c);
+    commitsByTask.set(c.task_id, list);
+  }
+  // Untagged commits: group by repo and day (auto-grouping), newest first.
+  const groups = new Map<string, { key: string; repo: string; day: string; items: PesCommit[] }>();
+  for (const c of slot?.commits ?? []) {
+    if (c.task_id) continue;
+    const day = c.at.slice(0, 10);
+    const key = c.repo + '|' + day;
+    const g = groups.get(key) ?? { key, repo: c.repo, day, items: [] };
+    g.items.push(c);
+    groups.set(key, g);
+  }
+  const unlinked = [...groups.values()].sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : a.repo.localeCompare(b.repo)));
 
   return (
     <ScreenShell
@@ -107,9 +128,14 @@ export default function SprintsScreen({
                           {ended && t.status !== 'done' && <span className="pes-carried">{tr.sprints.carriedOver}</span>}
                         </span>
                         <span className="pes-card-sub">
-                          {t.priority}
+                          T-{t.ticket_no} · {t.priority}
                           {t.effort != null ? ` · ${t.effort}` : ''}
                         </span>
+                        {commitsByTask.get(t.id)?.map((c) => (
+                          <span key={c.repo + c.sha} className="pes-commit">
+                            <code>{c.sha}</code> {c.repo} — {c.message}
+                          </span>
+                        ))}
                       </span>
                     </div>
                   ))}
@@ -117,6 +143,24 @@ export default function SprintsScreen({
               </article>
             );
           })}
+          {unlinked.length > 0 && (
+            <article className="pes-detail">
+              <h4 className="pes-detail-name">{tr.sprints.unlinked}</h4>
+              <p className="pes-detail-tag">{tr.sprints.tagHint}</p>
+              {unlinked.map((g) => (
+                <div key={g.key} className="pes-commit-group">
+                  <b>
+                    {g.repo} · {g.day} · {g.items.length}
+                  </b>
+                  {g.items.map((c) => (
+                    <span key={c.sha} className="pes-commit">
+                      <code>{c.sha}</code> {c.message}
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </article>
+          )}
         </div>
       ) : (
         <>
@@ -137,7 +181,7 @@ export default function SprintsScreen({
             </button>
             {note && <span role="status">{note}</span>}
           </div>
-          <YearCalendar sprints={sprints} onOpen={setSlot} />
+          <YearCalendar sprints={sprints} commits={commits} onOpen={setSlot} />
         </>
       )}
     </ScreenShell>

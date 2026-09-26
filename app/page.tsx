@@ -3,11 +3,12 @@ import { redirect } from 'next/navigation';
 import { getIsOwner } from '../lib/auth';
 import { SITE } from '../lib/site';
 import { getProjects } from '../lib/projects';
+import { getCommits } from '../lib/commits';
 import { getSprints } from '../lib/sprints';
 import { getAllInitiatives, getMinistries } from '../lib/vision';
 import type { Locale } from '../lib/i18n';
 import PesApp, { type PesProject } from './pes/_components/PesApp';
-import type { PesLocale, PesSprint, PesVisionData } from './pes/types';
+import type { PesCommit, PesLocale, PesSprint, PesVisionData } from './pes/types';
 
 interface HomeProps {
   searchParams: Promise<{ code?: string; error?: string; error_description?: string }>;
@@ -74,10 +75,14 @@ export default async function Home({ searchParams }: HomeProps) {
         start_date: s.start_date,
         end_date: s.end_date,
         status: s.status,
-        tasks: s.tasks.map((t) => ({ id: t.id, title: t.title, status: t.status, priority: t.priority, effort: t.effort })),
+        tasks: s.tasks.map((t) => ({ id: t.id, ticket_no: t.ticket_no, title: t.title, status: t.status, priority: t.priority, effort: t.effort })),
         task_count: s.task_count,
         done_count: s.done_count,
       }))
+    : [];
+
+  const commits: PesCommit[] = isOwner
+    ? (await getCommits()).map((c) => ({ repo: c.repo, sha: c.sha, message: c.message, at: c.committed_at, task_id: c.task_id }))
     : [];
 
   // 'concept' rows are idea stubs — they never appear publicly.
@@ -101,7 +106,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <>
-      <PesApp projects={projects} vision={vision} sprints={sprints} isOwner={isOwner} site={SITE} />
+      <PesApp projects={projects} vision={vision} sprints={sprints} commits={commits} isOwner={isOwner} site={SITE} />
 
       {/* Real, crawlable text for search engines, screen readers and no-JS
           visitors: the same content the menu presents, in plain HTML. */}

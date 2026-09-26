@@ -50,6 +50,9 @@ export interface PesDict {
     taskCount: string;
     noItems: string;
     carriedOver: string;
+    commits: string;
+    unlinked: string;
+    tagHint: string;
     sync: string;
     syncing: string;
     synced: (n: number) => string;
@@ -151,6 +154,9 @@ const en: PesDict = {
     taskCount: 'TASKS',
     noItems: 'No items in this sprint yet.',
     carriedOver: 'CARRIED OVER',
+    commits: 'commits',
+    unlinked: 'UNLINKED COMMITS',
+    tagHint: 'Tag a commit with [T-<number>] to link it to an item.',
     sync: 'SYNC COMMITS',
     syncing: 'SYNCING…',
     synced: (n) => (n === 0 ? 'Already up to date.' : `${n} new commits added.`),
@@ -253,6 +259,9 @@ const ms: PesDict = {
     taskCount: 'TUGASAN',
     noItems: 'Belum ada item dalam sprint ini.',
     carriedOver: 'DIBAWA KE HADAPAN',
+    commits: 'commit',
+    unlinked: 'COMMIT TANPA PAUTAN',
+    tagHint: 'Letak [T-<nombor>] pada commit untuk memautkannya ke item.',
     sync: 'SEGERAK COMMIT',
     syncing: 'MENYEGERAK…',
     synced: (n) => (n === 0 ? 'Sudah terkini.' : `${n} commit baharu ditambah.`),

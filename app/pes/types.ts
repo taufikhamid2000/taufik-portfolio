@@ -37,10 +37,19 @@ export interface PesVisionData {
 
 export interface PesTask {
   id: string;
+  ticket_no: number;
   title: string;
   status: string;
   priority: string;
   effort: number | null;
+}
+
+export interface PesCommit {
+  repo: string;
+  sha: string;
+  message: string;
+  at: string;
+  task_id: string | null;
 }
 
 export interface PesSprint {

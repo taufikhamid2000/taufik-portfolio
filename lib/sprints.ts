@@ -28,6 +28,7 @@ export interface SprintTask {
   priority: string;
   effort: number | null;
   display_order: number;
+  ticket_no: number;
 }
 
 export interface SprintWithCounts extends Sprint {
@@ -40,7 +41,7 @@ export async function getSprints(): Promise<SprintWithCounts[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('sprints')
-    .select('*, tasks(id, title, status, priority, effort, display_order)')
+    .select('*, tasks(id, ticket_no, title, status, priority, effort, display_order)')
     .order('start_date', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false });
 
