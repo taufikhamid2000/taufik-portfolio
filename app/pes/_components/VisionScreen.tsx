@@ -2,8 +2,10 @@
 
 import { dict } from '../../../lib/i18n';
 import type { PesLocale, PesVisionData } from '../types';
+import IdeaForm from './IdeaForm';
 import ScreenShell from './ScreenShell';
 import { useT } from './PesLocale';
+import { useEffect, useState } from 'react';
 import { useDetailView } from './useDetailView';
 import { useListNav } from './useListNav';
 
@@ -21,12 +23,27 @@ export default function VisionScreen({
   const t = dict[locale];
   const { ministries, initiatives } = data;
   const { index, setIndex, listRef } = useListNav(ministries.length);
-  const dv = useDetailView(onBack);
+  // Slug of the ministry whose idea form is open.
+  const [ideaFor, setIdeaFor] = useState<string | null>(null);
+  const dv = useDetailView(onBack, ideaFor !== null);
   const tr = useT();
   const selected = ministries[index];
   const items = selected ? initiatives.filter((i) => i.ministry_slug === selected.slug) : [];
   const statusLabel = { active: t.statusActive, planned: t.statusPlanned, concept: t.statusConcept };
-  const prefix = locale === 'ms' ? '/ms' : '';
+
+  // Esc closes the form before it closes the screen.
+  useEffect(() => {
+    if (!ideaFor) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        setIdeaFor(null);
+      }
+    }
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [ideaFor]);
 
   return (
     <ScreenShell
@@ -96,11 +113,15 @@ export default function VisionScreen({
                 </ul>
               )}
 
-              <div className="pes-screen-actions">
-                <a className="pes-btn" href={`${prefix}/vision/${selected.slug}`}>
-                  {t.haveIdea.toUpperCase()}
-                </a>
-              </div>
+              {ideaFor === selected.slug ? (
+                <IdeaForm slug={selected.slug} locale={locale} onDone={() => setIdeaFor(null)} />
+              ) : (
+                <div className="pes-screen-actions">
+                  <button type="button" className="pes-btn" onClick={() => setIdeaFor(selected.slug)}>
+                    {t.haveIdea.toUpperCase()}
+                  </button>
+                </div>
+              )}
             </article>
           )}
         </div>

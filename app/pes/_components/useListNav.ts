@@ -14,6 +14,7 @@ export function useListNav(length: number, onEnter?: (index: number) => void) {
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if ((e.target as HTMLElement | null)?.closest('input, textarea, select')) return;
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setIndex((i) => Math.min(i + 1, length - 1));
