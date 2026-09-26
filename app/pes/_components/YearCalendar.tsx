@@ -49,17 +49,19 @@ export function buildYear(year: number, sprints: PesSprint[], commits: PesCommit
 export default function YearCalendar({
   sprints,
   commits,
+  initialYear,
   onOpen,
 }: {
   sprints: PesSprint[];
   commits: PesCommit[];
-  onOpen: (slot: Slot, all: Slot[]) => void;
+  initialYear?: number;
+  onOpen: (slot: Slot, all: Slot[], year: number) => void;
 }) {
   const tr = useT();
   const locale = useLocale();
   const now = new Date();
   const thisYear = now.getFullYear();
-  const [year, setYear] = useState(thisYear);
+  const [year, setYear] = useState(initialYear ?? thisYear);
   const firstYear = Math.min(thisYear, ...sprints.filter((s) => s.start_date).map((s) => Number(s.start_date!.slice(0, 4))));
   const today = Date.UTC(thisYear, now.getMonth(), now.getDate());
   const { iterations, other } = useMemo(() => buildYear(year, sprints, commits, tr.sprints.buffer), [year, sprints, commits, tr]);
@@ -91,7 +93,7 @@ export default function YearCalendar({
         setYear(year - 1);
       } else if (e.key === 'Enter' && cells[cur]) {
         e.preventDefault();
-        onOpen(cells[cur], cells);
+        onOpen(cells[cur], cells, year);
       }
     }
     window.addEventListener('keydown', onKey);
@@ -142,7 +144,7 @@ export default function YearCalendar({
                   className={`pes-sprint-cell${s.buffer ? ' pes-sprint-cell--buffer' : ''}`}
                   aria-current={today >= s.from && today <= s.to ? 'date' : undefined}
                   data-selected={idx === cur}
-                  onClick={() => onOpen(s, cells)}
+                  onClick={() => onOpen(s, cells, year)}
                 >
                   <b>{s.label}</b>
                   <span>{range(s)}</span>
@@ -168,7 +170,7 @@ export default function YearCalendar({
                 type="button"
                 className="pes-sprint-cell"
                 data-selected={iterations.flat().length + k === cur}
-                onClick={() => onOpen(otherSlots[k], cells)}
+                onClick={() => onOpen(otherSlots[k], cells, year)}
               >
                 <b>{s.name}</b>
                 <em>

@@ -6,6 +6,7 @@ import { statusDotColors, statusLabels } from '../../../lib/project-status';
 import type { ProjectStatus } from '../../../lib/projects';
 import type { PesProject } from './PesApp';
 import { useT } from './PesLocale';
+import { readSub, go, slugify } from './nav';
 import { useAutoFocus } from './useAutoFocus';
 import { useDetailView } from './useDetailView';
 
@@ -80,7 +81,12 @@ export default function ProjectsScreen({
   }, [mode, base]);
 
   const [tab, setTab] = useState<string>('all');
-  const [index, setIndex] = useState(0);
+  // Restore the project named in the URL hash (client-only: this screen mounts after hydration).
+  const [index, setIndex] = useState(() => {
+    const sub = readSub(mode);
+    const i = sub ? base.findIndex((p) => slugify(p.name) === sub) : -1;
+    return Math.max(i, 0);
+  });
   const listRef = useRef<HTMLDivElement>(null);
   const dv = useDetailView(onBack);
   const tr = useT();
@@ -149,6 +155,11 @@ export default function ProjectsScreen({
   }, [index]);
 
   const pos = Math.min(index, Math.max(visible.length - 1, 0));
+  const selectedName = selected?.name;
+  useEffect(() => {
+    go(selectedName ? `#${mode}/${slugify(selectedName)}` : `#${mode}`, 'replace');
+  }, [mode, selectedName]);
+
   const status = selected ? asStatus(selected.status) : null;
 
   return (

@@ -8,6 +8,7 @@ import type { MenuId, PesCommit, PesLocale, PesSite, PesSprint, PesVisionData } 
 import AboutScreen from './AboutScreen';
 import ContactScreen from './ContactScreen';
 import { PesLocaleProvider } from './PesLocale';
+import { go, subscribeHash } from './nav';
 import OptionsScreen from './OptionsScreen';
 import ProjectsScreen from './ProjectsScreen';
 import SprintsScreen from './SprintsScreen';
@@ -156,28 +157,6 @@ const Tile = memo(function Tile({
   );
 });
 
-// Where the user is lives in the URL hash: '' = title, '#menu' = menu, '#<id>' = a screen.
-// A refresh or a shared link lands in the same place, and Back/Forward move between screens.
-const NAV_EVENT = 'pes-nav';
-
-function go(hash: string, mode: 'push' | 'replace') {
-  const url = window.location.pathname + window.location.search + hash;
-  if (mode === 'push') window.history.pushState({ pes: 1 }, '', url);
-  else window.history.replaceState({ pes: 1 }, '', url);
-  window.dispatchEvent(new Event(NAV_EVENT));
-}
-
-function subscribeHash(cb: () => void) {
-  window.addEventListener('hashchange', cb);
-  window.addEventListener('popstate', cb);
-  window.addEventListener(NAV_EVENT, cb);
-  return () => {
-    window.removeEventListener('hashchange', cb);
-    window.removeEventListener('popstate', cb);
-    window.removeEventListener(NAV_EVENT, cb);
-  };
-}
-
 const MOTION_KEY = 'pes-reduce-motion';
 const LOCALE_KEY = 'pes-locale';
 
@@ -201,7 +180,7 @@ export default function PesApp({
     () => window.location.hash,
     () => '',
   );
-  const hashId = hash.slice(1);
+  const hashId = hash.slice(1).split('/')[0];
   const openId: IconId | null = (MENU as string[]).includes(hashId) ? (hashId as IconId) : null;
   const started = hashId === 'menu' || openId !== null;
   const [index, setIndex] = useState(0);

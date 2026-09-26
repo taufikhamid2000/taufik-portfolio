@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { syncCommitsAction } from '../sync-action';
 import type { PesCommit, PesSprint } from '../types';
-import YearCalendar, { type Slot } from './YearCalendar';
+import { go, readSub } from './nav';
+import YearCalendar, { buildYear, type Slot } from './YearCalendar';
 import ScreenShell from './ScreenShell';
 import { useT } from './PesLocale';
 
@@ -23,8 +24,22 @@ export default function SprintsScreen({
   onBack: () => void;
 }) {
   const tr = useT();
-  const [nav, setNav] = useState<{ cells: Slot[]; pos: number } | null>(null);
+  // Restore the open sprint slot from the URL hash: '#sprints/<year>/<slot key>'.
+  const [nav, setNav] = useState<{ cells: Slot[]; pos: number; year: number } | null>(() => {
+    const [y, key] = readSub('sprints').split('/');
+    const year = Number(y);
+    if (!year || !key) return null;
+    const { iterations, other } = buildYear(year, sprints, commits, tr.sprints.buffer);
+    const cells = [...iterations.flat(), ...other.map((s) => ({ key: s.id, label: s.name, from: 0, to: 0, buffer: false, sprints: [s], commits: [] }))];
+    const pos = cells.findIndex((c) => c.key === key);
+    return pos < 0 ? null : { cells, pos, year };
+  });
+  const [initialYear] = useState(nav?.year);
   const slot = nav ? nav.cells[nav.pos] : null;
+  const navKey = nav ? `${nav.year}/${nav.cells[nav.pos].key}` : '';
+  useEffect(() => {
+    go(navKey ? `#sprints/${navKey}` : '#sprints', 'replace');
+  }, [navKey]);
   const touch = useRef<{ x: number; y: number } | null>(null);
   const step = (d: number) => setNav((n) => (n ? { ...n, pos: Math.min(Math.max(n.pos + d, 0), n.cells.length - 1) } : n));
   const router = useRouter();
@@ -213,7 +228,8 @@ export default function SprintsScreen({
             </button>
             {note && <span role="status">{note}</span>}
           </div>
-          <YearCalendar sprints={sprints} commits={commits} onOpen={(s, all) => setNav({ cells: all, pos: all.indexOf(s) })} />
+          <YearCalendar sprints={sprints} commits={commits} initialYear={initialYear}
+            onOpen={(s, all, year) => setNav({ cells: all, pos: all.indexOf(s), year })} />
         </>
       )}
     </ScreenShell>
