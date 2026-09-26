@@ -65,28 +65,6 @@ export default function SprintsScreen({
     return () => window.removeEventListener('keydown', onKey, true);
   }, [nav]);
 
-  if (!isOwner) {
-    return (
-      <ScreenShell title={tr.menu.sprints.title} onBack={onBack} hints={[]}>
-        <div className="pes-locked">
-          <div className="pes-locked-icon" aria-hidden="true">
-            <svg viewBox="0 0 56 56" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="10" y="24" width="36" height="26" rx="3" />
-              <path d="M18 24v-6a10 10 0 0120 0v6" />
-            </svg>
-          </div>
-          <h3>{tr.sprints.lockedTitle}</h3>
-          <p>{tr.sprints.lockedText}</p>
-          <div className="pes-screen-actions">
-            <a className="pes-btn" href="/login">
-              {tr.sprints.signIn}
-            </a>
-          </div>
-        </div>
-      </ScreenShell>
-    );
-  }
-
   const commitsByTask = new Map<string, PesCommit[]>();
   for (const c of commits) {
     if (!c.task_id) continue;
@@ -179,8 +157,8 @@ export default function SprintsScreen({
                           {t.effort != null ? ` · ${t.effort}` : ''}
                         </span>
                         {commitsByTask.get(t.id)?.map((c) => (
-                          <span key={c.repo + c.sha} className="pes-commit">
-                            <code>{c.sha}</code> {c.repo} — {c.message}
+                          <span key={c.repo + c.at + c.message} className="pes-commit">
+                            {c.sha && <code>{c.sha}</code>} {c.repo} — {c.message}
                           </span>
                         ))}
                       </span>
@@ -200,8 +178,8 @@ export default function SprintsScreen({
                     {g.repo} · {g.day} · {g.items.length}
                   </b>
                   {g.items.map((c) => (
-                    <span key={c.sha} className="pes-commit">
-                      <code>{c.sha}</code> {c.message}
+                    <span key={c.at + c.message} className="pes-commit">
+                      {c.sha && <code>{c.sha}</code>} {c.message}
                     </span>
                   ))}
                 </div>
@@ -211,6 +189,7 @@ export default function SprintsScreen({
         </div>
       ) : (
         <>
+          {isOwner && (
           <div className="pes-sync">
             <button
               type="button"
@@ -228,6 +207,7 @@ export default function SprintsScreen({
             </button>
             {note && <span role="status">{note}</span>}
           </div>
+          )}
           <YearCalendar sprints={sprints} commits={commits} initialYear={initialYear}
             onOpen={(s, all, year) => setNav({ cells: all, pos: all.indexOf(s), year })} />
         </>

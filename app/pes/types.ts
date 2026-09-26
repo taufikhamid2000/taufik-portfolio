@@ -46,7 +46,7 @@ export interface PesTask {
 
 export interface PesCommit {
   repo: string;
-  sha: string;
+  sha: string | null;
   message: string;
   at: string;
   task_id: string | null;

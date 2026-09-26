@@ -6,6 +6,7 @@ const OWNER = 'taufikhamid2000';
 interface GhRepo {
   name: string;
   fork: boolean;
+  private: boolean;
 }
 interface GhCommit {
   sha: string;
@@ -58,6 +59,7 @@ interface Stored {
   message: string;
   committed_at: string;
   task_id: string | null;
+  is_private: boolean;
 }
 
 /** Give every untagged commit an item: one per repo per sprint, created on demand. */
@@ -66,8 +68,10 @@ async function autoItems(supabase: Awaited<ReturnType<typeof createClient>>, fre
   for (const c of fresh) {
     if (c.task_id) continue;
     const slot = slotFor(c.committed_at);
-    const key = slot.start + '|' + c.repo;
-    const g = groups.get(key) ?? { repo: c.repo, slot, commits: [] };
+    // All private repos in a window share one generic item, so no private name or message leaks.
+    const label = c.is_private ? 'private' : c.repo;
+    const key = slot.start + '|' + label;
+    const g = groups.get(key) ?? { repo: label, slot, commits: [] };
     g.commits.push(c);
     groups.set(key, g);
   }
@@ -88,7 +92,8 @@ async function autoItems(supabase: Awaited<ReturnType<typeof createClient>>, fre
     }
     if (!sprint) continue;
 
-    const prefix = `${g.repo}: `;
+    const isPrivate = g.repo === 'private';
+    const prefix = isPrivate ? 'Private project: ' : `${g.repo}: `;
     const { data: existing } = await supabase
       .from('tasks')
       .select('id, completed_at')
@@ -105,8 +110,10 @@ async function autoItems(supabase: Awaited<ReturnType<typeof createClient>>, fre
         .from('tasks')
         .insert({
           sprint_id: sprint.id,
-          title: `${prefix}${latest.message}`.slice(0, 200),
-          description: `Auto-created from ${ordered.length} commit${ordered.length > 1 ? 's' : ''} in ${g.repo}.`,
+          title: isPrivate ? 'Private project: development work' : `${prefix}${latest.message}`.slice(0, 200),
+          description: isPrivate
+            ? 'Commits in private repositories.'
+            : `Auto-created from ${ordered.length} commit${ordered.length > 1 ? 's' : ''} in ${g.repo}.`,
           status: 'done',
           priority: 'medium',
           completed_at: latest.committed_at,
@@ -148,6 +155,7 @@ export async function syncCommits(): Promise<{ added: number; error?: string }> 
       }),
     );
 
+    const privateRepos = new Set(repos.filter((r) => r.private).map((r) => r.name));
     const rows = perRepo.flat().map(({ repo, c }) => {
       const message = c.commit.message.split('\n')[0].slice(0, 300);
       const tag = message.match(/\[T-(\d+)\]/i);
@@ -156,6 +164,7 @@ export async function syncCommits(): Promise<{ added: number; error?: string }> 
         sha: c.sha.slice(0, 7),
         message,
         committed_at: c.commit.author.date,
+        is_private: privateRepos.has(repo),
         ticket: tag ? Number(tag[1]) : null,
       };
     });
@@ -174,7 +183,7 @@ export async function syncCommits(): Promise<{ added: number; error?: string }> 
       const { data, error } = await supabase
         .from('commits')
         .upsert(payload.slice(i, i + 500), { onConflict: 'repo,sha', ignoreDuplicates: true })
-        .select('id, repo, message, committed_at, task_id');
+        .select('id, repo, message, committed_at, task_id, is_private');
       if (error) return { added: inserted.length, error: error.message };
       inserted.push(...((data ?? []) as Stored[]));
     }

@@ -65,10 +65,9 @@ export default async function Home({ searchParams }: HomeProps) {
     loadVision('ms'),
   ]);
 
-  // Sprints are owner-only in the database (RLS); only fetch and ship them
-  // to the client when the visitor is the owner, so nothing leaks otherwise.
-  const sprints: PesSprint[] = isOwner
-    ? (await getSprints()).map((s) => ({
+  // Sprint planning is public. Commits from private repos are masked in the database
+  // view that non-owners read, so nothing sensitive reaches the client.
+  const sprints: PesSprint[] = (await getSprints()).map((s) => ({
         id: s.id,
         name: s.name,
         goal: s.goal,
@@ -78,12 +77,15 @@ export default async function Home({ searchParams }: HomeProps) {
         tasks: s.tasks.map((t) => ({ id: t.id, ticket_no: t.ticket_no, title: t.title, status: t.status, priority: t.priority, effort: t.effort })),
         task_count: s.task_count,
         done_count: s.done_count,
-      }))
-    : [];
+      }));
 
-  const commits: PesCommit[] = isOwner
-    ? (await getCommits()).map((c) => ({ repo: c.repo, sha: c.sha, message: c.message, at: c.committed_at, task_id: c.task_id }))
-    : [];
+  const commits: PesCommit[] = (await getCommits(isOwner)).map((c) => ({
+    repo: c.repo,
+    sha: c.sha,
+    message: c.message,
+    at: c.committed_at,
+    task_id: c.task_id,
+  }));
 
   // 'concept' rows are idea stubs — they never appear publicly.
   const projects: PesProject[] = all
