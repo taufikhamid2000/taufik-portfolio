@@ -62,9 +62,15 @@ function sprintInput(f: SprintFields) {
   };
 }
 
-export const createSprintAction = (f: SprintFields) => guard(async () => void (await createSprint(sprintInput(f))));
-export const updateSprintAction = (id: string, f: SprintFields) => guard(async () => void (await updateSprint(id, sprintInput(f))));
-export const deleteSprintAction = (id: string) => guard(() => deleteSprint(id));
+export async function createSprintAction(f: SprintFields): Promise<Result> {
+  return guard(async () => void (await createSprint(sprintInput(f))));
+}
+export async function updateSprintAction(id: string, f: SprintFields): Promise<Result> {
+  return guard(async () => void (await updateSprint(id, sprintInput(f))));
+}
+export async function deleteSprintAction(id: string): Promise<Result> {
+  return guard(() => deleteSprint(id));
+}
 
 export interface ItemFields {
   title: string;
@@ -84,19 +90,25 @@ function itemInput(f: ItemFields) {
   return { title, status, priority: f.priority as TaskPriority, effort, completed_at: status === 'done' ? new Date().toISOString() : null };
 }
 
-export const createItemAction = (sprintId: string, f: ItemFields) =>
-  guard(async () => {
+export async function createItemAction(sprintId: string, f: ItemFields): Promise<Result> {
+  return guard(async () => {
     const { completed_at, ...rest } = itemInput(f);
-    await createTask({ ...rest, sprint_id: sprintId, project_id: null, description: null, display_order: Date.now() % 1000000 });
     void completed_at;
+    await createTask({ ...rest, sprint_id: sprintId, project_id: null, description: null, display_order: Date.now() % 1000000 });
   });
+}
 
-export const updateItemAction = (id: string, f: ItemFields) => guard(async () => void (await updateTask(id, itemInput(f))));
+export async function updateItemAction(id: string, f: ItemFields): Promise<Result> {
+  return guard(async () => void (await updateTask(id, itemInput(f))));
+}
 
-export const setItemStatusAction = (id: string, status: string) =>
-  guard(async () => {
+export async function setItemStatusAction(id: string, status: string): Promise<Result> {
+  return guard(async () => {
     if (!TASK_STATUSES.includes(status as TaskStatus)) throw new Error('Invalid status.');
     await updateTask(id, { status: status as TaskStatus, completed_at: status === 'done' ? new Date().toISOString() : null } as never);
   });
+}
 
-export const deleteItemAction = (id: string) => guard(() => deleteTask(id));
+export async function deleteItemAction(id: string): Promise<Result> {
+  return guard(() => deleteTask(id));
+}
