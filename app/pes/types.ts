@@ -8,7 +8,8 @@ export type MenuId =
   | 'about'
   | 'contact'
   | 'archive'
-  | 'settings';
+  | 'settings'
+  | 'admin';
 
 export interface PesMinistry {
   id: string;

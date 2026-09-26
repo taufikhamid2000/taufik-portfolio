@@ -104,6 +104,7 @@ const en: PesDict = {
     about: { label: 'About', title: 'ABOUT', description: 'Background, skills and the story so far.' },
     contact: { label: 'Contact', title: 'CONTACT', description: 'Get in touch for a full-stack or backend role.' },
     archive: { label: 'Archive', title: 'ARCHIVE', description: 'Retired and archived projects from the gallery.' },
+    admin: { label: 'Admin', title: 'ADMIN', description: 'Owner tools: inbox, vision editor and sign out.' },
     settings: { label: 'Options', title: 'OPTIONS', description: 'Language, motion and sound preferences.' },
   },
   hints: {
@@ -209,6 +210,7 @@ const ms: PesDict = {
     about: { label: 'Tentang', title: 'TENTANG', description: 'Latar belakang, kemahiran dan kisah setakat ini.' },
     contact: { label: 'Hubungi', title: 'HUBUNGI', description: 'Hubungi saya untuk peranan full-stack atau backend.' },
     archive: { label: 'Arkib', title: 'ARKIB', description: 'Projek yang telah diarkibkan daripada galeri.' },
+    admin: { label: 'Admin', title: 'ADMIN', description: 'Alat pemilik: peti masuk, penyunting visi dan log keluar.' },
     settings: { label: 'Tetapan', title: 'TETAPAN', description: 'Pilihan bahasa, gerakan dan bunyi.' },
   },
   hints: {

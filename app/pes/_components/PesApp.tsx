@@ -35,7 +35,7 @@ export interface PesProject {
 
 type IconId = MenuId;
 
-const MENU: IconId[] = ['projects', 'featured', 'vision', 'sprints', 'about', 'contact', 'archive', 'settings'];
+const PUBLIC_MENU: IconId[] = ['projects', 'featured', 'vision', 'sprints', 'about', 'contact', 'archive', 'settings'];
 
 const ICON_PATHS: Record<IconId, React.ReactNode> = {
   projects: (
@@ -74,6 +74,12 @@ const ICON_PATHS: Record<IconId, React.ReactNode> = {
     <>
       <rect x="6" y="8" width="44" height="12" rx="2" />
       <path d="M10 20v24a2 2 0 002 2h32a2 2 0 002-2V20M22 30h12" />
+    </>
+  ),
+  admin: (
+    <>
+      <path d="M28 4l20 8v14c0 14-9 22-20 26C17 48 8 40 8 26V12z" />
+      <path d="M19 28l7 7 12-14" />
     </>
   ),
   settings: (
@@ -185,7 +191,9 @@ export default function PesApp({
     () => '',
   );
   const hashId = hash.slice(1).split('/')[0];
-  const openId: IconId | null = (MENU as string[]).includes(hashId) ? (hashId as IconId) : null;
+  // The Admin tile exists only for the owner.
+  const menu = useMemo<IconId[]>(() => (isOwner ? [...PUBLIC_MENU, 'admin'] : PUBLIC_MENU), [isOwner]);
+  const openId: IconId | null = (menu as string[]).includes(hashId) ? (hashId as IconId) : null;
   const loginOpen = hashId === 'login';
   const inboxOpen = hashId === 'inbox' || hashId === 'vision-admin';
   const started = hashId === 'menu' || openId !== null || loginOpen || inboxOpen;
@@ -194,7 +202,7 @@ export default function PesApp({
   const [seenOpen, setSeenOpen] = useState<IconId | null>(null);
   if (openId !== seenOpen) {
     setSeenOpen(openId);
-    if (openId) setIndex(MENU.indexOf(openId));
+    if (openId) setIndex(menu.indexOf(openId));
   }
   const [localePref, setLocalePref] = usePref(LOCALE_KEY);
   const [motionPref, setMotionPref] = usePref(MOTION_KEY);
@@ -233,10 +241,10 @@ export default function PesApp({
 
   const move = useCallback(
     (delta: number) => {
-      setIndex((i) => (i + delta + MENU.length) % MENU.length);
+      setIndex((i) => (i + delta + menu.length) % menu.length);
       play('move');
     },
-    [play],
+    [play, menu],
   );
 
   const select = useCallback(
@@ -249,10 +257,10 @@ export default function PesApp({
 
   const confirm = useCallback(
     (i: number) => {
-      go('#' + MENU[i], 'push');
+      go('#' + menu[i], 'push');
       play('confirm');
     },
-    [play],
+    [play, menu],
   );
 
   const start = useCallback(() => {
@@ -293,12 +301,12 @@ export default function PesApp({
         setIndex(0);
       } else if (e.key === 'End') {
         e.preventDefault();
-        setIndex(MENU.length - 1);
+        setIndex(menu.length - 1);
       }
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [started, openId, loginOpen, inboxOpen, index, move, confirm, start, close]);
+  }, [started, openId, loginOpen, inboxOpen, index, menu, move, confirm, start, close]);
 
   // Center the selected tile in the (touch) tile row. Scrolls only that row:
   // scrollIntoView would also scroll the overflow:hidden root and shift the scene.
@@ -330,7 +338,7 @@ export default function PesApp({
   };
 
   const t = PES_DICT[locale];
-  const current = t.menu[MENU[index]];
+  const current = t.menu[menu[Math.min(index, menu.length - 1)]];
   const opened = openId ? { id: openId } : null;
 
   return (
@@ -420,7 +428,7 @@ export default function PesApp({
                 {current.title}
               </div>
               <div className="pes-tiles" role="list">
-                {MENU.map((id, i) => (
+                {menu.map((id, i) => (
                   <Tile key={id} id={id} label={t.menu[id].label} index={i} selected={i === index} onSelect={select} onConfirm={confirm} />
                 ))}
               </div>
@@ -430,7 +438,7 @@ export default function PesApp({
           <p className="pes-desc pes-enter pes-enter--d2">{current.description}</p>
 
           <div className="pes-dots" aria-hidden="true">
-            {MENU.map((m, i) => (
+            {menu.map((m, i) => (
               <i key={m} data-on={i === index} />
             ))}
           </div>
@@ -447,9 +455,11 @@ export default function PesApp({
             </div>
           )}
 
-          <button type="button" className="pes-admin-link" onClick={() => go('#login', 'push')}>
-            {isOwner ? 'Admin' : 'Sign in'}
-          </button>
+          {!isOwner && (
+            <button type="button" className="pes-admin-link" onClick={() => go('#login', 'push')}>
+              Sign in
+            </button>
+          )}
 
           <div className="pes-hints" aria-hidden="true">
             <span className="pes-hint">
@@ -469,6 +479,7 @@ export default function PesApp({
 
           {opened?.id === 'vision' && <VisionScreen data={vision[locale]} locale={locale} onBack={close} />}
           {opened?.id === 'sprints' && <SprintsScreen sprints={sprints} commits={commits} isOwner={isOwner} onBack={close} />}
+          {opened?.id === 'admin' && <LoginScreen isOwner={isOwner} onBack={close} />}
           {(loginOpen || (inboxOpen && !isOwner)) && <LoginScreen isOwner={isOwner} onBack={close} />}
           {hashId === 'inbox' && isOwner && <InboxScreen onBack={close} />}
           {hashId === 'vision-admin' && isOwner && <VisionAdminScreen onBack={close} />}
