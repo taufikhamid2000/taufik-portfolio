@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { PesSprint } from '../types';
 import { useLocale, useT } from './PesLocale';
 
@@ -56,6 +56,53 @@ export default function YearCalendar({
   const firstYear = Math.min(thisYear, ...sprints.filter((s) => s.start_date).map((s) => Number(s.start_date!.slice(0, 4))));
   const today = Date.UTC(thisYear, now.getMonth(), now.getDate());
   const { iterations, other } = useMemo(() => buildYear(year, sprints, tr.sprints.buffer), [year, sprints, tr]);
+  const otherSlots = useMemo<Slot[]>(
+    () => other.map((s) => ({ key: s.id, label: s.name, from: 0, to: 0, buffer: false, sprints: [s] })),
+    [other],
+  );
+  const cells = useMemo(() => [...iterations.flat(), ...otherSlots], [iterations, otherSlots]);
+  const [sel, setSel] = useState(0);
+  const cur = Math.min(sel, cells.length - 1);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const t = e.target as HTMLElement | null;
+      if (t?.closest('.pes-sync, .pes-year-nav')) return;
+      const move = (d: number) => {
+        e.preventDefault();
+        setSel((i) => Math.min(Math.max(Math.min(i, cells.length - 1) + d, 0), cells.length - 1));
+      };
+      if (e.key === 'ArrowRight') move(1);
+      else if (e.key === 'ArrowLeft') move(-1);
+      else if (e.key === 'ArrowDown') move(5);
+      else if (e.key === 'ArrowUp') move(-5);
+      else if (e.key === 'PageDown' && year < thisYear) {
+        e.preventDefault();
+        setYear(year + 1);
+      } else if (e.key === 'PageUp' && year > firstYear) {
+        e.preventDefault();
+        setYear(year - 1);
+      } else if (e.key === 'Enter' && cells[cur]) {
+        e.preventDefault();
+        onOpen(cells[cur]);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [cells, cur, year, thisYear, firstYear, onOpen]);
+
+  // Keep the highlighted cell visible by scrolling only its scroll container.
+  useEffect(() => {
+    const el = document.querySelector<HTMLElement>('.pes-sprint-cell[data-selected="true"]');
+    let p = el?.parentElement ?? null;
+    while (p && !/(auto|scroll)/.test(getComputedStyle(p).overflowY)) p = p.parentElement;
+    if (!el || !p) return;
+    const c = p.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    if (r.top < c.top) p.scrollBy({ top: r.top - c.top - 8, behavior: 'smooth' });
+    else if (r.bottom > c.bottom) p.scrollBy({ top: r.bottom - c.bottom + 8, behavior: 'smooth' });
+  }, [cur, year]);
+
   const fmt = new Intl.DateTimeFormat(locale === 'ms' ? 'ms-MY' : 'en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
   const range = (r: { from: number; to: number }) => `${fmt.format(r.from)} – ${fmt.format(r.to)}`;
 
@@ -78,7 +125,8 @@ export default function YearCalendar({
             <span>{range({ from: slots[0].from, to: slots[slots.length - 1].to })}</span>
           </h4>
           <div className="pes-iter-grid">
-            {slots.map((s) => {
+            {slots.map((s, n) => {
+              const idx = i * 5 + n;
               const count = s.sprints.reduce((n, x) => n + x.task_count, 0);
               return (
                 <button
@@ -86,6 +134,7 @@ export default function YearCalendar({
                   type="button"
                   className={`pes-sprint-cell${s.buffer ? ' pes-sprint-cell--buffer' : ''}`}
                   aria-current={today >= s.from && today <= s.to ? 'date' : undefined}
+                  data-selected={idx === cur}
                   onClick={() => onOpen(s)}
                 >
                   <b>{s.label}</b>
@@ -101,12 +150,13 @@ export default function YearCalendar({
         <section className="pes-iter" aria-label={tr.sprints.other}>
           <h4 className="pes-iter-title">{tr.sprints.other}</h4>
           <div className="pes-iter-grid">
-            {other.map((s) => (
+            {other.map((s, k) => (
               <button
                 key={s.id}
                 type="button"
                 className="pes-sprint-cell"
-                onClick={() => onOpen({ key: s.id, label: s.name, from: 0, to: 0, buffer: false, sprints: [s] })}
+                data-selected={iterations.flat().length + k === cur}
+                onClick={() => onOpen(otherSlots[k])}
               >
                 <b>{s.name}</b>
                 <em>
