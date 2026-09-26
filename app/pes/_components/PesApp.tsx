@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import '../pes.css';
 import { PES_DICT } from '../pes-i18n';
 import type { MenuId, PesCommit, PesLocale, PesSite, PesSprint, PesVisionData } from '../types';
@@ -156,6 +156,28 @@ const Tile = memo(function Tile({
   );
 });
 
+// Where the user is lives in the URL hash: '' = title, '#menu' = menu, '#<id>' = a screen.
+// A refresh or a shared link lands in the same place, and Back/Forward move between screens.
+const NAV_EVENT = 'pes-nav';
+
+function go(hash: string, mode: 'push' | 'replace') {
+  const url = window.location.pathname + window.location.search + hash;
+  if (mode === 'push') window.history.pushState({ pes: 1 }, '', url);
+  else window.history.replaceState({ pes: 1 }, '', url);
+  window.dispatchEvent(new Event(NAV_EVENT));
+}
+
+function subscribeHash(cb: () => void) {
+  window.addEventListener('hashchange', cb);
+  window.addEventListener('popstate', cb);
+  window.addEventListener(NAV_EVENT, cb);
+  return () => {
+    window.removeEventListener('hashchange', cb);
+    window.removeEventListener('popstate', cb);
+    window.removeEventListener(NAV_EVENT, cb);
+  };
+}
+
 const MOTION_KEY = 'pes-reduce-motion';
 const LOCALE_KEY = 'pes-locale';
 
@@ -174,9 +196,21 @@ export default function PesApp({
   isOwner: boolean;
   site: PesSite;
 }) {
-  const [started, setStarted] = useState(false);
+  const hash = useSyncExternalStore(
+    subscribeHash,
+    () => window.location.hash,
+    () => '',
+  );
+  const hashId = hash.slice(1);
+  const openId: IconId | null = (MENU as string[]).includes(hashId) ? (hashId as IconId) : null;
+  const started = hashId === 'menu' || openId !== null;
   const [index, setIndex] = useState(0);
-  const [openId, setOpenId] = useState<IconId | null>(null);
+  // A deep link (#sprints) should leave the matching tile selected once the screen closes.
+  const [seenOpen, setSeenOpen] = useState<IconId | null>(null);
+  if (openId !== seenOpen) {
+    setSeenOpen(openId);
+    if (openId) setIndex(MENU.indexOf(openId));
+  }
   const [localePref, setLocalePref] = usePref(LOCALE_KEY);
   const [motionPref, setMotionPref] = usePref(MOTION_KEY);
   const [rotatePref, setRotatePref] = usePref('pes-rotate-dismissed');
@@ -186,7 +220,8 @@ export default function PesApp({
   const play = useSound(sound);
   const setSound = useCallback((v: boolean) => setSoundPref(v ? '1' : '0'), [setSoundPref]);
   const close = useCallback(() => {
-    setOpenId(null);
+    if (window.history.state?.pes) window.history.back();
+    else go('#menu', 'replace');
     play('back');
     // Return focus to the selected tile so keyboard users don't land on <body>.
     requestAnimationFrame(() => document.querySelector<HTMLElement>('.pes-tile[aria-current="true"]')?.focus());
@@ -229,14 +264,14 @@ export default function PesApp({
 
   const confirm = useCallback(
     (i: number) => {
-      setOpenId(MENU[i]);
+      go('#' + MENU[i], 'push');
       play('confirm');
     },
     [play],
   );
 
   const start = useCallback(() => {
-    setStarted(true);
+    go('#menu', 'push');
     play('confirm');
   }, [play]);
 
