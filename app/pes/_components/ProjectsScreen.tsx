@@ -8,6 +8,7 @@ import type { PesProject } from './PesApp';
 import { useT } from './PesLocale';
 import { readSub, go, slugify } from './nav';
 import { useAutoFocus } from './useAutoFocus';
+import { ProjectForm } from './ProjectAdmin';
 import { useDetailView } from './useDetailView';
 
 export type ProjectsMode = 'projects' | 'featured' | 'archive';
@@ -61,10 +62,12 @@ const Card = memo(function Card({
 export default function ProjectsScreen({
   mode,
   projects,
+  isOwner = false,
   onBack,
 }: {
   mode: ProjectsMode;
   projects: PesProject[];
+  isOwner?: boolean;
   onBack: () => void;
 }) {
   const base = useMemo(() => {
@@ -88,7 +91,9 @@ export default function ProjectsScreen({
     return Math.max(i, 0);
   });
   const listRef = useRef<HTMLDivElement>(null);
-  const dv = useDetailView(onBack);
+  // 'new' or a project id while its form is open.
+  const [editing, setEditing] = useState<string | null>(null);
+  const dv = useDetailView(onBack, editing !== null);
   const tr = useT();
   const focusRef = useAutoFocus<HTMLDivElement>();
 
@@ -118,6 +123,7 @@ export default function ProjectsScreen({
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
+      if (editing || (e.target as HTMLElement | null)?.closest('input, textarea, select')) return;
       if (inDetail && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) {
         e.preventDefault();
         step(e.key === 'ArrowRight' ? 1 : -1);
@@ -141,7 +147,21 @@ export default function ProjectsScreen({
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [visible.length, changeTab, selected, inDetail, step]);
+  }, [visible.length, changeTab, selected, inDetail, step, editing]);
+
+  // Esc closes an open form before anything else.
+  useEffect(() => {
+    if (!editing) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        setEditing(null);
+      }
+    }
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [editing]);
 
   // Keep the selected card visible by scrolling only the list container.
   useEffect(() => {
@@ -186,12 +206,21 @@ export default function ProjectsScreen({
             ))}
           </div>
         )}
+        {isOwner && (
+          <button type="button" className="pes-btn pes-btn--ghost" onClick={() => setEditing('new')}>
+            + NEW
+          </button>
+        )}
         <button type="button" className="pes-btn pes-btn--ghost pes-full-back" onClick={dv.back}>
           {tr.backBtn}
         </button>
       </div>
 
-      {visible.length === 0 ? (
+      {editing === 'new' ? (
+        <div className="pes-detail">
+          <ProjectForm onDone={() => setEditing(null)} />
+        </div>
+      ) : visible.length === 0 ? (
         <p className="pes-empty">{tr.projects.empty}</p>
       ) : (
         <div className="pes-full-body" data-view={dv.view}>
@@ -210,7 +239,13 @@ export default function ProjectsScreen({
             ))}
           </div>
 
-          {selected && status && (
+          {selected && status && editing === selected.id && (
+            <div className="pes-detail" key={selected.id}>
+              <ProjectForm project={selected} onDone={() => setEditing(null)} />
+            </div>
+          )}
+
+          {selected && status && editing !== selected.id && (
             <article
               className="pes-detail"
               key={selected.id}
@@ -265,6 +300,11 @@ export default function ProjectsScreen({
                 </ul>
               )}
               <div className="pes-screen-actions">
+                {isOwner && (
+                  <button type="button" className="pes-btn" onClick={() => setEditing(selected.id)}>
+                    EDIT
+                  </button>
+                )}
                 {selected.demo_url && (
                   <a className="pes-btn" href={selected.demo_url} target="_blank" rel="noopener noreferrer">
                     {tr.projects.demo}

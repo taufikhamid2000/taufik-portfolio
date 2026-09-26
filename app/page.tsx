@@ -87,9 +87,9 @@ export default async function Home({ searchParams }: HomeProps) {
     task_id: c.task_id,
   }));
 
-  // 'concept' rows are idea stubs — they never appear publicly.
+  // 'concept' rows are idea stubs: only the owner sees them.
   const projects: PesProject[] = all
-    .filter((p) => p.status !== 'concept')
+    .filter((p) => isOwner || p.status !== 'concept')
     .map((p) => ({
       id: p.id,
       name: p.name,
@@ -101,6 +101,7 @@ export default async function Home({ searchParams }: HomeProps) {
       image_url: p.image_url,
       featured: p.featured,
       status: p.status,
+      display_order: p.display_order,
     }));
 
   const vision: Record<PesLocale, PesVisionData> = { en, ms };

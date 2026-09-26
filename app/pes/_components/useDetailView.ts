@@ -9,7 +9,7 @@ import { useMediaQuery } from './usePref';
  * While the detail is open, Esc/Backspace and the header Back button return
  * to the list instead of closing the whole screen.
  */
-export function useDetailView(onBack: () => void) {
+export function useDetailView(onBack: () => void, paused = false) {
   const [detail, setDetail] = useState(false);
   const portrait = useMediaQuery('(max-aspect-ratio: 1/1)');
   const inDetail = detail && portrait;
@@ -18,9 +18,10 @@ export function useDetailView(onBack: () => void) {
   const closeDetail = useCallback(() => setDetail(false), []);
 
   useEffect(() => {
-    if (!inDetail) return;
+    if (!inDetail || paused) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape' || e.key === 'Backspace') {
+      const typing = (e.target as HTMLElement | null)?.closest('input, textarea, select');
+      if (e.key === 'Escape' || (e.key === 'Backspace' && !typing)) {
         e.preventDefault();
         e.stopImmediatePropagation();
         setDetail(false);
@@ -29,7 +30,7 @@ export function useDetailView(onBack: () => void) {
     // Capture phase so this runs before PesApp's window listener closes the screen.
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
-  }, [inDetail]);
+  }, [inDetail, paused]);
 
   return {
     view: inDetail ? ('detail' as const) : ('list' as const),

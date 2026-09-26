@@ -28,6 +28,7 @@ export interface PesProject {
   image_url: string | null;
   featured: boolean;
   status: string;
+  display_order: number;
 }
 
 type IconId = MenuId;
@@ -460,7 +461,7 @@ export default function PesApp({
           </div>
 
           {opened && (opened.id === 'projects' || opened.id === 'featured' || opened.id === 'archive') && (
-            <ProjectsScreen mode={opened.id} projects={projects} onBack={close} />
+            <ProjectsScreen mode={opened.id} projects={projects} isOwner={isOwner} onBack={close} />
           )}
 
           {opened?.id === 'vision' && <VisionScreen data={vision[locale]} locale={locale} onBack={close} />}

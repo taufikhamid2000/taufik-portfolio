@@ -1242,10 +1242,13 @@
 .pes-admin-link:hover, .pes-admin-link:focus-visible { color: #fff; }
 .pes-form { display: grid; gap: 10px; max-width: 34rem; padding: 4px 0 12px; }
 .pes-form label { display: grid; gap: 4px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(226,236,255,.75); flex: 1; }
-.pes-form input, .pes-form select { font: inherit; font-size: 14px; letter-spacing: 0; text-transform: none; padding: .55rem .7rem; color: #fff; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.25); border-radius: 4px; min-width: 0; }
+.pes-form input, .pes-form select, .pes-form textarea { font: inherit; font-size: 14px; letter-spacing: 0; text-transform: none; padding: .55rem .7rem; color: #fff; background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.25); border-radius: 4px; min-width: 0; }
 .pes-form input:focus, .pes-form select:focus { outline: 2px solid var(--pes-gold, #f5c542); outline-offset: 1px; }
 .pes-form-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
 .pes-form-error { margin: 0; color: #ff8a8a; font-size: 12px; }
 .pes-form-link { font-size: 12px; color: rgba(226,236,255,.7); }
 .pes-mini { padding: .3rem .7rem; font-size: 11px; margin-top: 6px; }
 .pes-tag-btn { border: 0; cursor: pointer; font: inherit; font-size: .68rem; font-weight: 900; }
+.pes-form textarea { resize: vertical; }
+.pes-form .pes-form-check { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.pes-form .pes-form-check input { width: 1.1rem; height: 1.1rem; }

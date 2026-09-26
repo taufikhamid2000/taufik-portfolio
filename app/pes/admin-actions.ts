@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getIsOwner } from '../../lib/auth';
 import { createSprint, deleteSprint, updateSprint, type SprintStatus } from '../../lib/sprints';
 import { createTask, deleteTask, updateTask, type TaskPriority, type TaskStatus } from '../../lib/tasks';
+import { createProject, deleteProject, updateProject, type ProjectStatus } from '../../lib/projects';
 import { createClient } from '../../lib/supabase/server';
 
 // Owner tools for the PES view. Every action re-checks the owner (RLS backs it up) and
@@ -111,4 +112,54 @@ export async function setItemStatusAction(id: string, status: string): Promise<R
 
 export async function deleteItemAction(id: string): Promise<Result> {
   return guard(() => deleteTask(id));
+}
+
+export interface ProjectFields {
+  name: string;
+  tagline: string;
+  description: string;
+  tech: string;
+  github_url: string;
+  demo_url: string;
+  image_url: string;
+  status: string;
+  featured: boolean;
+  display_order: string;
+}
+
+const PROJECT_STATUSES: ProjectStatus[] = ['active', 'in-progress', 'concept', 'archived', 'in-portfolio'];
+
+function projectInput(f: ProjectFields) {
+  const name = f.name.trim();
+  const tagline = f.tagline.trim();
+  const description = f.description.trim();
+  if (!name) throw new Error('Name is required.');
+  if (!tagline) throw new Error('Tagline is required.');
+  if (!description) throw new Error('Description is required.');
+  if (!PROJECT_STATUSES.includes(f.status as ProjectStatus)) throw new Error('Invalid status.');
+  const order = parseInt(f.display_order || '0', 10);
+  return {
+    name,
+    tagline,
+    description,
+    tech: f.tech.split(',').map((t) => t.trim()).filter(Boolean),
+    github_url: f.github_url.trim() || null,
+    demo_url: f.demo_url.trim() || null,
+    image_url: f.image_url.trim() || null,
+    status: f.status as ProjectStatus,
+    featured: f.featured,
+    display_order: Number.isFinite(order) ? order : 0,
+  };
+}
+
+export async function createProjectAction(f: ProjectFields): Promise<Result> {
+  return guard(async () => void (await createProject(projectInput(f))));
+}
+
+export async function updateProjectAction(id: string, f: ProjectFields): Promise<Result> {
+  return guard(async () => void (await updateProject(id, projectInput(f))));
+}
+
+export async function deleteProjectAction(id: string): Promise<Result> {
+  return guard(() => deleteProject(id));
 }
