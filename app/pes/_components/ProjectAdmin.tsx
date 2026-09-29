@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createProjectAction, deleteProjectAction, updateProjectAction, type ProjectFields } from '../admin-actions';
+import { createProjectAction, deleteProjectAction, updateProjectAction, uploadProjectScreenshotAction, type ProjectFields } from '../admin-actions';
 import type { PesProject } from './PesApp';
 import { useAdminRun } from './SprintAdmin';
 
@@ -10,6 +10,8 @@ const STATUSES = ['active', 'in-progress', 'in-portfolio', 'concept', 'archived'
 // Owner-only project editor (English only, admin tool).
 export function ProjectForm({ project, onDone }: { project?: PesProject; onDone: () => void }) {
   const { run, pending, error } = useAdminRun();
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [f, setF] = useState<ProjectFields>({
     name: project?.name ?? '',
     tagline: project?.tagline ?? '',
@@ -61,6 +63,33 @@ export function ProjectForm({ project, onDone }: { project?: PesProject; onDone:
         Image URL
         <input type="text" placeholder="/screenshots/name.png or https://..." value={f.image_url} onChange={text('image_url')} />
       </label>
+      <label>
+        Or upload a screenshot
+        <input
+          type="file"
+          accept="image/*"
+          disabled={uploading}
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            e.target.value = '';
+            if (!file) return;
+            setUploading(true);
+            setUploadError(null);
+            const body = new FormData();
+            body.set('file', file);
+            const r = await uploadProjectScreenshotAction(body);
+            setUploading(false);
+            if (r.error) setUploadError(r.error);
+            else if (r.url) setF((prev) => ({ ...prev, image_url: r.url! }));
+          }}
+        />
+      </label>
+      {uploading && <p className="pes-detail-desc">Uploading…</p>}
+      {uploadError && (
+        <p role="alert" className="pes-form-error">
+          {uploadError}
+        </p>
+      )}
       <div className="pes-form-row">
         <label>
           Status

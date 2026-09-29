@@ -166,6 +166,24 @@ export async function deleteProjectAction(id: string): Promise<Result> {
   return guard(() => deleteProject(id));
 }
 
+const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
+
+export async function uploadProjectScreenshotAction(formData: FormData): Promise<Result & { url?: string }> {
+  if (!(await getIsOwner())) return { error: 'Sign in as the site owner first.' };
+  const file = formData.get('file');
+  if (!(file instanceof File) || file.size === 0) return { error: 'Choose an image first.' };
+  if (!file.type.startsWith('image/')) return { error: 'Only image files are allowed.' };
+  if (file.size > MAX_SCREENSHOT_BYTES) return { error: 'Image must be under 5MB.' };
+
+  const ext = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
+  const path = `${crypto.randomUUID()}.${ext}`;
+  const supabase = await createClient();
+  const { error: uploadError } = await supabase.storage.from('project-screenshots').upload(path, file, { contentType: file.type });
+  if (uploadError) return { error: uploadError.message };
+  const { data } = supabase.storage.from('project-screenshots').getPublicUrl(path);
+  return { url: data.publicUrl };
+}
+
 // ----- Inbox: idea submissions and missing translations -----
 
 export interface InboxSubmission {
