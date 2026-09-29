@@ -1,5 +1,7 @@
 'use server';
 
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { revalidatePath } from 'next/cache';
 import { getIsOwner } from '../../lib/auth';
 import { createSprint, deleteSprint, updateSprint, type SprintStatus } from '../../lib/sprints';
@@ -182,6 +184,49 @@ export async function uploadProjectScreenshotAction(formData: FormData): Promise
   if (uploadError) return { error: uploadError.message };
   const { data } = supabase.storage.from('project-screenshots').getPublicUrl(path);
   return { url: data.publicUrl };
+}
+
+const CONTENT_TYPES: Record<string, string> = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', svg: 'image/svg+xml' };
+
+/**
+ * One-off migration: move every project's locally-committed screenshot (public/screenshots/*)
+ * into the Storage bucket and repoint image_url at the resulting public link. Safe to re-run —
+ * already-migrated rows (image_url no longer starting with "/") are skipped.
+ */
+export async function migrateScreenshotsToStorageAction(): Promise<Result & { migrated?: number; skipped?: number; details?: string[] }> {
+  if (!(await getIsOwner())) return { error: 'Sign in as the site owner first.' };
+  const supabase = await createClient();
+  const { data: projects, error } = await supabase.from('projects').select('id, name, image_url');
+  if (error) return { error: error.message };
+
+  let migrated = 0;
+  let skipped = 0;
+  const details: string[] = [];
+  for (const p of projects ?? []) {
+    const url: string | null = p.image_url;
+    if (!url || !url.startsWith('/')) {
+      skipped++;
+      continue;
+    }
+    try {
+      const bytes = await readFile(path.join(process.cwd(), 'public', url));
+      const ext = url.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'png';
+      const storagePath = `migrated/${p.id}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('project-screenshots')
+        .upload(storagePath, bytes, { contentType: CONTENT_TYPES[ext] ?? 'application/octet-stream', upsert: true });
+      if (uploadError) throw new Error(uploadError.message);
+      const { data: pub } = supabase.storage.from('project-screenshots').getPublicUrl(storagePath);
+      const { error: updateError } = await supabase.from('projects').update({ image_url: pub.publicUrl }).eq('id', p.id);
+      if (updateError) throw new Error(updateError.message);
+      migrated++;
+      details.push(`${p.name}: ${url} -> ${pub.publicUrl}`);
+    } catch (e) {
+      details.push(`${p.name}: FAILED (${e instanceof Error ? e.message : 'unknown error'})`);
+    }
+  }
+  revalidatePath('/');
+  return { migrated, skipped, details };
 }
 
 // ----- Inbox: idea submissions and missing translations -----

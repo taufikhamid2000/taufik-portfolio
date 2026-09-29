@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
-import { signOutAction } from '../admin-actions';
+import { migrateScreenshotsToStorageAction, signOutAction } from '../admin-actions';
 import InboxScreen from './InboxScreen';
 import { go, readSub } from './nav';
 import ScreenShell from './ScreenShell';
@@ -19,6 +19,8 @@ type Tab = (typeof TABS)[number]['id'];
 export default function AdminScreen({ onBack }: { onBack: () => void }) {
   const router = useRouter();
   const [pending, start] = useTransition();
+  const [migrating, setMigrating] = useState(false);
+  const [migrateResult, setMigrateResult] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>(() => {
     const sub = readSub('admin');
     return TABS.some((t) => t.id === sub) ? (sub as Tab) : 'inbox';
@@ -73,6 +75,25 @@ export default function AdminScreen({ onBack }: { onBack: () => void }) {
           >
             SIGN OUT
           </button>
+          <p style={{ marginTop: 24 }}>
+            One-off: move every project&apos;s committed <code>/screenshots/...</code> image into Storage and repoint its Image URL. Safe to run more than once — already-migrated projects are skipped.
+          </p>
+          <button
+            type="button"
+            className="pes-btn pes-btn--ghost"
+            disabled={migrating}
+            onClick={async () => {
+              setMigrating(true);
+              setMigrateResult(null);
+              const r = await migrateScreenshotsToStorageAction();
+              setMigrating(false);
+              setMigrateResult(r.error ?? `Migrated ${r.migrated}, skipped ${r.skipped}.\n${(r.details ?? []).join('\n')}`);
+              if (!r.error) router.refresh();
+            }}
+          >
+            {migrating ? 'MIGRATING…' : 'MIGRATE SCREENSHOTS TO STORAGE'}
+          </button>
+          {migrateResult && <pre className="pes-detail-desc" style={{ whiteSpace: 'pre-wrap' }}>{migrateResult}</pre>}
         </div>
       )}
     </ScreenShell>
