@@ -34,7 +34,7 @@ export interface PesProject {
 
 type IconId = MenuId;
 
-const MENU: IconId[] = ['projects', 'featured', 'vision', 'sprints', 'about', 'contact', 'archive', 'settings', 'admin'];
+const MENU: IconId[] = ['projects', 'vision', 'sprints', 'about', 'contact', 'settings', 'admin'];
 
 const ICON_PATHS: Record<IconId, React.ReactNode> = {
   projects: (
@@ -470,9 +470,7 @@ export default function PesApp({
             </span>
           </div>
 
-          {opened && (opened.id === 'projects' || opened.id === 'featured' || opened.id === 'archive') && (
-            <ProjectsScreen mode={opened.id} projects={projects} isOwner={isOwner} onBack={close} />
-          )}
+          {opened?.id === 'projects' && <ProjectsScreen projects={projects} isOwner={isOwner} onBack={close} />}
 
           {opened?.id === 'vision' && <VisionScreen data={vision[locale]} locale={locale} onBack={close} />}
           {opened?.id === 'sprints' && <SprintsScreen sprints={sprints} commits={commits} isOwner={isOwner} onBack={close} />}

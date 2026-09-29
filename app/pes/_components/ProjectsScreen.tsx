@@ -11,9 +11,15 @@ import { useAutoFocus } from './useAutoFocus';
 import { ProjectForm } from './ProjectAdmin';
 import { useDetailView } from './useDetailView';
 
-export type ProjectsMode = 'projects' | 'featured' | 'archive';
-
 const STATUS_ORDER: ProjectStatus[] = ['active', 'in-progress', 'in-portfolio'];
+
+// A tab is either a real project status, or one of these two cross-cutting views.
+function filterByTab(tab: string, projects: PesProject[]): PesProject[] {
+  if (tab === 'featured') return projects.filter((p) => p.featured && p.status !== 'archived');
+  if (tab === 'archived') return projects.filter((p) => p.status === 'archived');
+  if (tab === 'all') return projects.filter((p) => p.status !== 'archived');
+  return projects.filter((p) => p.status === tab);
+}
 
 // Short "position" tag shown on each card, like a player's position in PES.
 const STATUS_TAG: Record<ProjectStatus, string> = {
@@ -60,34 +66,31 @@ const Card = memo(function Card({
 });
 
 export default function ProjectsScreen({
-  mode,
   projects,
   isOwner = false,
   onBack,
 }: {
-  mode: ProjectsMode;
   projects: PesProject[];
   isOwner?: boolean;
   onBack: () => void;
 }) {
-  const base = useMemo(() => {
-    if (mode === 'featured') return projects.filter((p) => p.featured && p.status !== 'archived');
-    if (mode === 'archive') return projects.filter((p) => p.status === 'archived');
-    return projects.filter((p) => p.status !== 'archived');
-  }, [mode, projects]);
-
-  // Filter tabs only make sense on the full Projects list.
   const tabs = useMemo<string[]>(() => {
-    if (mode !== 'projects') return [];
-    const present = STATUS_ORDER.filter((s) => base.some((p) => p.status === s));
-    return ['all', ...present];
-  }, [mode, base]);
+    const present = STATUS_ORDER.filter((s) => projects.some((p) => p.status === s));
+    const extra: string[] = [];
+    if (projects.some((p) => p.featured)) extra.push('featured');
+    if (projects.some((p) => p.status === 'archived')) extra.push('archived');
+    return ['all', ...present, ...extra];
+  }, [projects]);
 
-  const [tab, setTab] = useState<string>('all');
-  // Restore the project named in the URL hash (client-only: this screen mounts after hydration).
+  // Restore the project (and its tab) named in the URL hash (client-only: this screen mounts after hydration).
+  const [tab, setTab] = useState<string>(() => {
+    const sub = readSub('projects');
+    if (!sub) return 'all';
+    return tabs.find((t) => filterByTab(t, projects).some((p) => slugify(p.name) === sub)) ?? 'all';
+  });
   const [index, setIndex] = useState(() => {
-    const sub = readSub(mode);
-    const i = sub ? base.findIndex((p) => slugify(p.name) === sub) : -1;
+    const sub = readSub('projects');
+    const i = sub ? filterByTab(tab, projects).findIndex((p) => slugify(p.name) === sub) : -1;
     return Math.max(i, 0);
   });
   const listRef = useRef<HTMLDivElement>(null);
@@ -97,10 +100,7 @@ export default function ProjectsScreen({
   const tr = useT();
   const focusRef = useAutoFocus<HTMLDivElement>();
 
-  const visible = useMemo(
-    () => (tab === 'all' ? base : base.filter((p) => p.status === tab)),
-    [base, tab],
-  );
+  const visible = useMemo(() => filterByTab(tab, projects), [tab, projects]);
 
   const selected = visible[Math.min(index, Math.max(visible.length - 1, 0))];
 
@@ -177,15 +177,15 @@ export default function ProjectsScreen({
   const pos = Math.min(index, Math.max(visible.length - 1, 0));
   const selectedName = selected?.name;
   useEffect(() => {
-    go(selectedName ? `#${mode}/${slugify(selectedName)}` : `#${mode}`, 'replace');
-  }, [mode, selectedName]);
+    go(selectedName ? `#projects/${slugify(selectedName)}` : `#projects`, 'replace');
+  }, [selectedName]);
 
   const status = selected ? asStatus(selected.status) : null;
 
   return (
-    <div className="pes-full pes-enter" role="dialog" aria-modal="true" aria-label={tr.menu[mode].title} tabIndex={-1} ref={focusRef}>
+    <div className="pes-full pes-enter" role="dialog" aria-modal="true" aria-label={tr.menu.projects.title} tabIndex={-1} ref={focusRef}>
       <div className="pes-full-head">
-        <h2 className="pes-full-title">{tr.menu[mode].title}</h2>
+        <h2 className="pes-full-title">{tr.menu.projects.title}</h2>
         <span className="pes-full-count">{visible.length}</span>
         {tabs.length > 0 && (
           <div className="pes-tabs" role="tablist">

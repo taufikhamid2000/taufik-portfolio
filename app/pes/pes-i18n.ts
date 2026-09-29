@@ -140,6 +140,7 @@ const en: PesDict = {
       'in-portfolio': 'In Portfolio',
       concept: 'Concept',
       archived: 'Archived',
+      featured: 'Featured',
     },
   },
   sprints: {
@@ -246,6 +247,7 @@ const ms: PesDict = {
       'in-portfolio': 'Dalam Portfolio',
       concept: 'Konsep',
       archived: 'Diarkibkan',
+      featured: 'Terbaik',
     },
   },
   sprints: {
