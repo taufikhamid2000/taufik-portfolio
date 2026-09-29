@@ -59,7 +59,7 @@ export function ProjectForm({ project, onDone }: { project?: PesProject; onDone:
       </label>
       <label>
         Image URL
-        <input type="url" value={f.image_url} onChange={text('image_url')} />
+        <input type="text" placeholder="/screenshots/name.png or https://..." value={f.image_url} onChange={text('image_url')} />
       </label>
       <div className="pes-form-row">
         <label>
