@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
+import { createClient } from '../../../lib/supabase/client';
 import { signInAction, signOutAction } from '../admin-actions';
 import ScreenShell from './ScreenShell';
 
@@ -19,6 +20,15 @@ export default function LoginScreen({ isOwner, onBack }: { isOwner: boolean; onB
       router.refresh();
       onBack();
     });
+
+  // Full-page redirect to Google; /auth/confirm exchanges the code and sends us back to /pes.
+  const signInWithGoogle = async () => {
+    const { error } = await createClient().auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/confirm?next=/pes` },
+    });
+    if (error) setError(error.message);
+  };
 
   return (
     <ScreenShell title={isOwner ? 'ADMIN' : 'SIGN IN'} onBack={onBack} hints={[{ keys: '↵', label: isOwner ? 'Sign out' : 'Sign in', kind: 'confirm' }]}>
@@ -49,6 +59,9 @@ export default function LoginScreen({ isOwner, onBack }: { isOwner: boolean; onB
           {error && <p role="alert" className="pes-form-error">{error}</p>}
           <button type="submit" className="pes-btn" disabled={pending}>
             {pending ? 'SIGNING IN…' : 'SIGN IN'}
+          </button>
+          <button type="button" className="pes-btn pes-btn--ghost" disabled={pending} onClick={signInWithGoogle}>
+            CONTINUE WITH GOOGLE
           </button>
           <a className="pes-form-link" href="/auth/reset-password">
             Forgot password?
